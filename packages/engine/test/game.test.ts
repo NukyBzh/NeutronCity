@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   DAY_MINUTES, SURPRISE_SPEC, dayResult, demandAt, drawSurprises, gaugeOf, hourOf, isHeatingDay, maxEuros, newGame,
-  setSetpoints, simulate, stepMinute, townHappiness, type DayDef, type GameState,
+  isSurplus, setSetpoints, simulate, stepMinute, townHappiness, type DayDef, type GameState,
 } from '../src/index';
 import { DAYS, SHOP } from './content';
 
@@ -87,12 +87,39 @@ describe('surprises', () => {
 
 describe('D-02 gauge and town happiness', () => {
   it('gauge thresholds', () => {
-    expect([gaugeOf(3), gaugeOf(-3.01), gaugeOf(8), gaugeOf(-8.5)]).toEqual(['bien', 'presque', 'presque', 'loin']);
+    expect([gaugeOf(3), gaugeOf(-3.01), gaugeOf(7), gaugeOf(-7.5)]).toEqual(['bien', 'presque', 'presque', 'loin']);
   });
 
   it('happiness starts at 40, only grows with purchases and stays ≤ 100', () => {
     expect(townHappiness(SHOP, [])).toBe(40);
     expect(townHappiness(SHOP, ['parc'])).toBeGreaterThan(40);
     expect(townHappiness(SHOP, SHOP.map((i) => i.id))).toBeLessThanOrEqual(100);
+  });
+});
+
+describe('D-15: stay in the ±7 % band, wasted electricity costs money', () => {
+  const day = DAYS.find((d) => d.id === 'ete')!;
+
+  it('electricity more than 7 points above the demand costs 1 € a minute', () => {
+    expect(isSurplus(60, 52)).toBe(true);
+    expect(isSurplus(59, 52)).toBe(false);
+    // Plant at 100 % all day while the town asks 32–85 %: mostly wasted, never paid much.
+    const over = simulate(day, 4, () => ({ elec: 100, heat: 0 }));
+    expect(over.stats.surplusElec).toBeGreaterThan(300);
+    const r = dayResult(day, over);
+    expect(r.advice).toBe('surplus');
+    expect(r.stars).toBe(1);
+  });
+
+  it('the piggy bank never goes below 0', () => {
+    let s = setSetpoints(newGame(day, 9), 100, 0, 'elec');
+    let min = Infinity;
+    while (s.minute < DAY_MINUTES) { s = stepMinute(day, s); min = Math.min(min, s.euros); }
+    expect(min).toBeGreaterThanOrEqual(0);
+  });
+
+  it('a player who follows closely loses nothing to the penalty', () => {
+    const good = simulate(day, 11, ahead(day));
+    expect(good.stats.surplusElec).toBe(0);
   });
 });

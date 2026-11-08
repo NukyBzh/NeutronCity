@@ -1,6 +1,6 @@
 # Neutron City sur la Galaxy Tab A9+ (APK de test)
 
-*APK construit le 2026-11-08 depuis la version **0.4.1** (lot L3.1). Fichier : `livrables/Neutron-City-0.4.1.apk`
+*APK construit le 2026-11-08 depuis la version **0.5.0** (lot L3.2). Fichier : `livrables/Neutron-City-0.5.0.apk`
 (non versionné). Recompiler : `npm.cmd run android` à la racine du dépôt.*
 
 ## 1. Ce que fait l'APK
@@ -13,7 +13,7 @@
   une installation à la main. La signature avec une clé à vous viendra au lot L8.
 
 ## 2. Installer l'APK sur la tablette (une fois)
-1. Copier `Neutron-City-0.4.1.apk` sur la tablette : câble USB (dossier `Download`), ou envoi à soi-même
+1. Copier `Neutron-City-0.5.0.apk` sur la tablette : câble USB (dossier `Download`), ou envoi à soi-même
    (Google Drive, e-mail).
 2. Sur la tablette, ouvrir **Mes fichiers** → `Téléchargements` → toucher le fichier APK.
 3. Au message « installation d'applications inconnues bloquée », toucher **Paramètres** et autoriser

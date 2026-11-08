@@ -9,13 +9,19 @@ import { SURPRISE_SPEC, drawSurprises, surpriseWeight, type Surprise } from './s
 
 export type Gauge = 'bien' | 'presque' | 'loin';
 
-/** D-02: gap between production and demand, in core points → gauge. */
+/** D-15: the player must stay in a band of ±7 core points around the demand. */
+export const BAND_PCT = 7;
+/** D-15: gap between production and demand, in core points → gauge (±3 « bien », ±7 « presque »). */
 export function gaugeOf(gap: number): Gauge {
   const g = Math.abs(gap);
-  return g <= 3 ? 'bien' : g <= 8 ? 'presque' : 'loin';
+  return g <= 3 ? 'bien' : g <= BAND_PCT ? 'presque' : 'loin';
 }
-/** D-02: euros earned per game minute for one output; no negative penalty in V1. */
+/** D-15: euros earned per game minute for one output inside the band. */
 export const EUROS_PER_MINUTE: Record<Gauge, number> = { bien: 2, presque: 1, loin: 0 };
+/** D-15: electricity produced above the band is wasted and costs this much per game minute. */
+export const SURPLUS_PENALTY = 1;
+/** True when electricity is produced above the band (wasted, D-15). */
+export const isSurplus = (production: number, demand: number): boolean => production - demand > BAND_PCT;
 
 export interface Demand { elec: number; heat: number }
 
@@ -38,6 +44,8 @@ export interface GameStats {
   redEvening: number;
   /** Minutes the town asked for heat. */
   heatMinutes: number;
+  /** Minutes with electricity produced above the band (D-15). */
+  surplusElec: number;
 }
 
 export interface GameState {
@@ -65,7 +73,7 @@ export function newGame(day: DayDef, seed: number): GameState {
     seed, surprises, minute: 0,
     plant: { setElec: e, setHeat: h, elec: e, heat: h },
     euros: 0, paidMinutes: 0,
-    stats: { redElec: 0, redHeat: 0, redEvening: 0, heatMinutes: 0 },
+    stats: { redElec: 0, redHeat: 0, redEvening: 0, heatMinutes: 0, surplusElec: 0 },
   };
 }
 
@@ -81,25 +89,30 @@ export function gaugesOf(day: DayDef, s: GameState): { demand: Demand; elec: Gau
   return { demand, elec: gaugeOf(s.plant.elec - demand.elec), heat: demand.heat > 0 ? gaugeOf(s.plant.heat - demand.heat) : null };
 }
 
-/** One game minute: the plant follows its setpoints, then the minute is paid and counted. */
+/**
+ * One game minute: the plant follows its setpoints, then the minute is paid and counted. Electricity above the band
+ * costs SURPLUS_PENALTY (D-15); the piggy bank never goes below 0 (a child of 8 is not left in debt).
+ */
 export function stepMinute(day: DayDef, s: GameState): GameState {
   if (isOver(s)) return s;
   const minute = s.minute + 1;
   const plant = stepPlant(s.plant, day.rampPctPerHour);
   const next = { ...s, minute, plant };
   const g = gaugesOf(day, next);
-  const pay = EUROS_PER_MINUTE[g.elec] + (g.heat ? EUROS_PER_MINUTE[g.heat] : 0);
+  const surplus = isSurplus(plant.elec, g.demand.elec);
+  const pay = EUROS_PER_MINUTE[g.elec] + (g.heat ? EUROS_PER_MINUTE[g.heat] : 0) - (surplus ? SURPLUS_PENALTY : 0);
   const hour = hourOf(next);
   const st = s.stats;
   return {
     ...next,
-    euros: s.euros + pay,
+    euros: Math.max(0, s.euros + pay),
     paidMinutes: s.paidMinutes + (pay > 0 ? 1 : 0),
     stats: {
       redElec: st.redElec + (g.elec === 'loin' ? 1 : 0),
       redHeat: st.redHeat + (g.heat === 'loin' ? 1 : 0),
       redEvening: st.redEvening + (g.elec === 'loin' && hour > 18 && hour <= 21 ? 1 : 0),
       heatMinutes: st.heatMinutes + (g.heat ? 1 : 0),
+      surplusElec: st.surplusElec + (surplus ? 1 : 0),
     },
   };
 }
@@ -117,7 +130,7 @@ export function starsOf(euros: number, max: number): 1 | 2 | 3 {
   return r >= 0.8 ? 3 : r >= 0.5 ? 2 : 1;
 }
 
-export type Advice = 'bravo' | 'soir' | 'chaleur' | 'anticiper';
+export type Advice = 'bravo' | 'soir' | 'chaleur' | 'surplus' | 'anticiper';
 
 export interface DayResult { euros: number; max: number; stars: 1 | 2 | 3; advice: Advice }
 
@@ -128,6 +141,7 @@ export function dayResult(day: DayDef, s: GameState): DayResult {
   const st = s.stats;
   let advice: Advice = 'anticiper';
   if (stars === 3) advice = 'bravo';
+  else if (st.surplusElec >= 60) advice = 'surplus';
   else if (st.redEvening >= 30) advice = 'soir';
   else if (isHeatingDay(day) && st.heatMinutes > 0 && st.redHeat / st.heatMinutes > st.redElec / DAY_MINUTES) advice = 'chaleur';
   return { euros: s.euros, max, stars, advice };

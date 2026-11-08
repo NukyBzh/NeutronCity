@@ -1,10 +1,11 @@
 import { iconUrl } from '../assets';
 import { t } from '../i18n';
-import { ANNOUNCE_HOURS, END_HOUR, SURPRISE_SPEC, START_HOUR, demandAt, type DayDef, type Surprise } from '@neutron/engine';
+import { ANNOUNCE_HOURS, BAND_PCT, END_HOUR, SURPRISE_SPEC, START_HOUR, demandAt, type DayDef, type Surprise } from '@neutron/engine';
 import { LOOK_AHEAD_HOURS, type Sample } from './session';
 
 /**
- * Demand of the town (dashed) and production of the plant (solid), one lane per output. Only the next
+ * Demand of the town (dashed) inside its green ±7 % band (D-15: stay in it to earn euros) and production of the
+ * plant (solid), one lane per output. Only the next
  * LOOK_AHEAD_HOURS of demand are visible; a surprise shows as a hatched violet band once Cassandra has announced it.
  * Hours are pictograms (morning, noon, evening, night), not numbers.
  */
@@ -12,8 +13,8 @@ const VW = 720;
 const X0 = 56;
 const X1 = 704;
 const LANES = {
-  elec: { top: 6, h: 124, min: 20, max: 90, line: '#7A5200', fill: '#FFC83D' },
-  heat: { top: 146, h: 92, min: 0, max: 40, line: '#9C3D06', fill: '#FF8A3D' },
+  elec: { top: 6, h: 124, min: 15, max: 100, line: '#7A5200', fill: '#FFC83D' },
+  heat: { top: 146, h: 92, min: 0, max: 50, line: '#9C3D06', fill: '#FF8A3D' },
 } as const;
 type Lane = keyof typeof LANES;
 export const CURVES_VH = 276;
@@ -40,6 +41,15 @@ export function Curves({ day, surprises, hour, history, current, heatOn }: {
     for (let h = START_HOUR; h <= until + 1e-9; h += 0.25) out.push([x(h), y(lane, demandAt(day, surprises, h)[lane])]);
     out.push([x(until), y(lane, demandAt(day, surprises, until)[lane])]);
     return out;
+  };
+  // The band where the player earns euros: demand ± BAND_PCT, drawn as far as the demand is shown.
+  const bandPts = (lane: Lane): [number, number][] => {
+    const up: [number, number][] = []; const down: [number, number][] = [];
+    for (let h = START_HOUR; h <= until + 1e-9; h += 0.25) {
+      const v = demandAt(day, surprises, h)[lane];
+      up.push([x(h), y(lane, v + BAND_PCT)]); down.unshift([x(h), y(lane, Math.max(0, v - BAND_PCT))]);
+    }
+    return [...up, ...down];
   };
   const prodPts = (lane: Lane): [number, number][] => [...history, current].map((s) => [x(s.h), y(lane, s[lane])]);
   // Surprises already announced by Cassandra, in the lane of the output they change.
@@ -80,6 +90,7 @@ export function Curves({ day, surprises, hour, history, current, heatOn }: {
               ))}
               {on ? (
                 <>
+                  <path d={`${path(bandPts(lane))} Z`} fill="#2E9E5B" fillOpacity={0.24} />
                   <path d={path(demandPts(lane))} fill="none" stroke="#1C2A4A" strokeWidth={3.5} strokeDasharray="10 8" strokeLinecap="round" />
                   <path d={path(prodPts(lane))} fill="none" stroke={L.fill} strokeWidth={10} strokeLinecap="round" strokeLinejoin="round" />
                   <path d={path(prodPts(lane))} fill="none" stroke={L.line} strokeWidth={4} strokeLinecap="round" strokeLinejoin="round" />

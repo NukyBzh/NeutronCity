@@ -17,6 +17,8 @@ const SCREENS: Record<string, Screen> = { accueil: 'home', journees: 'days', jeu
 const START_SCREEN = SCREENS[PARAMS.get('ecran') ?? ''] ?? 'home';
 const START_DAY = dayById(PARAMS.get('journee') ?? '') ?? DAYS[0]!;
 const START_OWNED = (PARAMS.get('achats') ?? '').split(',').filter(Boolean);
+/** Review: `&nouveau=fontaine` shows the shop just after buying that upgrade. */
+const START_FRESH = PARAMS.get('nouveau');
 const FIXED_SEED = PARAMS.has('graine') ? Number(PARAMS.get('graine')) >>> 0 : null;
 /** Reviewing a screen through the address never reads nor changes the player's saved progress. */
 const REVIEW = PARAMS.has('ecran') || PARAMS.has('achats');
@@ -41,7 +43,7 @@ export function App() {
   // Speed chosen by the player, kept from one day to the next (not saved).
   const [speed, setSpeed] = useState<Speed>(1);
   // Upgrade just bought: it appears in the town with a short animation.
-  const [fresh, setFresh] = useState<string | null>(null);
+  const [fresh, setFresh] = useState<string | null>(START_FRESH);
 
   useEffect(() => {
     if (!REVIEW) saveProgress({ version: 1, wallet, owned, stars, lastDay: day.id });

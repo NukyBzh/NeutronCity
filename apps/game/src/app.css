@@ -110,7 +110,7 @@ strong { font-weight: 800; }
 
 /* Play: 3 zones (town, curves + piggy bank, controls) under a thin header. */
 .play {
-  display: grid; grid-template-columns: 1fr 8.5rem 21rem; grid-template-rows: 3.4rem 16.6rem 1fr; gap: 0.5rem; padding: 0.5rem;
+  display: grid; grid-template-columns: 1fr 9rem 21rem; grid-template-rows: 3.4rem 16.6rem 1fr; gap: 0.5rem; padding: 0.5rem;
 }
 .zone-curves { grid-column: 1; grid-row: 3; }
 .play-guide { grid-column: 2; grid-row: 3; position: relative; z-index: 3; }
@@ -120,6 +120,8 @@ strong { font-weight: 800; }
 .clock-box { display: inline-flex; align-items: center; gap: 0.5rem; }
 .clock { width: 2.6rem; height: 2.6rem; }
 .clock-digits { font-size: 1.5rem; font-variant-numeric: tabular-nums; background: var(--blanc); border: 0.15rem solid var(--encre); border-radius: 0.7rem; padding: 0 0.6rem; }
+.play-top-right { display: flex; align-items: center; gap: 1.2rem; }
+.play-top-right .piggy { margin-left: 0; }
 .speed { display: inline-flex; gap: 0.3rem; background: var(--blanc); border: 0.15rem solid var(--encre); border-radius: 1.4rem; padding: 0.2rem; }
 .speed-btn {
   font: inherit; font-size: 1.15rem; font-weight: 800; min-width: 3.4rem; height: 2.4rem; border: 0; border-radius: 1.2rem;
@@ -129,15 +131,18 @@ strong { font-weight: 800; }
 .speed-btn:focus-visible { outline: 0.2rem solid var(--bleu); outline-offset: 0.1rem; }
 .zone-city { grid-column: 1 / -1; position: relative; border: 0.15rem solid var(--encre); border-radius: 1.2rem; overflow: hidden; }
 .city { width: 100%; height: 100%; display: block; }
-.play-cassandra { position: absolute; left: 50%; bottom: -0.3rem; height: 19rem; transform: translateX(-50%); pointer-events: none; }
+.play-cassandra { position: absolute; left: 50%; bottom: -0.3rem; height: 18rem; transform: translateX(-50%); pointer-events: none; }
 .play-cassandra .bubble { right: auto; left: -9rem; top: auto; bottom: 100%; width: 19rem; pointer-events: auto; }
 
 .zone-curves { display: flex; flex-direction: column; padding: 0.5rem 0.8rem 0.4rem; min-width: 0; }
-.curves-head { display: flex; align-items: center; gap: 1.2rem; font-size: 0.9rem; height: 2.6rem; }
+.curves-head { display: flex; align-items: center; gap: 0.9rem; padding-right: 1.4rem; font-size: 0.9rem; height: 2.6rem; white-space: nowrap; }
 .legend { display: inline-flex; align-items: center; gap: 0.4rem; }
 .legend-dash { width: 2rem; height: 0; border-top: 0.2rem dashed var(--encre); }
+.legend-band { width: 2rem; height: 0.9rem; border-radius: 0.3rem; background: rgba(46, 158, 91, 0.25); border: 0.1rem solid rgba(46, 158, 91, 0.6); }
+.coin.lost { filter: hue-rotate(-50deg) saturate(2.5); animation-name: coin-lost; }
+@keyframes coin-lost { 0% { transform: translate(0.4rem, 0) scale(0.8); opacity: 1; } 100% { transform: translate(2.5rem, 2.5rem) scale(0.5) rotate(90deg); opacity: 0; } }
 .legend-solid { width: 2rem; height: 0.4rem; border-radius: 0.2rem; background: var(--elec-fonce); }
-.piggy { position: relative; margin-left: auto; display: inline-flex; align-items: center; gap: 0.4rem; font-size: 1.5rem; font-weight: 800; }
+.piggy { position: relative; margin-left: auto; white-space: nowrap; display: inline-flex; align-items: center; gap: 0.4rem; font-size: 1.5rem; font-weight: 800; }
 .piggy.big { font-size: 1.8rem; }
 .coin { position: absolute; left: 0.5rem; top: -1rem; animation: coin 1.1s ease-in forwards; pointer-events: none; }
 @keyframes coin { 0% { transform: translate(-3rem, -1.5rem) scale(1.3); opacity: 0; } 30% { opacity: 1; } 100% { transform: translate(0.4rem, 1.2rem) scale(0.6); opacity: 0; } }
@@ -265,6 +270,10 @@ svg .pop, svg .float { transform-box: fill-box; transform-origin: center; }
 /* The town is redrawn every 5 game minutes (hour, sky, lights): its animated parts are new elements then. Their
    delay is shifted by the time elapsed since the page opened (--phase, set at each redraw), so every animation goes
    on where it was instead of starting again (R1-02). --d is each element's own offset. */
+.mark-arrow { animation: mark-bounce 0.9s ease-in-out infinite alternate; }
+@keyframes mark-bounce { from { transform: translateY(-14px); } to { transform: translateY(6px); } }
+.mark-ring { transform-box: fill-box; transform-origin: center; animation: mark-ring 1.2s ease-in-out infinite alternate; }
+@keyframes mark-ring { from { transform: scale(0.85); opacity: 0.6; } to { transform: scale(1.1); opacity: 1; } }
 .city .iso-car, .city .walker-iso, .city .flake, .city .steam, .city .plume, .city .flow, .city .float {
   animation-delay: calc(var(--d, 0s) - var(--phase, 0s));
 }
@@ -282,7 +291,15 @@ svg .pop, svg .float { transform-box: fill-box; transform-origin: center; }
 .summary .summary-cassandra { position: absolute; right: 0.8rem; bottom: 0; height: 16rem; }
 .summary .summary-cassandra .bubble { right: 70%; top: 3rem; width: 15rem; }
 .shop-body { display: grid; grid-template-columns: 33rem 1fr; gap: 0.8rem; height: 34rem; }
-.shop-body .town-panel { height: 100%; }
+.shop-body .town-panel { height: 100%; position: relative; }
+.shop-news {
+  position: absolute; left: 0.8rem; right: 0.8rem; bottom: 0.8rem; display: flex; align-items: center; gap: 0.7rem; padding: 0.6rem 0.9rem;
+  background: var(--blanc); border: 0.2rem solid var(--bleu); border-radius: 1rem; box-shadow: 0 0.3rem 0.6rem rgba(28, 42, 74, 0.2);
+  animation: bubble-in 0.35s ease-out; font-size: 1rem; font-weight: 600; line-height: 1.3;
+}
+.shop-news img { width: 3rem; height: 3rem; flex: none; }
+.shop-news b { display: block; color: var(--bleu); font-size: 1.1rem; }
+.shop-item.just { outline: 0.3rem solid #FFC83D; outline-offset: 0.1rem; }
 .shop-side { display: flex; flex-direction: column; min-width: 0; }
 .shop-side .joy-bar { width: 9rem; }
 .shop-side .shop-items { grid-template-columns: 1fr 1fr; gap: 0.5rem; }

@@ -10,8 +10,8 @@ avant tout commit, installation, envoi sur GitHub ou action irréversible).*
 | v0.2.0 | L1 Maquettes | **Fait** le 2026-11-08 : page Style et 21 icônes dans Figma (limite Starter atteinte ensuite) ; maquette cliquable validée (D-08) : accueil, journées, jeu, pause, bilan, boutique ; captures dans `docs/maquettes/`. Passe dessins (D-09) faite, en attente de validation → v0.2.1 |
 | v0.3.0 | L2 Moteur | **Fait** le 2026-11-08 : moteur, 3 journées et boutique en YAML, interface branchée (D-10 à D-12) ; commit `ce3068c`. Passe dessins des saisons faite (v0.3.1). Style de la ville choisi le 2026-11-08 : **B isométrique pour enfants** (D-13, remplace D-03) ; intégrée en v0.4.0 |
 | v0.4.0 | L3 Pilotage | **Fait** le 2026-11-08, validé, commit `c421f2b`, étiquette v0.4.0 : journée jouable de 6 h à minuit sur PC et tablette (navigateur), ville isométrique (D-13) en bandeau dans le jeu et entière dans la boutique et le bilan, progression enregistrée (D-14) |
-| v0.4.1 | L3.1 Corrections du test R1 | **Fait** le 2026-11-08, en attente de validation : R1-01 à R1-07 (voitures, fontaine, heure hh:mm, demande en chiffres, vitesses ×1/×2/×4, place de Cassandra) ; APK `livrables/Neutron-City-0.4.1.apk` |
-| v0.5.0 | L3.2 Règles et boutique (R1) | Proposé ; L4 à L9 décalés d’une version mineure si validé |
+| v0.4.1 | L3.1 Corrections du test R1 | **Fait** le 2026-11-08, commit `a499231` (étiquette après essai sur la tablette) : R1-01 à R1-07 (voitures, fontaine, heure hh:mm, demande en chiffres, vitesses ×1/×2/×4, place de Cassandra) ; APK `livrables/Neutron-City-0.4.1.apk` |
+| v0.5.0 | L3.2 Règles et boutique (R1) | **Fait** le 2026-11-08, en attente de validation : bande ±7 % et malus de surproduction (D-15, choix par défaut à confirmer), journées plus contrastées et rampe 15 %/h (D-16), objet acheté montré dans la ville (R1-08) ; APK `livrables/Neutron-City-0.5.0.apk`. L4 à L9 décalés d’une version mineure |
 | — | L4 Ville animée | À faire |
 | v0.6.0 | L5 Cassandra | À faire |
 | v0.7.0 | L6 Boutique | À faire |
@@ -21,7 +21,7 @@ avant tout commit, installation, envoi sur GitHub ou action irréversible).*
 
 ## Documents
 - `docs/CADRAGE.md` — cadrage validé.
-- `docs/DECISIONS.md` — décisions D-01 à D-14.
+- `docs/DECISIONS.md` — décisions D-01 à D-16.
 - `docs/RETOURS.md` — retours de test (R1 : premier essai sur la tablette).
 - `docs/tablette.md` — installer l’APK sur la Galaxy Tab A9+.
 - `docs/CONFIGURATION.md` — règles Git, retour en arrière, journal des versions.
@@ -31,7 +31,7 @@ avant tout commit, installation, envoi sur GitHub ou action irréversible).*
 - Passe « dessins » : rendre plus réalistes les dessins utilisés par le lot qui vient de se terminer. Passe L1 faite le 2026-11-08 (ville, centrale, habitants, véhicules, boutique ; icônes gardées simples, ce sont des pictogrammes). Passe L2 faite le 2026-11-08 : la ville prend la saison de la journée.
 
 ## Revoir la maquette
-- `npm.cmd run dev`, puis http://localhost:5180 ; réglages d'adresse : `?vitesse=20` (journée en 15 s), `?ecran=jeu&journee=ete&heure=19&suivi=non&achats=parc,fontaine` (écran, journée, heure de départ, joueur qui ne bouge pas, achats) ; `&graine=42` pour rejouer les mêmes surprises. Captures : Edge sans fenêtre (`msedge --headless=new --screenshot`).
+- `npm.cmd run dev`, puis http://localhost:5180 ; réglages d'adresse : `?vitesse=20` (journée en 15 s), `?ecran=jeu&journee=ete&heure=19&suivi=non&achats=parc,fontaine&nouveau=fontaine` (écran, journée, heure de départ, joueur qui ne bouge pas, achats) ; `&graine=42` pour rejouer les mêmes surprises. Captures : Edge sans fenêtre (`msedge --headless=new --screenshot`).
 
 ## Version de test (2026-11-08)
 - **Retours du premier test sur la tablette** (R1, 14 points) : `docs/RETOURS.md`, avec les lots proposés L3.1, L3.2, L4, L5 (à valider).

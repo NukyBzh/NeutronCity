@@ -112,7 +112,11 @@ export function Shop({ items, wallet, owned, fresh = null, season, onBuy, onBack
         <span className="piggy big"><Icon name="tirelire" size={2.6} /><b>{euros(wallet)}</b></span>
       </header>
       <div className="shop-body">
-      <div className="town-panel"><IsoCity view="full" hour={13} season={season} mood="content" elecOn heatOn={season !== 'ete'} upgrades={owned} fresh={fresh} /></div>
+      <div className="town-panel"><IsoCity view="full" hour={13} season={season} mood="content" elecOn heatOn={season !== 'ete'} upgrades={owned} fresh={fresh} />
+        {fresh ? (
+          <p className="shop-news" role="status"><img src={shopUrl(fresh)} alt="" aria-hidden /><span><b>{t('shop.new')}</b>{t(`shop.where.${fresh}`)}</span></p>
+        ) : null}
+      </div>
       <div className="shop-side">
       <div className="joy" role="img" aria-label={t('shop.joy')}>
         <Icon name="sourire" size={2.2} />
@@ -124,7 +128,7 @@ export function Shop({ items, wallet, owned, fresh = null, season, onBuy, onBack
           const has = owned.includes(item.id);
           const can = !has && wallet >= item.price;
           return (
-            <article key={item.id} className={`shop-item${has ? ' owned' : ''}`}>
+            <article key={item.id} className={`shop-item${has ? ' owned' : ''}${item.id === fresh ? ' just' : ''}`}>
               <img src={shopUrl(item.id)} alt="" aria-hidden />
               <h2>{t(`shop.${item.id}`)}</h2>
               {has ? (

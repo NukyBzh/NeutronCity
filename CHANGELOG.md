@@ -2,7 +2,14 @@
 
 *Ce qui change pour le joueur, en mots simples. Une section par version (voir `docs/CONFIGURATION.md` §4).*
 
-## v0.4.1 — 2026-11-08 (lot L3.1 : corrections après le premier test sur la tablette, à valider)
+## v0.5.0 — 2026-11-08 (lot L3.2 : règles et boutique, à valider)
+- Une bande verte autour des pointillés montre la « zone qui rapporte » : reste à ±7 % de la demande pour gagner des euros.
+- Produire trop d'électricité coûte 1 € par minute : l'électricité en trop est perdue. Des pièces rouges sortent de la tirelire et Cassandra te prévient. La tirelire ne descend jamais sous 0 €.
+- La demande varie beaucoup plus dans la journée (nuit basse, pics marqués) ; la centrale suit plus vite (15 % par heure).
+- Dans la boutique, après un achat, une flèche jaune montre l'objet dans la ville et un bandeau dit où il est.
+- La tirelire est maintenant en haut de l'écran de jeu, à côté des boutons de vitesse.
+
+## v0.4.1 — 2026-11-08 (lot L3.1 : corrections après le premier test sur la tablette)
 - Les voitures ne roulent plus dans la rivière : elles partent après la centrale et avancent toujours, sans revenir en arrière.
 - La fontaine (et les autres achats) ne clignotent plus : ils n'apparaissent avec une petite animation qu'au moment de l'achat.
 - L'heure s'affiche aussi en chiffres (14:35), à côté de l'horloge.

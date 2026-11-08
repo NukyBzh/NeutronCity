@@ -2,18 +2,18 @@ id: ete
 format: 1
 balance: balanced
 level: 1
-rampPctPerHour: 10
+rampPctPerHour: 15
 # Électricité seule : la climatisation fait monter la demande l'après-midi, petit pic du soir.
 points:
-  - [0, 42, 0]
-  - [6, 42, 0]
-  - [9, 54, 0]
-  - [12, 64, 0]
-  - [15, 70, 0]
-  - [17, 68, 0]
-  - [19, 62, 0]
-  - [20.5, 66, 0]
-  - [24, 51, 0]
+  - [0, 50, 0]
+  - [6, 32, 0]
+  - [9, 55, 0]
+  - [12, 72, 0]
+  - [15, 85, 0]
+  - [17, 82, 0]
+  - [19, 70, 0]
+  - [20.5, 78, 0]
+  - [24, 50, 0]
 surprises: [peak]
 lines:
   - { hour: 6, say: jeu.ete.bonjour, pose: accueil }

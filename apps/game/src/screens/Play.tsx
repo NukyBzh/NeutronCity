@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  clampSetpoints, gaugesOf, hourOf, isHeatingDay, isOver, moodOf, setSetpoints, type DayDef, type GameState, type Pose,
+  clampSetpoints, gaugesOf, hourOf, isHeatingDay, isOver, isSurplus, moodOf, setSetpoints, type DayDef, type GameState, type Pose,
 } from '@neutron/engine';
 import { euros, t } from '../i18n';
 import { IsoCity } from '../play/IsoCity';
@@ -40,8 +40,10 @@ export function Play({ day, seed, upgrades, speed, onSpeed, onFinish, onRestart,
   const [paused, setPaused] = useState(false);
   const [line, setLine] = useState<Line | null>(null);
   const [coins, setCoins] = useState<number[]>([]);
+  // Red coins leaving the piggy bank while electricity is wasted (D-15).
+  const [losses, setLosses] = useState<number[]>([]);
   const clock = useRef({
-    real: 0, carry: 0, lastInput: 0, farSince: -1, coreToldAt: -1e9, praised: false, goodSince: -1,
+    real: 0, carry: 0, lastInput: 0, farSince: -1, coreToldAt: -1e9, praised: false, goodSince: -1, surplusSince: -1, surplusToldAt: -1e9, lastLoss: 0,
     next: Math.max(0, timeline.filter((l) => l.hour < hourOf(run.game)).length - 1),
   });
   const current = useRef(run);
@@ -69,6 +71,8 @@ export function Play({ day, seed, upgrades, speed, onSpeed, onFinish, onRestart,
         r = advance(day, r.game, r.history);
         const p = r.game.paidMinutes;
         if (p > paid && p % 10 === 0) setCoins((k) => [...k.slice(-4), p]);
+        const w = r.game.stats.surplusElec;
+        if (w > 0 && w % 10 === 0 && w !== c.lastLoss) { c.lastLoss = w; setLosses((k) => [...k.slice(-4), w]); }
       }
       if (r !== current.current) {
         current.current = r;
@@ -92,6 +96,14 @@ export function Play({ day, seed, upgrades, speed, onSpeed, onFinish, onRestart,
           c.farSince = c.real;
         }
       } else c.farSince = -1;
+      // Electricity wasted for a while: Cassandra says it costs euros (at most every 30 s, D-15).
+      if (isSurplus(g.plant.elec, view.demand.elec)) {
+        if (c.surplusSince < 0) c.surplusSince = c.real;
+        if (c.real - c.surplusSince > 6 && c.real - c.surplusToldAt > 30) {
+          c.surplusToldAt = c.real;
+          say('jeu.surplus', 'attention');
+        }
+      } else c.surplusSince = -1;
       if (view.elec === 'bien' && (view.heat === null || view.heat === 'bien')) {
         if (c.goodSince < 0) c.goodSince = h;
         if (!c.praised && h - c.goodSince >= 3) {
@@ -151,12 +163,20 @@ export function Play({ day, seed, upgrades, speed, onSpeed, onFinish, onRestart,
           <span>{t(`day.${day.id}.title`)}</span>
           <Clock hour={hour} />
         </div>
-        <div className="speed" role="group" aria-label={t('speed.label')}>
-          {SPEEDS.map((s) => (
-            <button key={s} type="button" className={`speed-btn${s === speed ? ' on' : ''}`} aria-pressed={s === speed} onClick={() => onSpeed(s)}>
-              {t('speed.x', { n: String(s) })}
-            </button>
-          ))}
+        <div className="play-top-right">
+          <span className="piggy" aria-label={t('piggy.label', { amount: euros(g.euros) })}>
+            <Icon name="tirelire" size={2.4} />
+            <b>{euros(g.euros)}</b>
+            {coins.map((k) => <span key={k} className="coin"><Icon name="piece" size={1.5} /></span>)}
+            {losses.map((k) => <span key={`l${k}`} className="coin lost"><Icon name="piece" size={1.5} /></span>)}
+          </span>
+          <div className="speed" role="group" aria-label={t('speed.label')}>
+            {SPEEDS.map((s) => (
+              <button key={s} type="button" className={`speed-btn${s === speed ? ' on' : ''}`} aria-pressed={s === speed} onClick={() => onSpeed(s)}>
+                {t('speed.x', { n: String(s) })}
+              </button>
+            ))}
+          </div>
         </div>
       </header>
 
@@ -183,11 +203,7 @@ export function Play({ day, seed, upgrades, speed, onSpeed, onFinish, onRestart,
         <div className="curves-head">
           <span className="legend"><i className="legend-dash" />{t('curves.demand')}</span>
           <span className="legend"><i className="legend-solid" />{t('curves.production')}</span>
-          <span className="piggy" aria-label={t('piggy.label', { amount: euros(g.euros) })}>
-            <Icon name="tirelire" size={2.4} />
-            <b>{euros(g.euros)}</b>
-            {coins.map((k) => <span key={k} className="coin"><Icon name="piece" size={1.5} /></span>)}
-          </span>
+          <span className="legend"><i className="legend-band" />{t('curves.band')}</span>
         </div>
         <div className="curves-body">
           <Curves day={day} surprises={g.surprises} hour={hour} history={run.history} current={{ h: hour, elec: g.plant.elec, heat: g.plant.heat }} heatOn={heatDay} />

@@ -26,9 +26,11 @@ jeu.indice.elec.monter: "La ville manque d'électricité. Monte le curseur jaune
 jeu.indice.elec.baisser: "Trop d'électricité ! Baisse un peu le curseur jaune."
 jeu.indice.heat.monter: "Les habitants ont froid. Monte le curseur orange !"
 jeu.indice.heat.baisser: "Trop de chaleur ! Baisse un peu le curseur orange."
+jeu.surplus: "L'électricité en **trop** est perdue et te coûte des euros. Baisse le curseur jaune !"
 
 # Bilan : un seul conseil, choisi par le moteur (dayResult).
 bilan.bravo: "Génial ! Ta ville a eu juste ce qu'il fallait toute la journée."
 bilan.soir: "Le soir, la demande monte vite : monte les curseurs avant 18 h."
 bilan.chaleur: "Pense aussi au curseur orange : les habitants ont eu froid."
+bilan.surplus: "Tu as produit trop d'électricité : elle est **perdue** et coûte des euros."
 bilan.anticiper: "Regarde les pointillés : ils te montrent la demande à venir."

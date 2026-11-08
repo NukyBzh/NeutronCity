@@ -18,9 +18,12 @@ describe('isometric town (test feedback R1)', () => {
     }
   });
 
-  it('R1-03: only the upgrade just bought appears with the animation', () => {
+  it('R1-03 / R1-08: only the upgrade just bought appears, with an arrow showing where it is', () => {
     const s = town({ fresh: 'fontaine' }, 'full');
-    expect(s.match(/class="pop"/g)?.length).toBe(1);
+    expect(s.match(/class="pop"/g)?.length).toBe(2);
+    expect(s).toContain('mark-arrow');
+    for (const id of ALL) expect(town({ fresh: id }, 'full'), id).toContain('mark-arrow');
+    expect(town({}, 'full')).not.toContain('mark-arrow');
   });
 
   it('R1-02: animated parts carry their own offset, never a fixed delay that restarts', () => {

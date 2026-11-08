@@ -30,8 +30,9 @@ zone.city: La ville
 zone.curves: La demande de la ville et ta production
 zone.controls: Tes commandes
 curves.label: Courbes de la demande de la ville et de la production de ta centrale
-curves.demand: La ville demande
-curves.production: Ta centrale produit
+curves.demand: Demande
+curves.production: Ta production
+curves.band: Zone qui rapporte
 piggy.label: "Ta tirelire : {amount}"
 output.elec: Électricité
 output.heat: Chaleur
@@ -65,6 +66,12 @@ shop.parc: Un parc
 shop.piste: Une piste cyclable
 shop.eclairage: De beaux lampadaires
 shop.ecole: Une nouvelle école
+shop.new: "Nouveau dans ta ville !"
+shop.where.fontaine: La fontaine est au milieu du parc, près de la centrale.
+shop.where.parc: Le parc a maintenant des arbres et des bancs.
+shop.where.piste: Une piste cyclable verte longe toutes les rues.
+shop.where.eclairage: Un lampadaire éclaire chaque coin de rue.
+shop.where.ecole: La nouvelle école est au cœur de la ville, sous la flèche jaune.
 
 btn.newPlayer: Nouveau joueur
 btn.cancel: Annuler

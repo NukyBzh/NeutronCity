@@ -351,6 +351,24 @@ export function drawTown(o: TownOptions, view: 'band' | 'full'): string {
     out.push(`<g><circle cx="${f1(qx)}" cy="${f1(qy)}" r="40" fill="#FFFFFF" opacity="0.85" stroke="${INK}" stroke-width="2"/><image href="${o.icons.electricite}" x="${f1(qx - 32)}" y="${f1(qy - 32)}" width="64" height="64"/><image href="${o.icons.loin}" x="${f1(qx + 8)}" y="${f1(qy + 6)}" width="34" height="34"/></g>`);
   }
 
+  // Upgrade just bought: a bouncing yellow arrow and a glowing ring show where it is in the town (R1-08).
+  if (o.fresh) {
+    const SPOT: Record<string, [number, number, number]> = {
+      fontaine: [11 + 4, 66 + 4, 1.5], parc: [11 + 4, 66 + 4, 2], ecole: [33 + 4, 44 + 3.5, 5],
+      piste: [11 * 3 + 4, 11 * 5 + 10.5, 0], eclairage: [11 * 2 + 8.3, 11 * 5 + 8.3, 2.3],
+    };
+    const spot = SPOT[o.fresh];
+    if (spot) {
+      const [sx, sy] = P(spot[0], spot[1], 0);
+      const [, ty] = P(spot[0], spot[1], spot[2]);
+      // Bigger in the whole-town view (shop), where the town is drawn small.
+      const k = view === 'full' ? 2.6 : 1;
+      const a = (v: number): string => f1(v * k);
+      out.push(`<g class="pop"><ellipse class="mark-ring" cx="${f1(sx)}" cy="${f1(sy)}" rx="${a(58)}" ry="${a(30)}" fill="#FFE27A" fill-opacity="0.35" stroke="#FFC83D" stroke-width="${a(5)}"/>`
+        + `<g class="mark-arrow"><path transform="translate(${f1(sx)} ${f1(ty)})" d="M${a(-18)} ${a(-92)} H${a(18)} V${a(-52)} H${a(34)} L0 ${a(-14)} L${a(-34)} ${a(-52)} H${a(-18)} Z" fill="#FFC83D" stroke="${INK}" stroke-width="${a(5)}" stroke-linejoin="round"/></g></g>`);
+    }
+  }
+
   const snow = winter ? Array.from({ length: 50 }, (_, k) => `<circle class="flake" cx="${f1(-400 + ((k * 197) % 2000))}" cy="${view === 'band' ? f1(rowY(8) - 330) : -230}" r="${f1(1.6 + (k % 3))}" fill="#FFFFFF" opacity="0.9" style="--d:${-((k * 13) % 11)}s;animation-duration:${8 + (k % 5)}s"/>`).join('') : '';
   const defs = `<defs><linearGradient id="iso-concrete" x1="0" x2="1"><stop offset="0" stop-color="${tone('#FFFFFF')}"/><stop offset="0.6" stop-color="${tone('#E4E8F0')}"/><stop offset="1" stop-color="${tone('#A9B4C8')}"/></linearGradient><linearGradient id="iso-reactor" x1="0" x2="1"><stop offset="0" stop-color="${tone('#FFFFFF')}"/><stop offset="0.55" stop-color="${tone('#EEF2F8')}"/><stop offset="1" stop-color="${tone('#AEB9CD')}"/></linearGradient></defs>`;
   return defs + ground.join('') + out.join('') + snow;

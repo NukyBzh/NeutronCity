@@ -8,7 +8,7 @@
 export const RATED_ELEC_MW = 100;
 export const RATED_HEAT_MW = 300;
 /** D-05: default ramp of each output, in % of the core per game hour. */
-export const DEFAULT_RAMP_PCT_PER_HOUR = 10;
+export const DEFAULT_RAMP_PCT_PER_HOUR = 15;
 
 export type Output = 'elec' | 'heat';
 

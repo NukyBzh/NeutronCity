@@ -2,22 +2,23 @@ id: hiver
 format: 1
 balance: balanced
 level: 3
-rampPctPerHour: 10
+rampPctPerHour: 15
 # Il fait froid : la ville veut de la lumière ET du chauffage ; le cœur est presque plein au pic du soir.
 points:
-  - [0, 48, 28]
-  - [6, 46, 26]
-  - [8, 54, 32]
-  - [10, 57, 30]
-  - [11, 56, 28]
-  - [13, 54, 22]
-  - [14, 53, 20]
-  - [16, 51, 22]
-  - [18, 57, 28]
-  - [19.5, 60, 30]
-  - [20, 59, 31]
-  - [22, 55, 30]
-  - [24, 48, 28]
+  - [0, 42, 30]
+  - [6, 36, 28]
+  - [8, 52, 38]
+  - [10, 56, 35]
+  - [13, 48, 22]
+  - [15, 46, 18]
+  - [16, 44, 20]
+  - [17, 49, 28]
+  - [18, 54, 31]
+  - [19, 56, 35]
+  - [19.5, 57, 35]
+  - [21, 54, 34]
+  - [22, 52, 33]
+  - [24, 42, 30]
 surprises: [peak, coldWave, mildSpell]
 lines:
   - { hour: 6, say: jeu.hiver.bonjour, pose: accueil }

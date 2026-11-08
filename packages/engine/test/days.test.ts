@@ -18,12 +18,12 @@ describe('content/days', () => {
     expect(ids.filter((id) => !(id in TEXTS))).toEqual([]);
   });
 
-  it.each(DAYS.map((d) => [d.id, d] as const))('%s: the curve alone is gentle (≤ 4.5 %%/h)', (_id, day) => {
+  it.each(DAYS.map((d) => [d.id, d] as const))('%s: the curve alone stays below 9 %%/h (D-16)', (_id, day) => {
     for (let m = 0; m < 24 * 60; m++) {
       const a = curveAt(day, m / 60);
       const b = curveAt(day, (m + 1) / 60);
-      expect(Math.abs(b.elec - a.elec) * 60).toBeLessThanOrEqual(4.5 + 1e-9);
-      expect(Math.abs(b.heat - a.heat) * 60).toBeLessThanOrEqual(4.5 + 1e-9);
+      expect(Math.abs(b.elec - a.elec) * 60).toBeLessThanOrEqual(9 + 1e-9);
+      expect(Math.abs(b.heat - a.heat) * 60).toBeLessThanOrEqual(9 + 1e-9);
     }
   });
 
@@ -35,7 +35,7 @@ describe('content/days', () => {
         const d = demandAt(day, sur, START_HOUR + m / 60);
         if (d.elec + d.heat > 100) throw new Error(`${day.id} seed ${seed} minute ${m}: elec + heat = ${d.elec + d.heat}`);
         const slope = Math.max(Math.abs(d.elec - prev.elec), Math.abs(d.heat - prev.heat)) * 60;
-        if (slope > 8 + 1e-9) throw new Error(`${day.id} seed ${seed} minute ${m}: slope ${slope} %/h`);
+        if (slope > 12.5 + 1e-9) throw new Error(`${day.id} seed ${seed} minute ${m}: slope ${slope} %/h`);
         prev = d;
       }
     }
