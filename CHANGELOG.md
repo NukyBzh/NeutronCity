@@ -2,7 +2,13 @@
 
 *Ce qui change pour le joueur, en mots simples. Une section par version (voir `docs/CONFIGURATION.md` §4).*
 
-## v0.5.0 — 2026-11-08 (lot L3.2 : règles et boutique, à valider)
+## v0.6.0 — 2026-11-08 (lot L4 : la ville vivante, à valider)
+- Le ciel change avec l'heure : aube rose, plein jour, heure dorée, coucher de soleil orangé, puis la nuit.
+- Le soleil traverse le ciel et se couche derrière la ville ; la nuit, la lune et les étoiles apparaissent ; des nuages passent doucement.
+- Au coucher du soleil, une lumière chaude éclaire les façades ; les immeubles font des ombres sur le sol ; les arbres ont du volume.
+- La ville est plus fluide sur la tablette, surtout quand le temps va vite (×2, ×4).
+
+## v0.5.0 — 2026-11-08 (lot L3.2 : règles et boutique)
 - Une bande verte autour des pointillés montre la « zone qui rapporte » : reste à ±7 % de la demande pour gagner des euros.
 - Produire trop d'électricité coûte 1 € par minute : l'électricité en trop est perdue. Des pièces rouges sortent de la tirelire et Cassandra te prévient. La tirelire ne descend jamais sous 0 €.
 - La demande varie beaucoup plus dans la journée (nuit basse, pics marqués) ; la centrale suit plus vite (15 % par heure).

@@ -61,7 +61,8 @@ Avant tout retour en arrière : `git status` doit être propre (sinon `git stash
 | v0.3.1 | `d3ac73a` | 2026-11-08 | Passe dessins L2 (D-09) : saisons ; 3 propositions de style et choix B isométrique (D-13) ; ville isométrique commencée (pas encore branchée) ; version de test servie sur le réseau local |
 | v0.4.0 | `c421f2b` | 2026-11-08 | L3 : partie jouable, ville isométrique (D-13), progression enregistrée (D-14) |
 | v0.4.1 | `a499231` *(étiquette après essai sur la tablette)* | 2026-11-08 | L3.1 : corrections du test R1-01 à R1-07 ; chaîne APK (`npm.cmd run android`) |
-| v0.5.0 | *(à poser après validation)* | 2026-11-08 | L3.2 : bande ±7 % et malus (D-15), journées plus contrastées (D-16), objet acheté montré dans la ville |
+| v0.5.0 | `1843ba6` *(étiquette après essai sur la tablette)* | 2026-11-08 | L3.2 : bande ±7 % et malus (D-15), journées plus contrastées (D-16), objet acheté montré dans la ville |
+| v0.6.0 | *(à poser après validation)* | 2026-11-08 | L4 : ciel heure par heure, ombres et lumière du soir, ville en couches pour la tablette (D-17) |
 
 Un commit ne peut pas citer son propre identifiant : la colonne « Commit » de la dernière ligne se complète au commit
 suivant (`git rev-list -n1 vX.Y.Z` le donne).

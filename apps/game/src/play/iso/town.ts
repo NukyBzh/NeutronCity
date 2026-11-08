@@ -52,6 +52,24 @@ export function nightAt(h: number): number {
   return 0;
 }
 
+/**
+ * Night level used by the drawing, in steps of 1/8: the town is only redrawn when the light really changes (about
+ * 20 times a day instead of every 5 game minutes), which keeps the tablet smooth.
+ */
+export const nightStep = (h: number): number => Math.round(nightAt(h) * 8) / 8;
+/** Warm light of the setting sun on the town (0 to 1, highest around 19 h 30), in steps of 1/4. */
+export const warmStep = (h: number): number => Math.round(Math.max(0, 1 - Math.abs(h - 19.3) / 1.7) * 4) / 4;
+/** What the drawing depends on in the hour: it is redrawn only when this changes. */
+export const lightKey = (h: number): string => `${nightStep(h)}|${warmStep(h)}`;
+
+/**
+ * The town comes as layers, back to front. `still` layers never move: the screen paints them once into a picture.
+ * `moving` layers hold what is animated (cars and walkers between the rows of buildings, so the rows in front still
+ * hide them; smoke, flows, snow and markers on top). Painting a few small moving layers each frame instead of the whole
+ * town is what makes the animation smooth on the tablet.
+ */
+export interface TownLayer { kind: 'still' | 'moving'; svg: string }
+
 type Kind = 'reactor' | 'cooling' | 'yard' | 'trees' | 'park' | 'houses' | 'flats' | 'brick' | 'tower' | 'shop' | 'school' | 'pink';
 /** What stands on each cell of the band (rows 5–8) and around it; other cells get a mix of houses, flats and trees. */
 const CELLS: Record<string, Kind> = {
@@ -68,11 +86,33 @@ const FILL: Kind[] = ['houses', 'flats', 'trees', 'pink', 'houses', 'brick', 'tr
 const kindOf = (i: number, j: number): Kind => CELLS[`${i},${j}`] ?? FILL[(i * 7 + j * 3) % FILL.length]!;
 const hash = (a: number, b: number, c = 0): number => ((a * 73856093) ^ (b * 19349663) ^ (c * 83492791)) >>> 0;
 
+/** The whole town as one SVG string (tests, tools). */
 export function drawTown(o: TownOptions, view: 'band' | 'full'): string {
-  const night = nightAt(o.hour);
+  const { defs, layers } = build(o, view);
+  return defs + layers.map((l) => l.svg).join('');
+}
+
+/** The town as layers; every still layer carries the gradients it may use. */
+export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer[] {
+  const { defs, layers } = build(o, view);
+  return layers.map((l) => (l.kind === 'still' ? { kind: 'still', svg: defs + l.svg } : l));
+}
+
+function build(o: TownOptions, view: 'band' | 'full'): { defs: string; layers: TownLayer[] } {
+  const night = nightStep(o.hour);
+  const warm = warmStep(o.hour);
   const winter = o.season === 'hiver';
   const NIGHT = '#0B1440';
-  const tone = (c: string): string => (night > 0 ? mixHex(c, NIGHT, 0.5 * night) : c);
+  const SUNSET = '#FF9E6B';
+  // Colours of the town in the current light: warmer at sunset, darker and bluer at night.
+  const tone = (c: string): string => {
+    const w = warm > 0 ? mixHex(c, SUNSET, 0.2 * warm) : c;
+    return night > 0 ? mixHex(w, NIGHT, 0.5 * night) : w;
+  };
+  // Shadows cast on the ground by the buildings (to the right-down of the screen), longer and softer at sunset, gone
+  // at night.
+  const shadowOpacity = 0.2 * (1 - night);
+  const shadowLength = (h: number): number => Math.min(3.2, h * (0.32 + 0.25 * warm));
   const line = ` stroke="${tone(INK)}" stroke-width="1.3" stroke-linejoin="round"`;
   const poly = (arr: [number, number][], fill: string, extra = ''): string => `<polygon points="${pts(arr)}" fill="${tone(fill)}"${line}${extra}/>`;
   const flatPoly = (arr: [number, number][], fill: string): string => `<polygon points="${pts(arr)}" fill="${tone(fill)}"/>`;
@@ -82,6 +122,15 @@ export function drawTown(o: TownOptions, view: 'band' | 'full'): string {
   const lit = night > 0.3;
   /** The "appear" animation, only for the upgrade just bought. */
   const pop = (id: string): string => (o.fresh === id ? ' class="pop"' : '');
+  const layers: TownLayer[] = [];
+  const add = (kind: TownLayer['kind'], svg: string): void => {
+    if (!svg) return;
+    const last = layers[layers.length - 1];
+    if (last && last.kind === kind) last.svg += svg;
+    else layers.push({ kind, svg });
+  };
+  /** Animated things drawn above the whole town (smoke, plume, flows, snow, signs, markers). */
+  const top: string[] = [];
 
   const grass = winter ? '#EEF3FA' : o.season === 'printemps' ? '#8FD082' : '#9CC965';
   const leaf = o.season === 'printemps' ? '#5DBB5A' : '#3E9E48';
@@ -89,7 +138,12 @@ export function drawTown(o: TownOptions, view: 'band' | 'full'): string {
 
   // ---------- primitives ----------
   function box(x: number, y: number, z: number, w: number, d: number, h: number, color: string, top?: string): string {
-    return poly([P(x, y + d, z), P(x + w, y + d, z), P(x + w, y + d, z + h), P(x, y + d, z + h)], color)
+    let shadow = '';
+    if (z === 0 && h >= 2.5 && shadowOpacity > 0.01) {
+      const s = shadowLength(h);
+      shadow = `<polygon points="${pts([P(x + w, y), P(x + w + s, y + s * 0.35), P(x + w + s, y + d + s * 0.35), P(x + s, y + d + s * 0.35), P(x, y + d)])}" fill="#0B1440" opacity="${f1(shadowOpacity)}"/>`;
+    }
+    return shadow + poly([P(x, y + d, z), P(x + w, y + d, z), P(x + w, y + d, z + h), P(x, y + d, z + h)], color)
       + poly([P(x + w, y, z), P(x + w, y + d, z), P(x + w, y + d, z + h), P(x + w, y, z + h)], shade(color, 0.78))
       + poly([P(x, y, z + h), P(x + w, y, z + h), P(x + w, y + d, z + h), P(x, y + d, z + h)], top ?? (winter ? '#F7FAFE' : shade(color, 1.18)));
   }
@@ -136,7 +190,8 @@ export function drawTown(o: TownOptions, view: 'band' | 'full'): string {
   function chimneySmoke(x: number, y: number, z: number): string {
     const [cx, cy] = P(x, y, z);
     const op = cold ? 0.3 : 0.85;
-    return `<g class="steam slow" opacity="${op}"><circle cx="${f1(cx)}" cy="${f1(cy - 6)}" r="4" fill="${tone('#EEF1F7')}"/><circle cx="${f1(cx + 4)}" cy="${f1(cy - 14)}" r="5.5" fill="${tone('#EEF1F7')}"/><circle cx="${f1(cx + 1)}" cy="${f1(cy - 24)}" r="6.5" fill="${tone('#EEF1F7')}" opacity="0.7"/></g>`;
+    top.push(`<g class="steam slow" opacity="${op}"><circle cx="${f1(cx)}" cy="${f1(cy - 6)}" r="4" fill="${tone('#EEF1F7')}"/><circle cx="${f1(cx + 4)}" cy="${f1(cy - 14)}" r="5.5" fill="${tone('#EEF1F7')}"/><circle cx="${f1(cx + 1)}" cy="${f1(cy - 24)}" r="6.5" fill="${tone('#EEF1F7')}" opacity="0.7"/></g>`);
+    return '';
   }
   function tree(x: number, y: number, size = 1, cone = false): string {
     const [bx, by] = P(x, y, 0);
@@ -149,7 +204,10 @@ export function drawTown(o: TownOptions, view: 'band' | 'full'): string {
     if (cone) {
       g += `<polygon points="${f1(bx)},${f1(by - 40 * size)} ${f1(bx - 9 * size)},${f1(by - 9 * size)} ${f1(bx + 9 * size)},${f1(by - 9 * size)}" fill="${tone(leaf)}"${line}/>`;
     } else {
-      g += `<circle cx="${f1(bx)}" cy="${f1(by - 19 * size)}" r="${f1(9.5 * size)}" fill="${tone(leaf)}"${line}/><circle cx="${f1(bx - 3 * size)}" cy="${f1(by - 22 * size)}" r="${f1(4.2 * size)}" fill="${tone(shade(leaf, 1.3))}"/>`;
+      // Round crown with volume: dark side to the right-down, light side to the top-left.
+      g += `<circle cx="${f1(bx)}" cy="${f1(by - 19 * size)}" r="${f1(9.5 * size)}" fill="${tone(shade(leaf, 0.78))}"${line}/>`
+        + `<circle cx="${f1(bx - 1.3 * size)}" cy="${f1(by - 20.5 * size)}" r="${f1(7.6 * size)}" fill="${tone(leaf)}"/>`
+        + `<circle cx="${f1(bx - 3 * size)}" cy="${f1(by - 23 * size)}" r="${f1(3.8 * size)}" fill="${tone(shade(leaf, 1.3))}"/>`;
       if (o.season === 'printemps') g += [[-4, -16], [3, -24], [5, -15], [-1, -20]].map(([dx, dy], k) => `<circle cx="${f1(bx + dx! * size)}" cy="${f1(by + dy! * size)}" r="${f1(1.8 * size)}" fill="${k % 2 ? '#FFFFFF' : '#FF9FC0'}"/>`).join('');
     }
     return g;
@@ -288,14 +346,14 @@ export function drawTown(o: TownOptions, view: 'band' | 'full'): string {
         const rx = 3.6 * S * 0.95; const ry = rx * 0.5;
         let g = `<path d="M${f1(x0 - rx)} ${f1(y0)} C ${f1(x0 - rx * 0.55)} ${f1(y0 - (y0 - yt) * 0.45)} ${f1(x0 - rx * 0.55)} ${f1(y0 - (y0 - yt) * 0.75)} ${f1(x0 - rx * 0.68)} ${f1(yt)} L ${f1(x0 + rx * 0.68)} ${f1(yt)} C ${f1(x0 + rx * 0.55)} ${f1(y0 - (y0 - yt) * 0.75)} ${f1(x0 + rx * 0.55)} ${f1(y0 - (y0 - yt) * 0.45)} ${f1(x0 + rx)} ${f1(y0)} A ${f1(rx)} ${f1(ry)} 0 0 1 ${f1(x0 - rx)} ${f1(y0)} Z" fill="url(#iso-concrete)"${line}/>`;
         g += `<ellipse cx="${f1(x0)}" cy="${f1(yt)}" rx="${f1(rx * 0.68)}" ry="${f1(ry * 0.68)}" fill="${tone(winter ? '#FFFFFF' : '#8796AE')}"${line}/>`;
-        g += `<g class="plume">${[[0, -10, 14], [8, -26, 19], [22, -44, 24], [40, -62, 26]].map(([dx, dy, r], k) => `<ellipse cx="${f1(x0 + dx!)}" cy="${f1(yt + dy!)}" rx="${r}" ry="${f1(r! * 0.6)}" fill="#FFFFFF" opacity="${f1((0.95 - k * 0.18) * (1 - 0.4 * night))}"/>`).join('')}</g>`;
+        top.push(`<g class="plume">${[[0, -10, 14], [8, -26, 19], [22, -44, 24], [40, -62, 26]].map(([dx, dy, r], k) => `<ellipse cx="${f1(x0 + dx!)}" cy="${f1(yt + dy!)}" rx="${r}" ry="${f1(r! * 0.6)}" fill="#FFFFFF" opacity="${f1((0.95 - k * 0.18) * (1 - 0.4 * night))}"/>`).join('')}</g>`);
         return g;
       }
     }
   }
 
   // ---------- ground ----------
-  const ground: string[] = [];
+  const ground: string[] = [];  // still
   const range = view === 'band' ? { i0: -2, i1: 9, j0: 2, j1: 11 } : { i0: -2, i1: 7, j0: 0, j1: 8 };
   const span = (a: number, b: number): [number, number] => [11 * a - 3, 11 * b + 8];
   const [gx0, gx1] = span(range.i0, range.i1);
@@ -312,8 +370,11 @@ export function drawTown(o: TownOptions, view: 'band' | 'full'): string {
   for (let j = range.j0 - 1; j <= range.j1; j++) for (let x = 1; x < gx1; x += 3.6) ground.push(`<polyline points="${pts([P(x, 11 * j + 9.5), P(x + 1.4, 11 * j + 9.5)])}" stroke="${tone('#FFFFFF')}" stroke-width="1.6" stroke-linecap="round"/>`);
   if (o.upgrades.includes('piste')) for (let j = range.j0 - 1; j <= range.j1; j++) ground.push(`<g${pop('piste')}>${flatPoly([P(0, 11 * j + 10.2), P(gx1, 11 * j + 10.2), P(gx1, 11 * j + 10.9), P(0, 11 * j + 10.9)], '#2E9E5B')}</g>`);
 
+  add('still', ground.join(''));
+
   // ---------- cells, row by row (painter order), with what moves on the road in front of each row ----------
-  const out: string[] = [];
+  const out = { push: (svg: string) => add('still', svg) };
+  const moving = { push: (svg: string) => add('moving', svg) };
   for (let j = range.j0; j <= range.j1; j++) {
     for (let i = 0; i <= range.i1; i++) {
       const X = 11 * i; const Y = 11 * j;
@@ -328,27 +389,27 @@ export function drawTown(o: TownOptions, view: 'band' | 'full'): string {
     }
     // People on the pavement in front of the row, cars on the road in front of it.
     if (j === 5 || j === 6) {
-      out.push(person(11 * 1 + 2, 11 * j + 8.3, '#7B5CD6', j) + person(11 * 2 + 5, 11 * j + 8.3, '#2E9E5B', j + 1) + person(11 * 4 + 3, 11 * j + 8.3, '#FF8A3D', j + 2));
+      moving.push(person(11 * 1 + 2, 11 * j + 8.3, '#7B5CD6', j) + person(11 * 2 + 5, 11 * j + 8.3, '#2E9E5B', j + 1) + person(11 * 4 + 3, 11 * j + 8.3, '#FF8A3D', j + 2));
     }
-    if (j === 4) out.push(`<g class="iso-car">${car(CAR_START_X, 11 * j + 9.9, '#E0443E')}</g>`);
-    if (j === 6) out.push(`<g class="iso-car slow">${car(CAR_START_X, 11 * j + 8.4, '#1D47B8')}</g>`);
-    if (j === 5) out.push(`<g class="iso-car late">${car(CAR_START_X, 11 * j + 9.9, '#F2A51F')}</g>`);
+    if (j === 4) moving.push(`<g class="iso-car">${car(CAR_START_X, 11 * j + 9.9, '#E0443E')}</g>`);
+    if (j === 6) moving.push(`<g class="iso-car slow">${car(CAR_START_X, 11 * j + 8.4, '#1D47B8')}</g>`);
+    if (j === 5) moving.push(`<g class="iso-car late">${car(CAR_START_X, 11 * j + 9.9, '#F2A51F')}</g>`);
   }
 
   // Links from the plant: heating pipe and power line along the road in front of row 5.
   const pipeY = 11 * 5 + 8.25;
   out.push(`<polyline points="${pts([P(4, pipeY, 0.3), P(80, pipeY, 0.3)])}" stroke="${tone(INK)}" stroke-width="6" stroke-linecap="round"/><polyline points="${pts([P(4, pipeY, 0.3), P(80, pipeY, 0.3)])}" stroke="${tone('#FF8A3D')}" stroke-width="3.5" stroke-linecap="round"/>`);
-  if (o.heatOn) out.push(`<polyline class="flow" points="${pts([P(4, pipeY, 0.3), P(80, pipeY, 0.3)])}" stroke="#FFE7CC" stroke-width="1.6" stroke-dasharray="4 12" stroke-linecap="round"/>`);
+  if (o.heatOn) top.push(`<polyline class="flow" points="${pts([P(4, pipeY, 0.3), P(80, pipeY, 0.3)])}" stroke="#FFE7CC" stroke-width="1.6" stroke-dasharray="4 12" stroke-linecap="round"/>`);
   const poles = [2, 13, 24, 35, 46, 57, 68];
   const wireY = 11 * 4 + 8.2;
   for (const x of poles) { const [a, b] = P(x, wireY, 0); const [, c] = P(x, wireY, 5); out.push(`<line x1="${f1(a)}" y1="${f1(b)}" x2="${f1(a)}" y2="${f1(c)}" stroke="${tone('#4A5878')}" stroke-width="2"/><line x1="${f1(a - 4)}" y1="${f1(c)}" x2="${f1(a + 4)}" y2="${f1(c)}" stroke="${tone('#4A5878')}" stroke-width="2"/>`); }
   out.push(`<polyline points="${pts(poles.map((x) => P(x, wireY, 5)))}" stroke="${tone(INK)}" stroke-width="1" fill="none"/>`);
-  if (o.elecOn) out.push(`<polyline class="flow" points="${pts(poles.map((x) => P(x, wireY, 5)))}" stroke="#FFC83D" stroke-width="2.2" stroke-dasharray="3 12" fill="none" stroke-linecap="round"/>`);
+  if (o.elecOn) top.push(`<polyline class="flow" points="${pts(poles.map((x) => P(x, wireY, 5)))}" stroke="#FFC83D" stroke-width="2.2" stroke-dasharray="3 12" fill="none" stroke-linecap="round"/>`);
 
   // Reaction of the dark quarter: a bolt with a cross above it.
   if (darkQuarter) {
     const [qx, qy] = P(40, 40, 12);
-    out.push(`<g><circle cx="${f1(qx)}" cy="${f1(qy)}" r="40" fill="#FFFFFF" opacity="0.85" stroke="${INK}" stroke-width="2"/><image href="${o.icons.electricite}" x="${f1(qx - 32)}" y="${f1(qy - 32)}" width="64" height="64"/><image href="${o.icons.loin}" x="${f1(qx + 8)}" y="${f1(qy + 6)}" width="34" height="34"/></g>`);
+    top.push(`<g><circle cx="${f1(qx)}" cy="${f1(qy)}" r="40" fill="#FFFFFF" opacity="0.85" stroke="${INK}" stroke-width="2"/><image href="${o.icons.electricite}" x="${f1(qx - 32)}" y="${f1(qy - 32)}" width="64" height="64"/><image href="${o.icons.loin}" x="${f1(qx + 8)}" y="${f1(qy + 6)}" width="34" height="34"/></g>`);
   }
 
   // Upgrade just bought: a bouncing yellow arrow and a glowing ring show where it is in the town (R1-08).
@@ -364,12 +425,14 @@ export function drawTown(o: TownOptions, view: 'band' | 'full'): string {
       // Bigger in the whole-town view (shop), where the town is drawn small.
       const k = view === 'full' ? 2.6 : 1;
       const a = (v: number): string => f1(v * k);
-      out.push(`<g class="pop"><ellipse class="mark-ring" cx="${f1(sx)}" cy="${f1(sy)}" rx="${a(58)}" ry="${a(30)}" fill="#FFE27A" fill-opacity="0.35" stroke="#FFC83D" stroke-width="${a(5)}"/>`
+      top.push(`<g class="pop"><ellipse class="mark-ring" cx="${f1(sx)}" cy="${f1(sy)}" rx="${a(58)}" ry="${a(30)}" fill="#FFE27A" fill-opacity="0.35" stroke="#FFC83D" stroke-width="${a(5)}"/>`
         + `<g class="mark-arrow"><path transform="translate(${f1(sx)} ${f1(ty)})" d="M${a(-18)} ${a(-92)} H${a(18)} V${a(-52)} H${a(34)} L0 ${a(-14)} L${a(-34)} ${a(-52)} H${a(-18)} Z" fill="#FFC83D" stroke="${INK}" stroke-width="${a(5)}" stroke-linejoin="round"/></g></g>`);
     }
   }
 
-  const snow = winter ? Array.from({ length: 50 }, (_, k) => `<circle class="flake" cx="${f1(-400 + ((k * 197) % 2000))}" cy="${view === 'band' ? f1(rowY(8) - 330) : -230}" r="${f1(1.6 + (k % 3))}" fill="#FFFFFF" opacity="0.9" style="--d:${-((k * 13) % 11)}s;animation-duration:${8 + (k % 5)}s"/>`).join('') : '';
+  const snow = winter ? Array.from({ length: view === 'band' ? 32 : 50 }, (_, k) => `<circle class="flake" cx="${f1(-400 + ((k * 197) % 2000))}" cy="${f1((view === 'band' ? rowY(8) - 330 : -230) + ((k * 53) % 240))}" r="${f1(1.6 + (k % 3))}" fill="#FFFFFF" opacity="0.9" style="--d:${-((k * 13) % 11)}s;animation-duration:${8 + (k % 5)}s"/>`).join('') : '';
   const defs = `<defs><linearGradient id="iso-concrete" x1="0" x2="1"><stop offset="0" stop-color="${tone('#FFFFFF')}"/><stop offset="0.6" stop-color="${tone('#E4E8F0')}"/><stop offset="1" stop-color="${tone('#A9B4C8')}"/></linearGradient><linearGradient id="iso-reactor" x1="0" x2="1"><stop offset="0" stop-color="${tone('#FFFFFF')}"/><stop offset="0.55" stop-color="${tone('#EEF2F8')}"/><stop offset="1" stop-color="${tone('#AEB9CD')}"/></linearGradient></defs>`;
-  return defs + ground.join('') + out.join('') + snow;
+  top.push(snow);
+  add('moving', top.join(''));
+  return { defs, layers };
 }

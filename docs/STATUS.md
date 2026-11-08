@@ -12,7 +12,7 @@ avant tout commit, installation, envoi sur GitHub ou action irréversible).*
 | v0.4.0 | L3 Pilotage | **Fait** le 2026-11-08, validé, commit `c421f2b`, étiquette v0.4.0 : journée jouable de 6 h à minuit sur PC et tablette (navigateur), ville isométrique (D-13) en bandeau dans le jeu et entière dans la boutique et le bilan, progression enregistrée (D-14) |
 | v0.4.1 | L3.1 Corrections du test R1 | **Fait** le 2026-11-08, commit `a499231` (étiquette après essai sur la tablette) : R1-01 à R1-07 (voitures, fontaine, heure hh:mm, demande en chiffres, vitesses ×1/×2/×4, place de Cassandra) ; APK `livrables/Neutron-City-0.4.1.apk` |
 | v0.5.0 | L3.2 Règles et boutique (R1) | **Fait** le 2026-11-08, en attente de validation : bande ±7 % et malus de surproduction (D-15, choix confirmés), journées plus contrastées et rampe 15 %/h (D-16), objet acheté montré dans la ville (R1-08) ; APK `livrables/Neutron-City-0.5.0.apk`. L4 à L9 décalés d’une version mineure |
-| — | L4 Ville animée | À faire |
+| v0.6.0 | L4 Ville animée et ciel | **Fait** le 2026-11-08, en attente de validation : ciel heure par heure, soleil, lune, étoiles, nuages (R1-11, R1-12) ; ombres, arbres, lumière du soir (R1-14 en partie) ; ville en couches pour la tablette (D-17) ; APK `livrables/Neutron-City-0.6.0.apk` |
 | v0.6.0 | L5 Cassandra | À faire |
 | v0.7.0 | L6 Boutique | À faire |
 | v0.8.0 | L7 Journées | À faire |
@@ -21,7 +21,7 @@ avant tout commit, installation, envoi sur GitHub ou action irréversible).*
 
 ## Documents
 - `docs/CADRAGE.md` — cadrage validé.
-- `docs/DECISIONS.md` — décisions D-01 à D-16.
+- `docs/DECISIONS.md` — décisions D-01 à D-17.
 - `docs/RETOURS.md` — retours de test (R1 : premier essai sur la tablette).
 - `docs/tablette.md` — installer l’APK sur la Galaxy Tab A9+.
 - `docs/CONFIGURATION.md` — règles Git, retour en arrière, journal des versions.
