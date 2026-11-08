@@ -26,7 +26,7 @@ avant tout commit, installation, envoi sur GitHub ou action irréversible).*
 - `docs/tablette.md` — installer l’APK sur la Galaxy Tab A9+.
 - `docs/CONFIGURATION.md` — règles Git, retour en arrière, journal des versions.
 - `CHANGELOG.md` — changements pour le joueur.
-- `docs/GEMINI.md` — images générées avec Gemini (2026-11-08) : prompts, 56 PNG détourés dans `assets/gemini/` (tuiles 23 à 27, objets de la ville 25 à 47 compris), pas encore intégrés (lot à proposer). Originaux du Drive copiés dans `assets/Jeu centrale – assets/`.
+- `docs/GEMINI.md` — images générées avec Gemini (2026-11-08) : prompts, 56 PNG détourés dans `assets/gemini/` (tuiles 23 à 27, objets de la ville 25 à 47 compris), pas encore intégrés (lot à proposer) ; images gardées sur le PC seulement, hors de Git. Originaux du Drive copiés dans `assets/Jeu centrale – assets/`.
 - `docs/OBJETS-VILLE.md` — objets de la ville (15) et événements (10) conçus en chat le 2026-11-08 : JSON de conception dans `docs/conception/`, écarts E1 à E8 avec le moteur à trancher avant le lot L6, 23 prompts Gemini.
 
 ## À faire après chaque lot (D-09)

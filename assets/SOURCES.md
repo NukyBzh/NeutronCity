@@ -37,6 +37,6 @@ Dessins vectoriels écrits à la main en SVG (aucune image externe, aucune IA), 
 ## Images Gemini (`gemini/`) — 2026-11-08
 56 PNG transparents (30 le 2026-11-08 après-midi, 26 le soir) générés par Yann avec l'app Gemini (IA) à partir des prompts de `docs/GEMINI.md`, livrés en JPG
 puis détourés par Claude (`tools/detourage/detoure.py`). Liste, empreintes et remarques : `docs/GEMINI.md` § 3.
-Copie locale des originaux du Drive : `Jeu centrale – assets/`. **Pas encore utilisés dans le jeu.** Même point ouvert que Cassandra : conditions d'usage des images IA avant diffusion.
+Copie locale des originaux du Drive : `Jeu centrale – assets/`. **Pas encore utilisés dans le jeu ; gardés sur le PC de Yann, hors de Git pour le moment.** Même point ouvert que Cassandra : conditions d'usage des images IA avant diffusion.
 Image de référence de style `docs/gemini/reference-style-ville.jpg` : fournie par Yann, origine à préciser, **ne pas
 utiliser dans le jeu**.

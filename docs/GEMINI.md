@@ -18,7 +18,11 @@ dessinée dans `apps/game/src/play/City.tsx` (D-13). Intégrer ces images serait
    Les 30 PNG de l'archive sont identiques pixel pour pixel à ceux de `assets/gemini/` (seul l'encodage diffère :
    les empreintes du § 3 sont celles de l'archive). Les 2 JSON sont identiques à ceux de `docs/conception/`.
 
-## 2. Fichiers déposés dans le dépôt
+## 2. Fichiers (images sur le PC de Yann seulement)
+*Choix de Yann (2026-11-08) : les images restent sur son PC, hors de Git (`.gitignore`), tant qu'on ne les utilise pas
+dans le jeu. Elles sont restées dans le commit `6e74719` (historique), retirées au commit suivant. Pour les recréer :
+originaux du Drive + `tools/detourage/detoure.py` (même résultat à chaque fois).*
+
 | Emplacement | Contenu |
 |---|---|
 | `assets/gemini/*.png` | 56 PNG transparents, recadrés au plus près (marge 4 px), taille d'origine (≤ 1024 px) |
@@ -28,7 +32,7 @@ dessinée dans `apps/game/src/play/City.tsx` (D-13). Intégrer ces images serait
 | `tools/detourage/detoure.py` | script de détourage (Python 3, Pillow, NumPy, SciPy) |
 | `docs/GEMINI.md` | ce document |
 
-Aucun commit n'a été fait (règle du projet : accord avant tout commit).
+Seuls les textes (ce document, `docs/OBJETS-VILLE.md`, `docs/conception/`) et le script sont dans Git.
 
 ## 3. Inventaire des images
 | N° | Fichier | État | Remarque |

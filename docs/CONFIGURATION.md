@@ -8,6 +8,7 @@ versions (§4) est tenu à jour à chaque étiquette.*
 |---|---|---|
 | Code, contenu (journées, boutique, répliques), documentation | dépôt Git local, copie sur GitHub (dépôt **privé** `https://github.com/NukyBzh/NeutronCity.git`, branche `main`) | oui |
 | Images exportées de Figma | `assets/`, avec le lien Figma de chacune dans `assets/SOURCES.md` | oui |
+| Images Gemini et copie du Drive | `assets/gemini/`, `docs/gemini/`, `assets/Jeu centrale – assets/` (PC du porteur du projet) | **non** pour le moment (`docs/GEMINI.md` §2) ; à verser dans Git si un lot les intègre au jeu |
 | Fichiers sources des dessins | dans Figma (fichier du projet, lien dans `assets/SOURCES.md`) | **non** (restent dans Figma) |
 | Livrables construits (installeur Windows, APK) | `apps/desktop/src-tauri/target/…`, `out/` | **non** : on les reconstruit depuis une étiquette (§5) |
 | Réglages locaux (`.env*`, `*.local`, `.claude/settings.local.json`) | PC du porteur du projet | **non** |

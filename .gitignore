@@ -28,3 +28,6 @@ Thumbs.db
 
 # Local copy of the Google Drive folder (originals, docs/GEMINI.md §1)
 assets/Jeu centrale – assets/
+# Gemini images: kept on the owner PC only for now (docs/GEMINI.md §2)
+assets/gemini/
+docs/gemini/
