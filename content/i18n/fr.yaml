@@ -1,0 +1,6 @@
+# Textes de l'interface (français). Un identifiant par texte ; la version anglaise (en.yaml) gardera les mêmes.
+app.title: Neutron City
+app.subtitle: Ta centrale, ta ville, ta journée.
+app.version: "Version {version}"
+cassandra.alt: Cassandra, ingénieure de la centrale, te fait signe.
+home.hello: "Salut ! Moi, c'est Cassandra. Bientôt, tu piloteras la centrale avec moi."

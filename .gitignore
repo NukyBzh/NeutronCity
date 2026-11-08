@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Builds and caches
+dist/
+out/
+coverage/
+.vite/
+*.tsbuildinfo
+
+# Tauri / Android build outputs (rebuilt from a tag, docs/CONFIGURATION.md §5)
+apps/desktop/src-tauri/target/
+apps/desktop/src-tauri/gen/
+
+# Deliverables (never versioned)
+*.apk
+*.aab
+*.exe
+*.msi
+
+# Local files
+.env*
+*.local
+.claude/settings.local.json
+Thumbs.db
+.DS_Store

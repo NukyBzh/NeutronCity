@@ -1,0 +1,25 @@
+{
+  "name": "neutron-city",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Educational game for children aged 8 to 12: run an imaginary power plant that supplies a town",
+  "license": "UNLICENSED",
+  "type": "module",
+  "workspaces": [
+    "packages/engine",
+    "apps/game"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @neutron/game",
+    "build": "npm run build -w @neutron/game",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0",
+    "vitest": "^5.0.2",
+    "yaml": "^2.9.1"
+  }
+}
