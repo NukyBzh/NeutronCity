@@ -10,7 +10,8 @@ coverage/
 
 # Tauri / Android build outputs (rebuilt from a tag, docs/CONFIGURATION.md §5)
 apps/desktop/src-tauri/target/
-apps/desktop/src-tauri/gen/
+apps/desktop/src-tauri/gen/schemas/
+livrables/
 
 # Deliverables (never versioned)
 *.apk

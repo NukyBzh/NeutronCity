@@ -1,0 +1,26 @@
+{
+  "$schema": "../../../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "Neutron City",
+  "version": "0.4.0",
+  "identifier": "fr.neutroncity.jeu",
+  "build": {
+    "frontendDist": "../../game/dist",
+    "devUrl": "http://localhost:5180",
+    "beforeDevCommand": "npm run dev -w @neutron/game",
+    "beforeBuildCommand": "npm run build -w @neutron/game"
+  },
+  "app": {
+    "windows": [
+      { "title": "Neutron City", "width": 1280, "height": 800, "minWidth": 1024, "minHeight": 640, "resizable": true, "maximized": true }
+    ],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' ipc: http://ipc.localhost"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "shortDescription": "Jeu éducatif : fais tourner la centrale de ta ville",
+    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"]
+  }
+}
