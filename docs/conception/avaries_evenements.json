@@ -1,0 +1,190 @@
+{
+  "version": "1.0",
+  "date": "2026-11-08",
+  "description": "Evenements (avaries et bonus) du jeu pedagogique de pilotage de centrale et de reseau electrique, public 8-12 ans. Valeurs indicatives, a equilibrer en jouant.",
+  "regles_globales": {
+    "evenements_simultanes_max": 1,
+    "annonce": "icone + son a chaque declenchement",
+    "premiere_apparition": "bulle d'explication affichant message_pedagogique",
+    "difficulte": {
+      "8-9_ans": { "facteur_intensite": 0.7, "facteur_duree": 0.8 },
+      "10-12_ans": { "facteur_intensite": 1.0, "facteur_duree": 1.0 }
+    },
+    "hasard": "generateur initialise par une graine (partie rejouable a l'identique)",
+    "cycle_de_vie": ["annonce", "actif", "resolu", "retour_normale"],
+    "modificateurs": "multiplicatifs, appliques en un seul endroit du code",
+    "prerequis": "ville decoupee en au moins 3 quartiers, chacun avec sa part de consommation"
+  },
+  "schema": {
+    "id": "identifiant unique",
+    "titre": "nom affiche",
+    "type": "negatif | positif",
+    "declencheur": { "saisons": "liste ou toutes", "heures": "plage ou toutes", "poids": "probabilite relative", "condition": "optionnelle" },
+    "annonce_s": "secondes entre l'annonce et l'activation",
+    "cooldown_s": "delai minimum avant reapparition",
+    "visuel": "liste d'identifiants d'assets",
+    "action": { "type": "aucune | clic | appui_long | clics_repetes | condition_maintenue", "cible": "objet a viser", "nb": "nombre de clics ou duree", "description": "texte" },
+    "modificateurs": "liste de {cible, operation, valeur} ; cibles : demande_elec, demande_chaleur, puissance_max, rendement_echangeur, multiplicateur_gain, revenu_permanent, bonus_pieces, quartier_coupe, perte_chaleur",
+    "fin": { "type": "timer | action | condition", "duree_s": "si timer" },
+    "message_pedagogique": "phrase courte pour l'enfant"
+  },
+  "evenements": [
+    {
+      "id": "tempete",
+      "titre": "Tempête",
+      "type": "negatif",
+      "declencheur": { "saisons": ["automne", "hiver"], "heures": "toutes", "poids": 3 },
+      "annonce_s": 5,
+      "cooldown_s": 300,
+      "visuel": ["meteo_pluie_vent", "pylone_penche", "quartier_eteint", "barre_progression_reparation"],
+      "action": { "type": "clic", "cible": "pylone_penche", "nb": 1, "description": "Envoyer le camion de réparation (arrivée en 15 s). En attendant, baisser la production car le quartier éteint ne consomme plus." },
+      "modificateurs": [
+        { "cible": "quartier_coupe", "operation": "set", "valeur": 1 },
+        { "cible": "multiplicateur_gain", "operation": "mul", "valeur": 0.6 }
+      ],
+      "fin": { "type": "action", "delai_reparation_s": 15 },
+      "message_pedagogique": "Les lignes électriques transportent le courant jusqu'aux maisons. Si une ligne tombe, le quartier n'a plus d'électricité."
+    },
+    {
+      "id": "canicule",
+      "titre": "Canicule",
+      "type": "negatif",
+      "declencheur": { "saisons": ["ete"], "heures": "10-18", "poids": 2 },
+      "annonce_s": 5,
+      "cooldown_s": 400,
+      "visuel": ["soleil_rouge", "poissons_transpirent", "thermometre_riviere_rouge"],
+      "action": { "type": "aucune", "cible": "batterie", "description": "Baisser la puissance et utiliser la batterie pour compléter." },
+      "modificateurs": [
+        { "cible": "puissance_max", "operation": "mul", "valeur": 0.8 }
+      ],
+      "fin": { "type": "timer", "duree_s": 90 },
+      "message_pedagogique": "La centrale a besoin d'eau froide pour se refroidir. Quand la rivière est trop chaude, elle doit produire moins pour protéger les poissons."
+    },
+    {
+      "id": "match_tele",
+      "titre": "Match à la télé",
+      "type": "negatif",
+      "declencheur": { "saisons": "toutes", "heures": "19-22", "poids": 3 },
+      "annonce_s": 10,
+      "cooldown_s": 300,
+      "visuel": ["coup_de_sifflet", "compte_a_rebours", "ecrans_allumes", "ballon_stade"],
+      "action": { "type": "aucune", "cible": "manette_puissance", "description": "Anticiper pendant le compte à rebours : monter la production d'électricité avant le pic." },
+      "modificateurs": [
+        { "cible": "demande_elec", "operation": "mul", "valeur": 1.4 }
+      ],
+      "fin": { "type": "timer", "duree_s": 30 },
+      "message_pedagogique": "Quand tout le monde allume la télé en même temps, la consommation monte d'un coup. Il faut le prévoir !"
+    },
+    {
+      "id": "vague_froid",
+      "titre": "Vague de froid",
+      "type": "negatif",
+      "declencheur": { "saisons": ["hiver"], "heures": "toutes", "poids": 2 },
+      "annonce_s": 5,
+      "cooldown_s": 500,
+      "visuel": ["neige", "fumee_cheminees"],
+      "action": { "type": "aucune", "cible": "manette_puissance+curseur_partage", "description": "Augmenter la puissance et envoyer plus de chaleur vers la ville." },
+      "modificateurs": [
+        { "cible": "demande_elec", "operation": "mul", "valeur": 1.3 },
+        { "cible": "demande_chaleur", "operation": "mul", "valeur": 1.3 }
+      ],
+      "contrainte": "demande totale plafonnee a 95 % de la capacite de la centrale",
+      "fin": { "type": "timer", "duree_s": 120 },
+      "message_pedagogique": "Quand il fait très froid, les maisons ont besoin de plus de chauffage et d'électricité."
+    },
+    {
+      "id": "ecureuil_transformateur",
+      "titre": "Écureuil dans le transformateur",
+      "type": "negatif",
+      "declencheur": { "saisons": "toutes", "heures": "toutes", "poids": 3 },
+      "annonce_s": 0,
+      "cooldown_s": 240,
+      "visuel": ["etincelles", "ecureuil_poste", "quartier_eteint"],
+      "action": { "type": "clic", "cible": "ecureuil_poste", "nb": 1, "description": "Cliquer sur l'écureuil pour le faire sortir (il repart content, jamais blessé)." },
+      "modificateurs": [
+        { "cible": "quartier_coupe", "operation": "set", "valeur": 1 },
+        { "cible": "multiplicateur_gain", "operation": "mul", "valeur": 0.8 }
+      ],
+      "fin": { "type": "action" },
+      "message_pedagogique": "Le transformateur adapte l'électricité pour les maisons. Un petit animal peut provoquer une coupure !"
+    },
+    {
+      "id": "fuite_chaleur",
+      "titre": "Tuyau de chaleur qui fuit",
+      "type": "negatif",
+      "declencheur": { "saisons": ["automne", "hiver"], "heures": "toutes", "poids": 2 },
+      "annonce_s": 3,
+      "cooldown_s": 300,
+      "visuel": ["panache_vapeur_rue", "vanne"],
+      "action": { "type": "appui_long", "cible": "vanne", "nb": 2, "description": "Fermer la vanne (appui long 2 s), puis cliquer pour réparer. En attendant, envoyer plus d'électricité." },
+      "modificateurs": [
+        { "cible": "perte_chaleur", "operation": "set", "valeur": 0.3 }
+      ],
+      "fin": { "type": "action" },
+      "message_pedagogique": "La chaleur de la centrale voyage dans des tuyaux d'eau chaude jusqu'aux maisons."
+    },
+    {
+      "id": "echangeur_calcaire",
+      "titre": "Échangeur plein de calcaire",
+      "type": "negatif",
+      "declencheur": { "saisons": "toutes", "heures": "toutes", "poids": 2 },
+      "annonce_s": 0,
+      "cooldown_s": 400,
+      "visuel": ["echangeur_gris", "jauge_rendement_baisse"],
+      "action": { "type": "clics_repetes", "cible": "echangeur_gris", "nb": 8, "description": "Nettoyer l'échangeur en cliquant plusieurs fois dessus." },
+      "modificateurs": [
+        { "cible": "rendement_echangeur", "operation": "mul", "valeur": 0.75, "progressif": true }
+      ],
+      "fin": { "type": "action" },
+      "message_pedagogique": "Comme dans une bouilloire, le calcaire empêche la chaleur de bien passer. Il faut nettoyer !"
+    },
+    {
+      "id": "nouveaux_habitants",
+      "titre": "Nouveaux habitants",
+      "type": "positif",
+      "declencheur": { "saisons": "toutes", "heures": "8-18", "poids": 2 },
+      "annonce_s": 3,
+      "cooldown_s": 600,
+      "visuel": ["camion_demenagement", "maison_cadeau"],
+      "action": { "type": "clic", "cible": "maison_cadeau", "nb": 1, "description": "Cliquer pour accueillir les habitants : une maison gratuite s'ajoute à la ville." },
+      "modificateurs": [
+        { "cible": "revenu_permanent", "operation": "mul", "valeur": 1.1 },
+        { "cible": "demande_elec", "operation": "mul", "valeur": 1.05, "permanent": true }
+      ],
+      "fin": { "type": "action" },
+      "message_pedagogique": "Plus il y a d'habitants, plus la ville consomme d'électricité... et plus elle rapporte."
+    },
+    {
+      "id": "visite_classe",
+      "titre": "Visite d'une classe",
+      "type": "positif",
+      "declencheur": { "saisons": "toutes", "heures": "9-16", "poids": 2 },
+      "annonce_s": 5,
+      "cooldown_s": 600,
+      "visuel": ["bus_scolaire", "enfants_coucou", "jauge_30s"],
+      "action": { "type": "condition_maintenue", "cible": "double_vert", "nb": 30, "description": "Rester 30 s dans la zone double vert (électricité et chaleur). La jauge repart à zéro si on en sort." },
+      "modificateurs": [
+        { "cible": "bonus_pieces", "operation": "add", "valeur": 100, "si": "condition_reussie" }
+      ],
+      "fin": { "type": "condition", "duree_max_s": 60 },
+      "message_pedagogique": "Montre aux élèves comment on produit exactement ce que la ville consomme !"
+    },
+    {
+      "id": "fete_ville",
+      "titre": "Fête de la ville",
+      "type": "positif",
+      "declencheur": { "saisons": "toutes", "heures": "19-23", "poids": 1 },
+      "annonce_s": 5,
+      "cooldown_s": 900,
+      "visuel": ["feux_artifice", "guirlandes", "badge_x2"],
+      "action": { "type": "aucune", "cible": "manette_puissance", "description": "Suivre la hausse de consommation pour profiter du gain doublé." },
+      "modificateurs": [
+        { "cible": "multiplicateur_gain", "operation": "mul", "valeur": 2.0 },
+        { "cible": "demande_elec", "operation": "mul", "valeur": 1.15 }
+      ],
+      "fin": { "type": "timer", "duree_s": 45 },
+      "message_pedagogique": "Les jours de fête, la ville consomme plus : c'est l'occasion de gagner plus si tu suis bien la courbe."
+    }
+  ],
+  "assets_a_generer": ["ecureuil_poste", "panache_vapeur_rue", "vanne", "bus_scolaire", "enfants_coucou", "camion_demenagement", "maison_cadeau", "feux_artifice", "guirlandes", "neige", "ballon_stade", "thermometre_riviere_rouge", "poissons_transpirent", "etincelles", "echangeur_gris"]
+}

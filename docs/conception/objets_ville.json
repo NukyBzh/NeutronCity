@@ -1,0 +1,312 @@
+{
+  "version": "1.0",
+  "date": "2026-11-08",
+  "description": "Objets achetables (batiments, decor, equipements energie) du jeu pedagogique de pilotage de centrale et de reseau electrique, public 8-12 ans. Valeurs indicatives, a equilibrer en jouant. Meme logique de modificateurs que avaries_evenements.json.",
+  "regles_globales": {
+    "unite": "1 unite de demande (elec ou chaleur) servie en zone verte = 1 piece/min ; orange = 0.3 piece/min ; rouge = 0",
+    "base_gain": "demande brute de la ville (avant panneaux solaires et isolation), pour que les objets d'aide ne fassent jamais perdre d'argent",
+    "duree_journee_s": 240,
+    "jour_nuit": "moitie jour (7h-19h), moitie nuit (19h-7h)",
+    "saisons": "profil donne pour ete et hiver ; printemps et automne = moyenne des deux",
+    "courbe_logement": "les objets avec courbe 'logement' suivent la courbe existante de la ville (pointes matin et soir), mise a l'echelle par leurs valeurs jour et nuit",
+    "retour_investissement": "minutes en zone verte pour rembourser l'objet, moyenne sur l'annee",
+    "ville_depart": { "demande_elec": 100, "demande_chaleur": 0 },
+    "rachat": "objets 'rachetable' : prix x1.15 a chaque achat ; objets 'unique_par_quartier' : 1 par quartier",
+    "placement": "tutoriel : placement automatique ; phase libre : le joueur choisit le quartier",
+    "affichage_gain": "bulle '+X' au-dessus du batiment a chaque minute de jeu",
+    "premiere_apparition": "bulle d'explication affichant message_pedagogique",
+    "modificateurs": "add = s'ajoute a la demande ou au revenu ; mul = multiplie ; set = fixe une valeur ; appliques au meme endroit du code que les avaries",
+    "phases": {
+      "tutoriel": "objets achetes dans l'ordre impose ; seul l'objet suivant est achetable",
+      "libre": "commence quand les 8 objets du tutoriel sont poses ; deblocage par nombre de batiments poses"
+    },
+    "liens_avaries": [
+      { "evenement": "canicule", "regle": "ne se declenche que si batterie_quartier est possedee (sa solution utilise la batterie)" },
+      { "evenement": "vague_froid, fuite_chaleur, echangeur_calcaire", "regle": "ne se declenchent qu'apres l'achat de reseau_chaleur" }
+    ]
+  },
+  "schema": {
+    "id": "identifiant unique",
+    "titre": "nom affiche",
+    "categorie": "logement | commerces_services | activites | loisirs | nature_decor | equipement_energie",
+    "phase": "tutoriel | libre",
+    "ordre_tutoriel": "position dans le tutoriel (si phase = tutoriel)",
+    "deblocage": { "batiments_min": "nombre de batiments poses requis", "condition": "optionnelle" },
+    "cout": "prix en pieces",
+    "retour_investissement_min": "indicatif",
+    "achat": "unique | rachetable | unique_par_quartier",
+    "visuel": "liste d'identifiants d'assets",
+    "animation": "texte",
+    "modificateurs": "liste de {cible, operation, valeur, profil?, portee?} ; profil = {jour, nuit, ete, hiver} multiplicateurs (1 = valeur pleine) ou courbe ; cibles : demande_elec, demande_chaleur, production_locale_elec, revenu_permanent, poids_avaries_negatives, stock_elec, stock_chaleur, immunite_coupure, active_reseau_chaleur",
+    "message_pedagogique": "phrase courte pour l'enfant"
+  },
+  "objets": [
+    {
+      "id": "ferme_moderne",
+      "titre": "Ferme moderne",
+      "categorie": "activites",
+      "phase": "tutoriel",
+      "ordre_tutoriel": 1,
+      "deblocage": { "batiments_min": 0 },
+      "cout": 50,
+      "retour_investissement_min": 4,
+      "achat": "rachetable",
+      "visuel": ["ferme_moderne", "serre_allumee", "tracteur_electrique"],
+      "animation": "serres qui s'allument le jour, tracteur electrique en aller-retour",
+      "modificateurs": [
+        { "cible": "demande_elec", "operation": "add", "valeur": 20, "profil": { "jour": 1.0, "nuit": 0.3, "ete": 1.0, "hiver": 1.0 } }
+      ],
+      "message_pedagogique": "Les serres et les robots de la ferme ont besoin de beaucoup d'électricité pendant la journée."
+    },
+    {
+      "id": "reseau_chaleur",
+      "titre": "Réseau de chaleur",
+      "categorie": "equipement_energie",
+      "phase": "tutoriel",
+      "ordre_tutoriel": 2,
+      "deblocage": { "batiments_min": 1 },
+      "cout": 100,
+      "retour_investissement_min": 5,
+      "achat": "unique",
+      "visuel": ["tranchee_tuyaux", "tuyau_chaleur", "bouffee_vapeur"],
+      "animation": "tranchee qui s'ouvre, tuyaux rouges poses, petites bouffees de vapeur sur les batiments raccordes",
+      "modificateurs": [
+        { "cible": "active_reseau_chaleur", "operation": "set", "valeur": 1, "debloque": ["jauge_chaleur", "curseur_partage", "bonus_double_vert"] },
+        { "cible": "demande_chaleur", "operation": "add", "valeur": 40, "profil": { "jour": 1.0, "nuit": 0.75, "ete": 0.2, "hiver": 1.0 } }
+      ],
+      "message_pedagogique": "La centrale fait aussi de la chaleur : elle peut chauffer les maisons."
+    },
+    {
+      "id": "maison_lilas",
+      "titre": "Maison des Lilas",
+      "categorie": "logement",
+      "phase": "tutoriel",
+      "ordre_tutoriel": 3,
+      "deblocage": { "batiments_min": 2 },
+      "cout": 30,
+      "retour_investissement_min": 5,
+      "achat": "rachetable",
+      "visuel": ["maison_lilas"],
+      "animation": "fenetres qui s'allument le matin et le soir",
+      "modificateurs": [
+        { "cible": "demande_elec", "operation": "add", "valeur": 6, "profil": { "jour": 1.0, "nuit": 0.33, "ete": 1.0, "hiver": 1.0, "courbe": "logement" } },
+        { "cible": "demande_chaleur", "operation": "add", "valeur": 4, "profil": { "jour": 1.0, "nuit": 1.0, "ete": 0.25, "hiver": 1.0 } }
+      ],
+      "message_pedagogique": "À la maison, on consomme surtout le matin et le soir."
+    },
+    {
+      "id": "maison_voiture_electrique",
+      "titre": "Maison à la voiture électrique",
+      "categorie": "logement",
+      "phase": "tutoriel",
+      "ordre_tutoriel": 4,
+      "deblocage": { "batiments_min": 3 },
+      "cout": 40,
+      "retour_investissement_min": 4,
+      "achat": "rachetable",
+      "visuel": ["maison_voiture_electrique", "eclair_recharge"],
+      "animation": "voiture branchee, eclair anime la nuit pendant la recharge",
+      "modificateurs": [
+        { "cible": "demande_elec", "operation": "add", "valeur": 6, "profil": { "jour": 1.0, "nuit": 0.33, "ete": 1.0, "hiver": 1.0, "courbe": "logement" } },
+        { "cible": "demande_elec", "operation": "add", "valeur": 6, "profil": { "jour": 0.0, "nuit": 1.0, "ete": 1.0, "hiver": 1.0 }, "note": "recharge de la voiture" },
+        { "cible": "demande_chaleur", "operation": "add", "valeur": 4, "profil": { "jour": 1.0, "nuit": 1.0, "ete": 0.25, "hiver": 1.0 } }
+      ],
+      "message_pedagogique": "La voiture se recharge la nuit, quand la ville consomme peu."
+    },
+    {
+      "id": "epicerie",
+      "titre": "Épicerie",
+      "categorie": "commerces_services",
+      "phase": "tutoriel",
+      "ordre_tutoriel": 5,
+      "deblocage": { "batiments_min": 4 },
+      "cout": 35,
+      "retour_investissement_min": 5,
+      "achat": "rachetable",
+      "visuel": ["epicerie"],
+      "animation": "clients qui entrent le jour, vitrine frigo toujours eclairee",
+      "modificateurs": [
+        { "cible": "demande_elec", "operation": "add", "valeur": 8, "profil": { "jour": 1.0, "nuit": 0.5, "ete": 1.0, "hiver": 1.0 } },
+        { "cible": "demande_chaleur", "operation": "add", "valeur": 2, "profil": { "jour": 1.0, "nuit": 1.0, "ete": 0.0, "hiver": 1.0 } }
+      ],
+      "message_pedagogique": "Les frigos de l'épicerie marchent même la nuit."
+    },
+    {
+      "id": "ecole",
+      "titre": "École",
+      "categorie": "commerces_services",
+      "phase": "tutoriel",
+      "ordre_tutoriel": 6,
+      "deblocage": { "batiments_min": 5 },
+      "cout": 30,
+      "retour_investissement_min": 6,
+      "achat": "rachetable",
+      "visuel": ["ecole", "enfants_cour", "panneau_vacances"],
+      "animation": "cour pleine d'enfants le jour, vide la nuit, panneau vacances en ete",
+      "modificateurs": [
+        { "cible": "demande_elec", "operation": "add", "valeur": 12, "profil": { "jour": 1.0, "nuit": 0.0, "ete": 0.2, "hiver": 1.0 } },
+        { "cible": "demande_chaleur", "operation": "add", "valeur": 6, "profil": { "jour": 1.0, "nuit": 0.0, "ete": 0.0, "hiver": 1.0 } }
+      ],
+      "message_pedagogique": "L'école consomme quand les élèves sont là, presque rien la nuit et pendant les vacances."
+    },
+    {
+      "id": "usine_cereales",
+      "titre": "Usine de céréales",
+      "categorie": "activites",
+      "phase": "tutoriel",
+      "ordre_tutoriel": 7,
+      "deblocage": { "batiments_min": 6 },
+      "cout": 120,
+      "retour_investissement_min": 6,
+      "achat": "rachetable",
+      "visuel": ["asset_13_usine_1", "tapis_sacs", "vapeur_sechoir"],
+      "animation": "tapis de sacs de cereales, vapeur au sechoir",
+      "modificateurs": [
+        { "cible": "demande_elec", "operation": "add", "valeur": 10, "profil": { "jour": 1.0, "nuit": 0.4, "ete": 1.0, "hiver": 1.0 } },
+        { "cible": "demande_chaleur", "operation": "add", "valeur": 15, "profil": { "jour": 1.0, "nuit": 1.0, "ete": 1.0, "hiver": 1.0 } }
+      ],
+      "message_pedagogique": "Pour sécher les céréales, l'usine utilise la chaleur de la centrale, même en été."
+    },
+    {
+      "id": "maison_medicale",
+      "titre": "Maison médicale",
+      "categorie": "commerces_services",
+      "phase": "tutoriel",
+      "ordre_tutoriel": 8,
+      "deblocage": { "batiments_min": 7 },
+      "cout": 50,
+      "retour_investissement_min": 10,
+      "achat": "unique",
+      "visuel": ["maison_medicale", "croix_verte", "ambulance"],
+      "animation": "croix verte qui clignote doucement, ambulance garee",
+      "modificateurs": [
+        { "cible": "demande_elec", "operation": "add", "valeur": 5, "profil": { "jour": 1.0, "nuit": 0.2, "ete": 1.0, "hiver": 1.0 } },
+        { "cible": "demande_chaleur", "operation": "add", "valeur": 3, "profil": { "jour": 1.0, "nuit": 1.0, "ete": 0.33, "hiver": 1.0 } },
+        { "cible": "poids_avaries_negatives", "operation": "mul", "valeur": 0.8 }
+      ],
+      "message_pedagogique": "Une ville bien soignée est plus calme : il y a moins de mauvaises surprises."
+    },
+    {
+      "id": "batterie_quartier",
+      "titre": "Batterie de quartier",
+      "categorie": "equipement_energie",
+      "phase": "libre",
+      "deblocage": { "batiments_min": 8 },
+      "cout": 150,
+      "retour_investissement_min": 15,
+      "achat": "unique_par_quartier",
+      "visuel": ["batterie_quartier", "jauge_charge", "fleches_energie"],
+      "animation": "jauge de charge, fleches entrantes en charge, sortantes en decharge",
+      "modificateurs": [
+        { "cible": "stock_elec", "operation": "add", "valeur": 20, "puissance_max": 10, "regle": "se charge si production > demande, se vide si production < demande" },
+        { "cible": "revenu_permanent", "operation": "add", "valeur": 10 }
+      ],
+      "message_pedagogique": "La batterie garde l'électricité en trop pour la rendre plus tard."
+    },
+    {
+      "id": "parc_arbore",
+      "titre": "Parc arboré",
+      "categorie": "nature_decor",
+      "phase": "libre",
+      "deblocage": { "batiments_min": 8 },
+      "cout": 60,
+      "retour_investissement_min": 15,
+      "achat": "unique_par_quartier",
+      "visuel": ["parc_arbore", "asset_19_arbre", "oiseaux", "balancoire"],
+      "animation": "arbres qui bougent, oiseaux, enfants sur la balancoire",
+      "modificateurs": [
+        { "cible": "demande_elec", "operation": "mul", "valeur": 0.95, "profil": { "ete": 1.0, "hiver": 0.0 }, "portee": "quartier" },
+        { "cible": "revenu_permanent", "operation": "add", "valeur": 4 }
+      ],
+      "message_pedagogique": "Les arbres font de l'ombre : en été, on a moins besoin de climatiseurs."
+    },
+    {
+      "id": "piscine",
+      "titre": "Piscine municipale",
+      "categorie": "loisirs",
+      "phase": "libre",
+      "deblocage": { "batiments_min": 10, "condition": "reseau_chaleur possede" },
+      "cout": 90,
+      "retour_investissement_min": 6,
+      "achat": "rachetable",
+      "visuel": ["piscine", "buee"],
+      "animation": "eau animee, plongeoir, buee en hiver",
+      "modificateurs": [
+        { "cible": "demande_elec", "operation": "add", "valeur": 6, "profil": { "jour": 1.0, "nuit": 0.33, "ete": 1.0, "hiver": 1.0 } },
+        { "cible": "demande_chaleur", "operation": "add", "valeur": 10, "profil": { "jour": 1.0, "nuit": 1.0, "ete": 1.0, "hiver": 1.0 } }
+      ],
+      "message_pedagogique": "La piscine utilise la chaleur de la centrale toute l'année."
+    },
+    {
+      "id": "isolation_maisons",
+      "titre": "Isolation des maisons",
+      "categorie": "equipement_energie",
+      "phase": "libre",
+      "deblocage": { "batiments_min": 12 },
+      "cout": 100,
+      "retour_investissement_min": 17,
+      "achat": "unique_par_quartier",
+      "visuel": ["bonnet_laine_cheminee"],
+      "animation": "bonnet de laine pose sur chaque cheminee du quartier",
+      "modificateurs": [
+        { "cible": "demande_chaleur", "operation": "mul", "valeur": 0.75, "profil": { "ete": 0.0, "hiver": 1.0 }, "portee": "logements_du_quartier" },
+        { "cible": "revenu_permanent", "operation": "add", "valeur": 6 }
+      ],
+      "message_pedagogique": "Une maison bien isolée garde sa chaleur, comme un pull."
+    },
+    {
+      "id": "panneaux_solaires",
+      "titre": "Panneaux solaires",
+      "categorie": "equipement_energie",
+      "phase": "libre",
+      "deblocage": { "batiments_min": 12 },
+      "cout": 80,
+      "retour_investissement_min": 18,
+      "achat": "unique_par_quartier",
+      "visuel": ["panneaux_solaires_toit", "reflet_soleil"],
+      "animation": "reflets de soleil le jour, panneaux sombres la nuit",
+      "modificateurs": [
+        { "cible": "production_locale_elec", "operation": "add", "valeur": 10, "profil": { "jour": 1.0, "nuit": 0.0, "ete": 1.0, "hiver": 0.4 }, "portee": "quartier", "note": "reduit la demande nette que la centrale doit suivre, pas la base de gain" },
+        { "cible": "revenu_permanent", "operation": "add", "valeur": 12, "profil": { "jour": 1.0, "nuit": 0.0, "ete": 1.0, "hiver": 0.5 } }
+      ],
+      "message_pedagogique": "Le soleil aide la journée, mais la nuit, c'est la centrale qui travaille seule."
+    },
+    {
+      "id": "hopital",
+      "titre": "Hôpital",
+      "categorie": "commerces_services",
+      "phase": "libre",
+      "deblocage": { "batiments_min": 14 },
+      "cout": 150,
+      "retour_investissement_min": 7,
+      "achat": "unique",
+      "visuel": ["asset_14_hopital", "asset_10_diesel_secours", "fumee_demarrage"],
+      "animation": "le groupe de secours fume et demarre quand le quartier est coupe ; l'hopital reste allume",
+      "modificateurs": [
+        { "cible": "demande_elec", "operation": "add", "valeur": 15, "profil": { "jour": 1.0, "nuit": 1.0, "ete": 1.0, "hiver": 1.0 } },
+        { "cible": "demande_chaleur", "operation": "add", "valeur": 8, "profil": { "jour": 1.0, "nuit": 1.0, "ete": 0.375, "hiver": 1.0 } },
+        { "cible": "immunite_coupure", "operation": "set", "valeur": 1, "portee": "batiment" }
+      ],
+      "message_pedagogique": "L'hôpital consomme jour et nuit, et un moteur de secours l'empêche d'être dans le noir."
+    },
+    {
+      "id": "cuve_chaleur",
+      "titre": "Cuve de chaleur",
+      "categorie": "equipement_energie",
+      "phase": "libre",
+      "deblocage": { "batiments_min": 16, "condition": "reseau_chaleur possede" },
+      "cout": 120,
+      "retour_investissement_min": 20,
+      "achat": "unique_par_quartier",
+      "visuel": ["cuve_chaleur", "thermometre_cuve"],
+      "animation": "thermometre qui monte la nuit et descend le matin",
+      "modificateurs": [
+        { "cible": "stock_chaleur", "operation": "add", "valeur": 30, "puissance_max": 10, "regle": "se remplit si chaleur produite > demande, se vide si chaleur produite < demande" },
+        { "cible": "revenu_permanent", "operation": "add", "valeur": 6 }
+      ],
+      "message_pedagogique": "On peut garder de l'eau chaude la nuit pour chauffer la ville au réveil."
+    }
+  ],
+  "assets_existants_reutilises": ["asset_13_usine_1", "asset_14_hopital", "asset_10_diesel_secours", "asset_19_arbre"],
+  "assets_a_generer": ["ferme_moderne", "serre_allumee", "tracteur_electrique", "tranchee_tuyaux", "tuyau_chaleur", "bouffee_vapeur", "maison_lilas", "maison_voiture_electrique", "eclair_recharge", "epicerie", "ecole", "enfants_cour", "panneau_vacances", "tapis_sacs", "vapeur_sechoir", "maison_medicale", "croix_verte", "ambulance", "batterie_quartier", "jauge_charge", "fleches_energie", "parc_arbore", "oiseaux", "balancoire", "piscine", "buee", "bonnet_laine_cheminee", "panneaux_solaires_toit", "reflet_soleil", "fumee_demarrage", "cuve_chaleur", "thermometre_cuve"]
+}

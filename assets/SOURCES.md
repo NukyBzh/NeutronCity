@@ -33,3 +33,10 @@ Dessins vectoriels écrits à la main en SVG (aucune image externe, aucune IA), 
 - La ville est dessinée directement dans le code (`apps/game/src/play/City.tsx` et `play/city/`) ; passe « plus réaliste »
   (D-09) le 2026-11-08 : centrale, bâtiments, rue, habitants, véhicules. Dessins de la boutique refaits le même jour. Saisons (neige, fleurs, climatiseurs, arbres nus) ajoutées le 2026-11-08 (passe L2).
   À reprendre dans Figma quand la limite le permettra.
+
+## Images Gemini (`gemini/`) — 2026-11-08
+56 PNG transparents (30 le 2026-11-08 après-midi, 26 le soir) générés par Yann avec l'app Gemini (IA) à partir des prompts de `docs/GEMINI.md`, livrés en JPG
+puis détourés par Claude (`tools/detourage/detoure.py`). Liste, empreintes et remarques : `docs/GEMINI.md` § 3.
+Copie locale des originaux du Drive : `Jeu centrale – assets/`. **Pas encore utilisés dans le jeu.** Même point ouvert que Cassandra : conditions d'usage des images IA avant diffusion.
+Image de référence de style `docs/gemini/reference-style-ville.jpg` : fournie par Yann, origine à préciser, **ne pas
+utiliser dans le jeu**.

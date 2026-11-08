@@ -25,3 +25,6 @@ livrables/
 .claude/settings.local.json
 Thumbs.db
 .DS_Store
+
+# Local copy of the Google Drive folder (originals, docs/GEMINI.md §1)
+assets/Jeu centrale – assets/

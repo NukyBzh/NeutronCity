@@ -23,7 +23,7 @@ l'ordre des lots, après feu vert du porteur du projet.
 | R1-14 | Dessins de qualité insuffisante. | Travail de dessin prévu (D-09). | **En partie v0.6.0** : ombres portées des immeubles, arbres avec volume, lumière du soir ; à poursuivre selon tes retours (centrale, habitants, voitures) |
 
 ### Lots proposés (à valider)
-- **L3.1 — corrections du test (v0.4.1)** : R1-01 à R1-07. **Fait le 2026-11-08**, en attente de validation.
-- **L3.2 — règles et boutique (v0.5.0)** : R1-08 à R1-10, décisions D-15 (bande ±7 % et malus) et D-16 (journées plus contrastées). **Fait le 2026-11-08**, en attente de validation.
-- **L4 — ville animée et dessins** : R1-11, R1-12, R1-14 ; fluidité sur la tablette (D-17). **Fait le 2026-11-08**, en attente de validation.
+- **L3.1 — corrections du test (v0.4.1)** : R1-01 à R1-07. **Fait le 2026-11-08**, validé (étiquette v0.4.1).
+- **L3.2 — règles et boutique (v0.5.0)** : R1-08 à R1-10, décisions D-15 (bande ±7 % et malus) et D-16 (journées plus contrastées). **Fait le 2026-11-08**, validé (étiquette v0.5.0).
+- **L4 — ville animée et dessins** : R1-11, R1-12, R1-14 ; fluidité sur la tablette (D-17). **Fait le 2026-11-08**, validé (étiquette v0.6.0).
 - **L5 — Cassandra et son** : musique (R1-13), tutoriel ; une pose dédiée « montre le curseur » si la pose « explique » ne suffit pas (R1-07).
