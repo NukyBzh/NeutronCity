@@ -1,9 +1,11 @@
 /**
- * Game texts: never hard-coded in components. Each text has an id and lives in content/i18n/<lang>.yaml
- * (French only in V1; English later with the same ids).
+ * Game texts: never hard-coded in components. Interface texts live in content/i18n/<lang>.yaml and Cassandra's lines in
+ * content/dialogues/<lang>.yaml (the id of a line will name its voice file later). French only in V1; English later
+ * with the same ids.
  */
 import { parse } from 'yaml';
-import frSource from '../../../content/i18n/fr.yaml?raw';
+import frUi from '../../../content/i18n/fr.yaml?raw';
+import frLines from '../../../content/dialogues/fr.yaml?raw';
 
 export type Texts = Record<string, string>;
 
@@ -18,10 +20,13 @@ export function parseTexts(source: string): Texts {
   return out;
 }
 
-const texts = parseTexts(frSource);
+const texts: Texts = { ...parseTexts(frUi), ...parseTexts(frLines) };
 
 /** Text of an id, with `{name}` placeholders replaced; a missing id shows itself so it is noticed. */
 export function t(id: string, values: Record<string, string> = {}): string {
   const text = texts[id] ?? id;
   return text.replace(/\{(\w+)\}/g, (m, k: string) => values[k] ?? m);
 }
+
+/** Whole euros with a French thin space: 1 240 €. */
+export const euros = (n: number): string => `${Math.round(n).toLocaleString('fr-FR')} €`;

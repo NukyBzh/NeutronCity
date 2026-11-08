@@ -54,7 +54,8 @@ Avant tout retour en arrière : `git status` doit être propre (sinon `git stash
 ## 4. Journal des versions
 | Version | Commit | Date | Contenu |
 |---|---|---|---|
-| v0.1.0 | *(premier commit, complété au commit suivant)* | 2026-11-08 | L0 : cadrage validé (D-01 à D-06), gestion de configuration, squelette (moteur + 1 test, écran d'accueil) |
+| v0.1.0 | `addec57` | 2026-11-08 | L0 : cadrage validé (D-01 à D-06), gestion de configuration, squelette (moteur + 1 test, écran d'accueil) |
+| v0.2.0 | *(complété au commit suivant)* | 2026-11-08 | L1 : style et icônes dans Figma (limite Starter atteinte), maquette cliquable de tous les écrans (D-07, D-08), passe dessins à chaque lot (D-09) |
 
 Un commit ne peut pas citer son propre identifiant : la colonne « Commit » de la dernière ligne se complète au commit
 suivant (`git rev-list -n1 vX.Y.Z` le donne).

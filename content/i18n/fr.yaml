@@ -1,6 +1,63 @@
 # Textes de l'interface (français). Un identifiant par texte ; la version anglaise (en.yaml) gardera les mêmes.
+# Les répliques de Cassandra sont dans content/dialogues/fr.yaml.
 app.title: Neutron City
 app.subtitle: Ta centrale, ta ville, ta journée.
 app.version: "Version {version}"
-cassandra.alt: Cassandra, ingénieure de la centrale, te fait signe.
-home.hello: "Salut ! Moi, c'est Cassandra. Bientôt, tu piloteras la centrale avec moi."
+cassandra.alt: Cassandra, ingénieure de la centrale.
+
+btn.play: Jouer
+btn.shop: Boutique
+btn.home: Accueil
+btn.back: Retour
+btn.pause: Pause
+btn.resume: Reprendre
+btn.restart: Recommencer
+btn.again: Rejouer
+btn.days: Journées
+
+days.title: Choisis ta journée
+days.elecOnly: Électricité
+days.both: Électricité et chaleur
+days.locked: Finis le printemps pour l'ouvrir
+day.ete.title: Journée d'été
+day.ete.level: Facile
+day.printemps.title: Journée de printemps
+day.printemps.level: Moyen
+day.hiver.title: Journée d'hiver
+day.hiver.level: Difficile
+maquette.note: "Maquette : les journées d'été et de printemps sont jouables pour essayer."
+
+zone.city: La ville
+zone.curves: La demande de la ville et ta production
+zone.controls: Tes commandes
+curves.label: Courbes de la demande de la ville et de la production de ta centrale
+curves.demand: La ville demande
+curves.production: Ta centrale produit
+piggy.label: "Ta tirelire : {amount}"
+output.elec: Électricité
+output.heat: Chaleur
+slider.value: "{pct} % · {mw} MW"
+slider.valuetext: "{pct} pour cent, {mw} mégawatts"
+core.word: Cœur
+core.label: Cœur de la centrale, partagé entre électricité et chaleur
+core.full: Le cœur de la centrale est plein
+clock.label: "Il est {h} heures"
+gauge.bien: Bien suivi
+gauge.presque: Presque
+gauge.loin: Trop loin
+stars.label: "{count} étoiles sur {max}"
+
+pause.title: Pause
+pause.text: Le temps est arrêté. Reprends quand tu veux.
+
+summary.title: Fin de la journée
+summary.earned: "Tu as gagné {amount}"
+
+shop.title: Boutique de la ville
+shop.joy: Bonheur des habitants
+shop.owned: Dans ta ville
+shop.fontaine: Une fontaine
+shop.parc: Un parc
+shop.piste: Une piste cyclable
+shop.eclairage: De beaux lampadaires
+shop.ecole: Une nouvelle école

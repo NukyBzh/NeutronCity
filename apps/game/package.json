@@ -1,6 +1,6 @@
 {
   "name": "@neutron/game",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/nunito": "^5.3.0",
     "@neutron/engine": "*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

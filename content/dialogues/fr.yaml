@@ -1,0 +1,20 @@
+# Répliques de Cassandra (français). L'identifiant servira de nom au fichier de voix (plus tard).
+# Règles : tutoiement, ≤ 15 mots si possible, un seul mot nouveau, écrit en gras avec **mot**.
+accueil.bonjour: "Salut ! Moi, c'est Cassandra. Viens piloter la **centrale** avec moi !"
+
+jeu.bonjour: "Bonjour ! La ville se réveille. Suis la ligne en pointillés : c'est sa **demande**."
+jeu.curseurs: "Monte ou baisse les curseurs. La centrale suit doucement, alors prends de l'avance !"
+jeu.chauffage.baisse: "Le soleil chauffe les maisons : il faut moins de **chaleur**."
+jeu.soir: "Ce soir, tout le monde rentre. La demande va monter !"
+jeu.surprise.match: "Surprise ! Un match à la télé ce soir : plus d'électricité !"
+jeu.fin.proche: "La ville va se coucher. Encore un effort jusqu'à minuit !"
+jeu.coeur.plein: "Le **cœur** est plein ! Baisse la chaleur pour monter l'électricité."
+jeu.bravo: "Bravo, tu suis parfaitement la ville !"
+jeu.indice.elec.monter: "La ville manque d'électricité. Monte le curseur jaune !"
+jeu.indice.elec.baisser: "Trop d'électricité ! Baisse un peu le curseur jaune."
+jeu.indice.heat.monter: "Les habitants ont froid. Monte le curseur orange !"
+jeu.indice.heat.baisser: "Trop de chaleur ! Baisse un peu le curseur orange."
+
+bilan.3: "Génial ! Ta ville a eu juste ce qu'il fallait toute la journée."
+bilan.2: "Bien joué ! Pense à monter un peu avant les pics."
+bilan.1: "Bonne journée ! Regarde les pointillés pour monter à temps."

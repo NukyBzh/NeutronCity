@@ -21,4 +21,14 @@ Son visage n'est pas redessiné.
 | `cassandra-planche.png` | planche des 5 poses | `a462ee00e4eb4bf7` |
 
 ## Fichier Figma du projet
-Lien à ajouter au lot L1 (fichier « Neutron City — dessins » fourni par le porteur du projet, choix Q6).
+« Neutron City — dessins » : https://www.figma.com/design/K1BdqYcOLPZ4vCc7bomwdC (créé par Claude le 2026-11-08 dans les brouillons du compte Figma du porteur du projet, équipe « L'équipe de Yann M. »).
+
+## Icônes (`icons/`) et dessins de la boutique (`shop/`)
+Dessins vectoriels écrits à la main en SVG (aucune image externe, aucune IA), le 2026-11-08.
+- 21 icônes dessinées dans Figma (page « 1 · Icônes ») et recopiées ici depuis le même tracé : `electricite`, `chaleur`,
+  `tirelire`, `piece`, `pause`, `jouer`, `etoile`, `boutique`, `accueil`, `cadenas`, `bien`, `presque`, `loin`,
+  `monter`, `baisser`, `centrale`, `matin`, `midi`, `soir`, `nuit`, `surprise`.
+- 4 icônes et 5 dessins de boutique faits **hors Figma** (limite d'appels de l'offre Starter, D-08), à importer dans
+  Figma plus tard : `froid`, `coeur`, `recommencer`, `sourire` ; `shop/fontaine`, `parc`, `piste`, `eclairage`, `ecole`.
+- La ville de la maquette est dessinée directement dans le code (`apps/game/src/play/City.tsx`), en formes simples :
+  remplacée par les dessins Figma avant le lot L4.
