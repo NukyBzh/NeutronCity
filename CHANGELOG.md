@@ -2,7 +2,10 @@
 
 *Ce qui change pour le joueur, en mots simples. Une section par version (voir `docs/CONFIGURATION.md` §4).*
 
-## v0.4.0 — 2026-11-08 (lot L3 : le pilotage, à valider)
+## Pas encore publié
+- Le jeu existe en application Android pour la tablette : un fichier APK à installer à la main, qui marche hors ligne, en paysage et plein écran.
+
+## v0.4.0 — 2026-11-08 (lot L3 : le pilotage)
 - La ville est maintenant dessinée en isométrique : pendant la partie, on voit la rivière, la centrale, la conduite de chaleur et la ligne électrique qui partent vers les rues ; dans la boutique et à la fin de la journée, on voit toute la ville, de jour ou de nuit, avec ses achats.
 - Les voitures roulent dans les rues, les habitants se promènent, la neige tombe en hiver.
 - Ta partie est gardée sur l'appareil : euros, étoiles et achats restent quand on recharge. La tirelire commence à 0 € : il faut jouer pour acheter.
