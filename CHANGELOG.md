@@ -2,6 +2,10 @@
 
 *Ce qui change pour le joueur, en mots simples. Une section par version (voir `docs/CONFIGURATION.md` §4).*
 
+## v0.3.1 — 2026-11-08 (retouches : les saisons)
+- Nouveau style choisi pour la ville : isométrique, couleurs vives et contours foncés, voitures sur roues (bientôt dans le jeu).
+- La ville change avec la journée : en été, collines dorées et climatiseurs aux fenêtres ; au printemps, arbres en fleurs et jardinières ; en hiver, neige qui tombe, toits et trottoirs blancs, arbres sans feuilles et habitants en bonnet et écharpe.
+
 ## v0.3.0 — 2026-11-08 (lot L2 : le moteur)
 - Les trois journées sont jouables : été (facile), printemps (moyen) et hiver (difficile, il faut partager le cœur entre électricité et chaleur). Une journée s'ouvre quand on a fini la précédente.
 - À chaque partie, deux surprises différentes : un grand match à la télé, une vague de froid ou un redoux. Cassandra les annonce une heure avant.

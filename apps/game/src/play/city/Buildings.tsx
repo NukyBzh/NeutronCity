@@ -174,3 +174,41 @@ export function LitWindows({ night, darkQuarter }: { night: number; darkQuarter:
     </g>
   );
 }
+
+/** Winter: snow on the roofs (houses: along both slopes; flat roofs: a white layer). */
+export function SnowCaps() {
+  return (
+    <g fill="#FFFFFF" stroke={INK} strokeWidth={1.5} strokeLinejoin="round">
+      {BUILDINGS.map((b) => {
+        const top = GROUND - b.h;
+        if (b.kind === 'house') {
+          return (
+            <g key={b.id}>
+              <path d={`M${b.x - 10} ${top + 4} L ${b.x + b.w / 2} ${top - 42} L ${b.x + b.w + 10} ${top + 4} L ${b.x + b.w + 4} ${top + 4} Q ${b.x + b.w - 20} ${top - 14} ${b.x + b.w / 2} ${top - 30} Q ${b.x + 20} ${top - 14} ${b.x - 4} ${top + 4} Z`} />
+              <rect x={b.x + b.w - 35} y={top - 54} width={24} height={6} rx={3} />
+            </g>
+          );
+        }
+        if (b.kind === 'tower') return <rect key={b.id} x={b.x + 18} y={top - 22} width={48} height={6} rx={3} />;
+        return <rect key={b.id} x={b.x - 5} y={top - 13} width={b.w + 10} height={7} rx={3} />;
+      })}
+    </g>
+  );
+}
+
+/** Summer: air conditioners under a few windows of the flats and the tower (they make electricity demand climb). */
+export function AirConditioners() {
+  const wins = BUILDINGS.filter((b) => b.kind === 'flats' || b.kind === 'tower').flatMap(windowsOf).filter((_, i) => i % 3 === 1);
+  return (
+    <g>
+      {wins.map((w, i) => (
+        <g key={i}>
+          <rect x={w.x + w.w / 2 - 11} y={w.y + w.h + 7} width={22} height={11} rx={2} fill="#E4E7EF" stroke={INK} strokeWidth={1.5} />
+          <circle cx={w.x + w.w / 2 - 4} cy={w.y + w.h + 12.5} r={3.5} fill="none" stroke="#6B7896" strokeWidth={1.5} />
+          <line x1={w.x + w.w / 2 + 3} x2={w.x + w.w / 2 + 8} y1={w.y + w.h + 10} y2={w.y + w.h + 10} stroke="#6B7896" strokeWidth={1.2} />
+          <line x1={w.x + w.w / 2 + 3} x2={w.x + w.w / 2 + 8} y1={w.y + w.h + 14} y2={w.y + w.h + 14} stroke="#6B7896" strokeWidth={1.2} />
+        </g>
+      ))}
+    </g>
+  );
+}

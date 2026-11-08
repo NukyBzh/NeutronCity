@@ -225,3 +225,6 @@ svg .pop, svg .float { transform-box: fill-box; transform-origin: center; }
 @media (prefers-reduced-motion: reduce) {
   .walker .leg, .walker .arm, .cloud, .plume, .flow { animation: none; }
 }
+.flake { animation: snow 9s linear infinite; }
+@keyframes snow { from { transform: translate(0, 0); } to { transform: translate(-40px, 360px); } }
+@media (prefers-reduced-motion: reduce) { .flake { animation: none; transform: translateY(120px); } }

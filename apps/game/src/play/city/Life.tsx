@@ -3,18 +3,82 @@ import { GROUND, H, INK, W } from './scene';
 
 /** Background, street and everything that moves in the town. Movement is pure CSS (stopped if the device asks). */
 
-export function Background() {
+export type Season = 'ete' | 'printemps' | 'hiver';
+export const seasonOf = (dayId: string): Season => (dayId === 'hiver' ? 'hiver' : dayId === 'printemps' ? 'printemps' : 'ete');
+
+/** Colours of the landscape per season: far hills, near hills, tree leaves (none in winter). */
+const LAND: Record<Season, { far: string; near: string; leaf: string; light: string }> = {
+  ete: { far: '#A9CFE0', near: '#A7C96A', leaf: '#4E9E48', light: '#6DBB5E' },
+  printemps: { far: '#B5D8E8', near: '#8FD082', leaf: '#6CC064', light: '#9BDB8F' },
+  hiver: { far: '#D7E4F0', near: '#EEF3FA', leaf: '', light: '' },
+};
+
+function Tree({ x, y, r, season }: { x: number; y: number; r: number; season: Season }) {
+  const land = LAND[season];
+  if (season === 'hiver') {
+    // Bare tree: trunk and branches, a little snow on the branches.
+    return (
+      <g stroke="#6B4A33" strokeLinecap="round" fill="none">
+        <path d={`M${x} ${y + r + 10} V ${y - r * 0.6}`} strokeWidth={5} />
+        <path d={`M${x} ${y} L ${x - r * 0.8} ${y - r * 0.8} M${x} ${y + 4} L ${x + r * 0.8} ${y - r * 0.6} M${x} ${y - r * 0.4} L ${x - r * 0.4} ${y - r * 1.1} M${x} ${y - r * 0.5} L ${x + r * 0.5} ${y - r * 1.1}`} strokeWidth={2.5} />
+        <path d={`M${x - r * 0.8} ${y - r * 0.8} l 6 -1 M${x + r * 0.8} ${y - r * 0.6} l -6 -1`} stroke="#FFFFFF" strokeWidth={3} />
+      </g>
+    );
+  }
+  return (
+    <g>
+      <rect x={x - 3} y={y} width={6} height={r + 10} fill="#7A5236" />
+      <circle cx={x} cy={y - 2} r={r} fill={land.leaf} stroke={INK} strokeWidth={2} />
+      <circle cx={x - r * 0.4} cy={y - r * 0.3} r={r * 0.45} fill={land.light} />
+      {season === 'printemps'
+        ? [[-0.5, -0.4], [0.3, -0.6], [0.5, 0.1], [-0.2, 0.3], [0, -0.1]].map(([dx, dy], i) => (
+            <circle key={i} cx={x + dx! * r} cy={y - 2 + dy! * r} r={2.6} fill={i % 2 ? '#FFFFFF' : '#FF9FC0'} />
+          ))
+        : null}
+    </g>
+  );
+}
+
+export function Background({ season }: { season: Season }) {
   const b = GROUND;
+  const land = LAND[season];
   const trees = [[300, b - 112, 18], [520, b - 96, 22], [700, b - 92, 16], [1020, b - 118, 20], [1090, b - 112, 15]] as const;
   return (
     <g>
-      <path d={`M0 ${b - 96} C 220 ${b - 170} 430 ${b - 140} 640 ${b - 118} S 1050 ${b - 175} ${W} ${b - 110} V ${b} H 0 Z`} fill="#A9CFE0" opacity={0.7} />
-      <path d={`M0 ${b - 60} C 260 ${b - 118} 520 ${b - 76} 760 ${b - 90} S 1100 ${b - 120} ${W} ${b - 66} V ${b} H 0 Z`} fill="#8FCB86" stroke={INK} strokeWidth={2.5} />
-      {trees.map(([x, y, r]) => (
+      <path d={`M0 ${b - 96} C 220 ${b - 170} 430 ${b - 140} 640 ${b - 118} S 1050 ${b - 175} ${W} ${b - 110} V ${b} H 0 Z`} fill={land.far} opacity={0.75} />
+      <path d={`M0 ${b - 60} C 260 ${b - 118} 520 ${b - 76} 760 ${b - 90} S 1100 ${b - 120} ${W} ${b - 66} V ${b} H 0 Z`} fill={land.near} stroke={INK} strokeWidth={2.5} />
+      {season === 'hiver' ? <path d={`M0 ${b - 60} C 260 ${b - 118} 520 ${b - 76} 760 ${b - 90} S 1100 ${b - 120} ${W} ${b - 66}`} stroke="#C9D6E6" strokeWidth={6} fill="none" opacity={0.6} /> : null}
+      {trees.map(([x, y, r]) => <Tree key={x} x={x} y={y} r={r} season={season} />)}
+    </g>
+  );
+}
+
+/** Winter: falling snowflakes (stopped if the device asks for less motion). */
+export function Snowfall() {
+  return (
+    <g fill="#FFFFFF" opacity={0.9} pointerEvents="none">
+      {Array.from({ length: 34 }, (_, i) => {
+        const x = (i * 197) % W;
+        const r = 1.6 + ((i * 7) % 3);
+        return <circle key={i} className="flake" cx={x} cy={-10} r={r} style={{ animationDelay: `${-((i * 13) % 11)}s`, animationDuration: `${8 + (i % 5)}s` }} />;
+      })}
+    </g>
+  );
+}
+
+/** Spring: flower beds at the foot of the buildings. */
+export function FlowerBeds({ xs }: { xs: readonly number[] }) {
+  return (
+    <g>
+      {xs.map((x) => (
         <g key={x}>
-          <rect x={x - 3} y={y} width={6} height={r + 10} fill="#7A5236" />
-          <circle cx={x} cy={y - 2} r={r} fill="#5DAE5A" stroke={INK} strokeWidth={2} />
-          <circle cx={x - r * 0.4} cy={y - r * 0.3} r={r * 0.45} fill="#7CC678" />
+          <rect x={x - 18} y={GROUND - 9} width={36} height={9} rx={3} fill="#8A5A3B" stroke={INK} strokeWidth={1.5} />
+          {[-12, -4, 4, 12].map((dx, i) => (
+            <g key={dx}>
+              <line x1={x + dx} x2={x + dx} y1={GROUND - 9} y2={GROUND - 16} stroke="#3E8A45" strokeWidth={2} />
+              <circle cx={x + dx} cy={GROUND - 18} r={3.5} fill={['#FF6F91', '#FFD84D', '#B18CFF', '#FF9F43'][i]} stroke={INK} strokeWidth={1} />
+            </g>
+          ))}
         </g>
       ))}
     </g>
@@ -38,15 +102,16 @@ export function Clouds() {
 }
 
 /** Pavement with paving joints and kerb, then the road with its markings. */
-export function Street({ cycleLane }: { cycleLane: boolean }) {
+export function Street({ cycleLane, snowy }: { cycleLane: boolean; snowy: boolean }) {
   const b = GROUND;
   return (
     <g>
-      <rect x={0} y={b} width={W} height={24} fill="#E4E7EF" stroke={INK} strokeWidth={2.5} />
+      <rect x={0} y={b} width={W} height={24} fill={snowy ? '#F7FAFE' : '#E4E7EF'} stroke={INK} strokeWidth={2.5} />
       {Array.from({ length: 33 }, (_, i) => <line key={i} x1={i * 40} x2={i * 40 - 8} y1={b} y2={b + 20} stroke="#C9CFDC" strokeWidth={1.5} />)}
       <rect x={0} y={b + 20} width={W} height={6} fill="#B6BDCC" stroke={INK} strokeWidth={1.5} />
       <rect x={0} y={b + 26} width={W} height={H - b - 26} fill="#55617C" />
       <rect x={0} y={b + 26} width={W} height={6} fill="#47526B" />
+      {snowy ? Array.from({ length: 14 }, (_, i) => <ellipse key={`s${i}`} cx={i * 96 + 30} cy={b + 27} rx={30} ry={4} fill="#FFFFFF" />) : null}
       {Array.from({ length: 16 }, (_, i) => <rect key={i} x={i * 84 + 20} y={b + 56} width={44} height={5} rx={2.5} fill="#F4F6FA" />)}
       {cycleLane ? (
         <g className="pop">
@@ -67,9 +132,10 @@ export function Street({ cycleLane }: { cycleLane: boolean }) {
 const SKIN = ['#F2C9A0', '#C68A5E', '#8D5A3B', '#F5D5B8'];
 
 /** A walking inhabitant (legs and arms swing). Cold: hat, scarf and a snowflake; happy: a heart. */
-export function Person({ x, shirt, trousers, skin, hair, delay, speed = 24, child = false, happy, cold }: {
-  x: number; shirt: string; trousers: string; skin: number; hair: string; delay: number; speed?: number; child?: boolean; happy: boolean; cold: boolean;
+export function Person({ x, shirt, trousers, skin, hair, delay, speed = 24, child = false, happy, cold, winter = false }: {
+  x: number; shirt: string; trousers: string; skin: number; hair: string; delay: number; speed?: number; child?: boolean; happy: boolean; cold: boolean; winter?: boolean;
 }) {
+  const wrapped = cold || winter;
   const s = child ? 0.78 : 1;
   return (
     <g className="walker" style={{ animationDelay: `${delay}s`, animationDuration: `${speed}s` }}>
@@ -91,12 +157,13 @@ export function Person({ x, shirt, trousers, skin, hair, delay, speed = 24, chil
         <path d="M-9 -59 Q -9 -69 0 -68 Q 9 -69 9 -59 Q 4 -63 -1 -62 Q -6 -63 -9 -59 Z" fill={hair} />
         <circle cx={3.5} cy={-58} r={1.2} fill={INK} />
         <path d="M2 -53.5 Q 4.5 -52 6.5 -54" stroke={INK} strokeWidth={1.2} fill="none" />
-        {cold ? (
+        {winter ? <path d="M-10 -24 V -41 Q -10 -48 0 -48 Q 10 -48 10 -41 V -20 Z" fill={shirt} stroke={INK} strokeWidth={2} opacity={0.95} /> : null}
+        {wrapped ? (
           <g>
             <path d="M-9 -61 Q 0 -74 9 -61 Z" fill="#1D47B8" stroke={INK} strokeWidth={1.5} />
             <circle cx={0} cy={-71} r={3} fill="#FFFFFF" stroke={INK} strokeWidth={1} />
             <rect x={-8} y={-50} width={16} height={6} rx={3} fill="#E0443E" stroke={INK} strokeWidth={1.2} />
-            <image href={iconUrl('froid')} x={-12} y={-100} width={24} height={24} />
+            {cold ? <image href={iconUrl('froid')} x={-12} y={-100} width={24} height={24} /> : null}
           </g>
         ) : null}
         {happy && !cold ? <image href={iconUrl('coeur')} x={-10} y={-96} width={20} height={20} className="float" /> : null}

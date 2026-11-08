@@ -1,8 +1,8 @@
 import { memo } from 'react';
 import { iconUrl, shopUrl } from '../assets';
 import type { Mood } from '@neutron/engine';
-import { BUILDINGS, BuildingDefs, Buildings, LitWindows } from './city/Buildings';
-import { Background, Bike, Car, Clouds, Person, Smoke, Street } from './city/Life';
+import { AirConditioners, BUILDINGS, BuildingDefs, Buildings, LitWindows, SnowCaps } from './city/Buildings';
+import { Background, Bike, Car, Clouds, FlowerBeds, Person, Smoke, Snowfall, Street, seasonOf } from './city/Life';
 import { HeatPipe, Plant, PlantDefs } from './city/Plant';
 import { GROUND, H, W, nightAt, skyAt } from './city/scene';
 
@@ -42,6 +42,8 @@ export const City = memo(function City(p: CityProps) {
   const cold = p.mood === 'froid';
   const lamps = p.upgrades.includes('eclairage');
   const houses = BUILDINGS.filter((b) => b.kind === 'house');
+  const season = seasonOf(p.season);
+  const winter = season === 'hiver';
   return (
     <svg className="city" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMax slice" role="img" aria-label="Neutron City">
       <defs>
@@ -59,26 +61,39 @@ export const City = memo(function City(p: CityProps) {
       </defs>
 
       <rect width={W} height={H} fill="url(#nc-sky)" />
+      {winter ? <rect width={W} height={H} fill="#DDE6F0" opacity={0.35} /> : null}
       {sunT > -0.05 && sunT < 1.05 ? <circle cx={sunX} cy={sunY} r={44} fill="url(#nc-sun)" /> : null}
       <Clouds />
-      <Background />
+      <Background season={season} />
       <Plant elecOn={p.elecOn} />
+      {winter ? (
+        <g fill="none" stroke="#FFFFFF" strokeLinecap="round">
+          <path d={`M146 ${GROUND - 98} A 40 40 0 0 1 214 ${GROUND - 98}`} strokeWidth={7} />
+          <path d={`M48 ${GROUND - 161} H 110`} strokeWidth={5} />
+          <path d={`M196 ${GROUND - 74} L 248 ${GROUND - 87} L 300 ${GROUND - 74}`} strokeWidth={5} />
+        </g>
+      ) : null}
       {houses.map((b) => (p.heatOn ? <Smoke key={b.id} x={b.x + b.w - 23} y={GROUND - b.h - 50} weak={cold} /> : null))}
       <Buildings night={night} />
+      {winter ? <SnowCaps /> : null}
+      {season === 'ete' ? <AirConditioners /> : null}
+      {season === 'printemps' ? <FlowerBeds xs={[372, 428, 612, 878, 932]} /> : null}
 
       {Object.entries(SLOTS).map(([id, s]) =>
         p.upgrades.includes(id) ? <image key={id} href={shopUrl(id)} x={s.x} y={s.y} width={s.s} height={s.s} className="pop" /> : null,
       )}
 
-      <Street cycleLane={p.upgrades.includes('piste')} />
+      <Street cycleLane={p.upgrades.includes('piste')} snowy={winter} />
       <HeatPipe heatOn={p.heatOn} />
       {lamps ? LAMPS.map((x) => <image key={x} href={shopUrl('eclairage')} x={x - 34} y={GROUND - 74} width={74} height={74} className="pop" />) : null}
 
-      <Person x={300} shirt="#7B5CD6" trousers="#3B4A6B" skin={0} hair="#6B3E26" delay={0} happy={happy} cold={cold} />
-      <Person x={600} shirt="#2E9E5B" trousers="#1D47B8" skin={2} hair="#1C2A4A" delay={-9} speed={30} child happy={happy} cold={cold} />
-      <Person x={860} shirt="#FF8A3D" trousers="#55617C" skin={1} hair="#2A1A10" delay={-15} speed={20} happy={happy} cold={cold} />
+      <Person x={300} shirt="#7B5CD6" trousers="#3B4A6B" skin={0} hair="#6B3E26" delay={0} happy={happy} cold={cold} winter={winter} />
+      <Person x={600} shirt="#2E9E5B" trousers="#1D47B8" skin={2} hair="#1C2A4A" delay={-9} speed={30} child happy={happy} cold={cold} winter={winter} />
+      <Person x={860} shirt="#FF8A3D" trousers="#55617C" skin={1} hair="#2A1A10" delay={-15} speed={20} happy={happy} cold={cold} winter={winter} />
       <Car night={night} />
       <Bike />
+
+      {winter ? <Snowfall /> : null}
 
       {/* Night: shade the scene, then light what glows. */}
       <rect width={W} height={H} fill="#0B1440" opacity={0.5 * night} pointerEvents="none" />
