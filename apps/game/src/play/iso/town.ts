@@ -32,8 +32,9 @@ const pts = (arr: [number, number][]): string => arr.map(([a, b]) => `${f1(a)},$
 
 /** Band shown in the play screen (rows of cells 5 to 8) and the whole town. */
 const rowY = (k: number): number => OY + (11 * k + 8) * 0.5 * S;
-export const BAND_VIEWBOX = `0 ${f1(rowY(8) + 46 - 340)} 1280 340`;
-export const FULL_VIEWBOX = '-420 -230 2000 1330';
+/** Band: from the river and the plant (left) to the last streets (right), rows 4–9 around the main street. */
+export const BAND_VIEWBOX = `-170 ${f1(rowY(8) + 60 - 432)} 1620 432`;
+export const FULL_VIEWBOX = '-300 -120 1820 1260';
 
 // ---------- colours ----------
 const hex = (h: string): number[] => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
@@ -194,7 +195,7 @@ export function drawTown(o: TownOptions, view: 'band' | 'full'): string {
       }
       case 'flats': case 'brick': case 'pink': {
         const col = kind === 'brick' ? '#D9734A' : kind === 'pink' ? '#FF9AA2' : '#FFD166';
-        const h = 9 + (seed % 4);
+        const h = 7 + (seed % 3);
         const x = X + 0.6; const y = Y + 1; const w = 6.8; const d = 6;
         let g = box(x, y, 0, w, d, h, col);
         if (kind === 'brick') for (let k = 1; k < h * 2; k++) g += `<polyline points="${pts([P(x, y + d, k / 2), P(x + w, y + d, k / 2), P(x + w, y, k / 2)])}" stroke="${tone(shade(col, 0.86))}" stroke-width="0.6" fill="none"/>`;
@@ -206,7 +207,7 @@ export function drawTown(o: TownOptions, view: 'band' | 'full'): string {
         return g;
       }
       case 'tower': {
-        const x = X + 1; const y = Y + 1; const w = 6; const d = 6; const h = 15 + (seed % 4);
+        const x = X + 1; const y = Y + 1; const w = 6; const d = 6; const h = 11 + (seed % 3);
         let g = box(x, y, 0, w, d, h, '#A9C4E8') + windows(x, y, w, d, h, Math.round(h / 1.9), dark, seed) + door(x, y, w, d);
         g += box(x + 1.5, y + 1.5, h, 2, 2, 1.2, '#8796AE');
         const [ax, ay] = P(x + w - 1, y + 1, h);
@@ -288,7 +289,7 @@ export function drawTown(o: TownOptions, view: 'band' | 'full'): string {
 
   // ---------- ground ----------
   const ground: string[] = [];
-  const range = view === 'band' ? { i0: -2, i1: 9, j0: 2, j1: 11 } : { i0: -2, i1: 9, j0: -2, j1: 9 };
+  const range = view === 'band' ? { i0: -2, i1: 9, j0: 2, j1: 11 } : { i0: -2, i1: 7, j0: 0, j1: 8 };
   const span = (a: number, b: number): [number, number] => [11 * a - 3, 11 * b + 8];
   const [gx0, gx1] = span(range.i0, range.i1);
   const [gy0, gy1] = span(range.j0, range.j1);
@@ -310,7 +311,9 @@ export function drawTown(o: TownOptions, view: 'band' | 'full'): string {
     for (let i = 0; i <= range.i1; i++) {
       const X = 11 * i; const Y = 11 * j;
       out.push(flatPoly([P(X - 0.6, Y - 0.6), P(X + 8.6, Y - 0.6), P(X + 8.6, Y + 8.6), P(X - 0.6, Y + 8.6)], winter ? '#F7FAFE' : '#E4E7EF'));
-      out.push(building(kindOf(i, j), X, Y, i, j));
+      // In the band, only the rows around the main street are built (the others stay green), so the view stays clear.
+      if (view === 'full' || (i + j >= 4 && i + j <= 9)) out.push(building(kindOf(i, j), X, Y, i, j));
+      else out.push(building('trees', X, Y, i, j));
       if (o.upgrades.includes('eclairage') && kindOf(i, j) !== 'cooling') {
         const [lx, ly] = P(X + 8.3, Y + 8.3, 0);
         out.push(`<g class="pop"><line x1="${f1(lx)}" y1="${f1(ly)}" x2="${f1(lx)}" y2="${f1(ly - 26)}" stroke="${tone('#3B4A6B')}" stroke-width="2"/><circle cx="${f1(lx)}" cy="${f1(ly - 27)}" r="3" fill="${lit ? '#FFE27A' : tone('#D5DCEB')}" stroke="${tone(INK)}" stroke-width="1"/>${lit ? `<ellipse cx="${f1(lx)}" cy="${f1(ly)}" rx="16" ry="8" fill="#FFE9A8" opacity="${f1(0.5 * night)}"/>` : ''}</g>`);
@@ -337,8 +340,8 @@ export function drawTown(o: TownOptions, view: 'band' | 'full'): string {
 
   // Reaction of the dark quarter: a bolt with a cross above it.
   if (darkQuarter) {
-    const [qx, qy] = P(44, 33, 16);
-    out.push(`<g class="pop"><image href="${o.icons.electricite}" x="${f1(qx - 22)}" y="${f1(qy - 22)}" width="44" height="44"/><image href="${o.icons.loin}" x="${f1(qx + 6)}" y="${f1(qy + 2)}" width="24" height="24"/></g>`);
+    const [qx, qy] = P(40, 40, 12);
+    out.push(`<g class="pop"><circle cx="${f1(qx)}" cy="${f1(qy)}" r="40" fill="#FFFFFF" opacity="0.85" stroke="${INK}" stroke-width="2"/><image href="${o.icons.electricite}" x="${f1(qx - 32)}" y="${f1(qy - 32)}" width="64" height="64"/><image href="${o.icons.loin}" x="${f1(qx + 8)}" y="${f1(qy + 6)}" width="34" height="34"/></g>`);
   }
 
   const snow = winter ? Array.from({ length: 50 }, (_, k) => `<circle class="flake" cx="${f1(-400 + ((k * 197) % 2000))}" cy="${view === 'band' ? f1(rowY(8) - 330) : -230}" r="${f1(1.6 + (k % 3))}" fill="#FFFFFF" opacity="0.9" style="animation-delay:${-((k * 13) % 11)}s;animation-duration:${8 + (k % 5)}s"/>`).join('') : '';

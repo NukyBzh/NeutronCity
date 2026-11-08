@@ -58,7 +58,8 @@ Avant tout retour en arrière : `git status` doit être propre (sinon `git stash
 | v0.2.0 | `a308ba0` | 2026-11-08 | L1 : style et icônes dans Figma (limite Starter atteinte), maquette cliquable de tous les écrans (D-07, D-08), passe dessins à chaque lot (D-09) |
 | v0.2.1 | `bb9f3e2` | 2026-11-08 | Passe dessins L1 (D-09) : ville, centrale, habitants, véhicules, boutique plus réalistes ; répliques de Cassandra adaptées à la journée |
 | v0.3.0 | `ce3068c` | 2026-11-08 | L2 : moteur déterministe (centrale, journées YAML, surprises à graine, argent, bilan, bonheur), interface branchée, D-10 à D-12 |
-| v0.3.1 | *(complété au commit suivant)* | 2026-11-08 | Passe dessins L2 (D-09) : saisons ; 3 propositions de style et choix B isométrique (D-13) ; ville isométrique commencée (pas encore branchée) ; version de test servie sur le réseau local |
+| v0.3.1 | `d3ac73a` | 2026-11-08 | Passe dessins L2 (D-09) : saisons ; 3 propositions de style et choix B isométrique (D-13) ; ville isométrique commencée (pas encore branchée) ; version de test servie sur le réseau local |
+| v0.4.0 | *(à poser après validation)* | 2026-11-08 | L3 : partie jouable, ville isométrique (D-13), progression enregistrée (D-14) |
 
 Un commit ne peut pas citer son propre identifiant : la colonne « Commit » de la dernière ligne se complète au commit
 suivant (`git rev-list -n1 vX.Y.Z` le donne).

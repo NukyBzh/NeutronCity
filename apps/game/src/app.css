@@ -228,3 +228,32 @@ svg .pop, svg .float { transform-box: fill-box; transform-origin: center; }
 .flake { animation: snow 9s linear infinite; }
 @keyframes snow { from { transform: translate(0, 0); } to { transform: translate(-40px, 360px); } }
 @media (prefers-reduced-motion: reduce) { .flake { animation: none; transform: translateY(120px); } }
+
+/* Isometric town (D-13): cars drive along the streets, inhabitants stroll on the pavements. */
+.iso-car { animation: iso-drive 14s linear infinite; }
+.iso-car.slow { animation-duration: 19s; animation-delay: -7s; }
+.iso-car.late { animation-duration: 16s; animation-delay: -11s; }
+@keyframes iso-drive { from { transform: translate(-60px, -35px); } to { transform: translate(1040px, 600px); } }
+.walker-iso { animation: iso-walk 9s ease-in-out infinite alternate; }
+@keyframes iso-walk { from { transform: translate(0, 0); } to { transform: translate(52px, 30px); } }
+@media (prefers-reduced-motion: reduce) { .iso-car, .walker-iso { animation: none; } }
+
+/* Whole town (isometric) in the summary and the shop. */
+.town-panel { border: 0.15rem solid var(--encre); border-radius: 1.2rem; overflow: hidden; background: var(--ciel); }
+.town-panel .city { width: 100%; height: 100%; display: block; }
+.summary { display: grid; grid-template-columns: 31rem 1fr; gap: 0.8rem; align-items: start; justify-content: stretch; }
+.summary .town-panel { height: 38.4rem; }
+.summary .summary-card { grid-column: 2; padding: 1.2rem 1rem; gap: 0.9rem; }
+.summary .summary-card .row { justify-content: center; gap: 0.6rem; }
+.summary .summary-cassandra { position: absolute; right: 0.8rem; bottom: 0; height: 16rem; }
+.summary .summary-cassandra .bubble { right: 70%; top: 3rem; width: 15rem; }
+.shop-body { display: grid; grid-template-columns: 33rem 1fr; gap: 0.8rem; height: 34rem; }
+.shop-body .town-panel { height: 100%; }
+.shop-side { display: flex; flex-direction: column; min-width: 0; }
+.shop-side .joy-bar { width: 9rem; }
+.shop-side .shop-items { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+.shop-side .shop-item { min-height: 0; padding: 0.5rem; gap: 0.3rem; }
+.shop-side .shop-item img { width: 3.4rem; height: 3.4rem; }
+.shop-side .shop-item h2 { font-size: 1rem; min-height: 2.4rem; }
+.home-reset { position: absolute; left: 1rem; bottom: 0.8rem; }
+.home-reset .btn { min-height: 2.6rem; font-size: 0.95rem; }

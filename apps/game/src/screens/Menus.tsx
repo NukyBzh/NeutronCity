@@ -1,10 +1,13 @@
+import { useState } from 'react';
 import { townHappiness, type Advice, type ShopItem } from '@neutron/engine';
 import { shopUrl } from '../assets';
 import { euros, t } from '../i18n';
+import { IsoCity } from '../play/IsoCity';
 import { Button, Cassandra, Icon, Rich, Stars } from '../ui/ui';
 
 /** Welcome screen: one goal, "Play" pulses. */
-export function Home({ onPlay, onShop }: { onPlay: () => void; onShop: () => void }) {
+export function Home({ onPlay, onShop, onReset }: { onPlay: () => void; onShop: () => void; onReset: () => void }) {
+  const [asking, setAsking] = useState(false);
   return (
     <main className="screen home">
       <div className="home-text">
@@ -16,7 +19,20 @@ export function Home({ onPlay, onShop }: { onPlay: () => void; onShop: () => voi
         </div>
       </div>
       <Cassandra pose="accueil" className="home-cassandra"><Rich text={t('accueil.bonjour')} /></Cassandra>
+      <div className="home-reset"><Button icon="recommencer" label={t('btn.newPlayer')} onClick={() => setAsking(true)} /></div>
       <p className="version">{t('app.version', { version: __APP_VERSION__ })}</p>
+      {asking ? (
+        <div className="overlay" role="dialog" aria-modal aria-label={t('reset.title')}>
+          <div className="overlay-card">
+            <h2><Icon name="recommencer" size={2} />{t('reset.title')}</h2>
+            <p>{t('reset.text')}</p>
+            <div className="row">
+              <Button icon="accueil" label={t('btn.cancel')} onClick={() => setAsking(false)} />
+              <Button kind="primary" icon="recommencer" label={t('btn.erase')} onClick={() => { onReset(); setAsking(false); }} />
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }
@@ -60,11 +76,12 @@ export function Days({ cards, onPick, onHome }: { cards: DayCard[]; onPick: (id:
 }
 
 /** End of the day: euros, stars (pictograms) and the one piece of advice chosen by the engine. */
-export function Summary({ earned, stars, advice, onShop, onAgain, onDays }: {
-  earned: number; stars: number; advice: Advice; onShop: () => void; onAgain: () => void; onDays: () => void;
+export function Summary({ earned, stars, advice, season, upgrades, onShop, onAgain, onDays }: {
+  earned: number; stars: number; advice: Advice; season: string; upgrades: readonly string[]; onShop: () => void; onAgain: () => void; onDays: () => void;
 }) {
   return (
     <main className="screen summary">
+      <div className="town-panel"><IsoCity view="full" hour={21.5} season={season} mood={stars >= 2 ? 'content' : 'calme'} elecOn heatOn={season !== 'ete'} upgrades={upgrades} /></div>
       <div className="summary-card panel">
         <h1>{t('summary.title')}</h1>
         <Stars count={stars} size={4} />
@@ -83,8 +100,8 @@ export function Summary({ earned, stars, advice, onShop, onAgain, onDays }: {
 }
 
 /** Shop: buy upgrades that appear in the town and make its inhabitants happier for good. */
-export function Shop({ items, wallet, owned, onBuy, onBack }: {
-  items: readonly ShopItem[]; wallet: number; owned: readonly string[]; onBuy: (item: ShopItem) => void; onBack: () => void;
+export function Shop({ items, wallet, owned, season, onBuy, onBack }: {
+  items: readonly ShopItem[]; wallet: number; owned: readonly string[]; season: string; onBuy: (item: ShopItem) => void; onBack: () => void;
 }) {
   const happiness = townHappiness(items, owned);
   return (
@@ -94,6 +111,9 @@ export function Shop({ items, wallet, owned, onBuy, onBack }: {
         <h1>{t('shop.title')}</h1>
         <span className="piggy big"><Icon name="tirelire" size={2.6} /><b>{euros(wallet)}</b></span>
       </header>
+      <div className="shop-body">
+      <div className="town-panel"><IsoCity view="full" hour={13} season={season} mood="content" elecOn heatOn={season !== 'ete'} upgrades={owned} /></div>
+      <div className="shop-side">
       <div className="joy" role="img" aria-label={t('shop.joy')}>
         <Icon name="sourire" size={2.2} />
         <span>{t('shop.joy')}</span>
@@ -115,6 +135,8 @@ export function Shop({ items, wallet, owned, onBuy, onBack }: {
             </article>
           );
         })}
+      </div>
+      </div>
       </div>
     </main>
   );

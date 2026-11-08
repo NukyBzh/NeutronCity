@@ -2,6 +2,12 @@
 
 *Ce qui change pour le joueur, en mots simples. Une section par version (voir `docs/CONFIGURATION.md` §4).*
 
+## v0.4.0 — 2026-11-08 (lot L3 : le pilotage, à valider)
+- La ville est maintenant dessinée en isométrique : pendant la partie, on voit la rivière, la centrale, la conduite de chaleur et la ligne électrique qui partent vers les rues ; dans la boutique et à la fin de la journée, on voit toute la ville, de jour ou de nuit, avec ses achats.
+- Les voitures roulent dans les rues, les habitants se promènent, la neige tombe en hiver.
+- Ta partie est gardée sur l'appareil : euros, étoiles et achats restent quand on recharge. La tirelire commence à 0 € : il faut jouer pour acheter.
+- Bouton « Nouveau joueur » sur l'accueil pour recommencer à zéro.
+
 ## v0.3.1 — 2026-11-08 (retouches : les saisons)
 - Nouveau style choisi pour la ville : isométrique, couleurs vives et contours foncés, voitures sur roues (bientôt dans le jeu).
 - La ville change avec la journée : en été, collines dorées et climatiseurs aux fenêtres ; au printemps, arbres en fleurs et jardinières ; en hiver, neige qui tombe, toits et trottoirs blancs, arbres sans feuilles et habitants en bonnet et écharpe.

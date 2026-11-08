@@ -3,7 +3,7 @@ import {
   clampSetpoints, gaugesOf, hourOf, isHeatingDay, isOver, moodOf, setSetpoints, type DayDef, type GameState, type Pose,
 } from '@neutron/engine';
 import { euros, t } from '../i18n';
-import { City } from '../play/City';
+import { IsoCity } from '../play/IsoCity';
 import { Clock, CoreBar, Slider } from '../play/Controls';
 import { Curves } from '../play/Curves';
 import { REAL_SECONDS_PER_GAME_MINUTE, START_HOUR, advance, playUntil, startOf, timelineOf, type Sample } from '../play/session';
@@ -146,7 +146,8 @@ export function Play({ day, seed, upgrades, onFinish, onRestart, onHome }: {
       </header>
 
       <section className="zone-city" aria-label={t('zone.city')}>
-        <City
+        <IsoCity
+          view="band"
           hour={Math.floor(hour * 12) / 12}
           season={day.id}
           mood={moodOf(view.elec, view.heat, elecShort, heatShort)}

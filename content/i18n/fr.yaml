@@ -60,3 +60,9 @@ shop.parc: Un parc
 shop.piste: Une piste cyclable
 shop.eclairage: De beaux lampadaires
 shop.ecole: Une nouvelle école
+
+btn.newPlayer: Nouveau joueur
+btn.cancel: Annuler
+btn.erase: Oui, effacer
+reset.title: Effacer la partie ?
+reset.text: Les euros, les étoiles et les achats de la ville seront effacés.
