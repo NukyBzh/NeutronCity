@@ -30,5 +30,6 @@ Dessins vectoriels écrits à la main en SVG (aucune image externe, aucune IA), 
   `monter`, `baisser`, `centrale`, `matin`, `midi`, `soir`, `nuit`, `surprise`.
 - 4 icônes et 5 dessins de boutique faits **hors Figma** (limite d'appels de l'offre Starter, D-08), à importer dans
   Figma plus tard : `froid`, `coeur`, `recommencer`, `sourire` ; `shop/fontaine`, `parc`, `piste`, `eclairage`, `ecole`.
-- La ville de la maquette est dessinée directement dans le code (`apps/game/src/play/City.tsx`), en formes simples :
-  remplacée par les dessins Figma avant le lot L4.
+- La ville est dessinée directement dans le code (`apps/game/src/play/City.tsx` et `play/city/`) ; passe « plus réaliste »
+  (D-09) le 2026-11-08 : centrale, bâtiments, rue, habitants, véhicules. Dessins de la boutique refaits le même jour.
+  À reprendre dans Figma quand la limite le permettra.

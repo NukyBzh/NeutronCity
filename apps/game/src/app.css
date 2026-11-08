@@ -185,7 +185,7 @@ strong { font-weight: 800; }
 .shop-items { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.8rem; }
 .shop-item { display: flex; flex-direction: column; align-items: center; gap: 0.6rem; padding: 1rem 0.5rem; background: var(--blanc); border: 0.15rem solid var(--encre); border-radius: 1.2rem; text-align: center; min-height: 18rem; justify-content: space-between; }
 .shop-item img { width: 6rem; height: 6rem; }
-.shop-item h2 { font-size: 1.15rem; }
+.shop-item h2 { font-size: 1.15rem; min-height: 3rem; display: flex; align-items: center; }
 .shop-item .btn { padding-right: 0.9rem; font-size: 1rem; }
 .shop-item.owned { background: #E8F6EE; }
 .shop-owned { display: flex; align-items: center; gap: 0.4rem; color: var(--bien-fonce); font-size: 1rem; }
@@ -210,3 +210,18 @@ strong { font-weight: 800; }
   .pulse { box-shadow: 0 0 0 0.3rem rgba(29, 71, 184, 0.6); }
 }
 svg .pop, svg .float { transform-box: fill-box; transform-origin: center; }
+
+/* Drawing pass (D-09): more natural movement in the town. */
+.walker .leg { transform-box: fill-box; transform-origin: 50% 0; animation: swing 0.7s ease-in-out infinite alternate; }
+.walker .leg-b { animation-delay: -0.7s; }
+.walker .arm { transform-box: fill-box; transform-origin: 50% 0; animation: swing 0.7s ease-in-out infinite alternate-reverse; }
+.walker .arm-b { animation-delay: -0.7s; }
+@keyframes swing { from { transform: rotate(-16deg); } to { transform: rotate(16deg); } }
+.cloud { animation: drift 90s linear infinite; }
+@keyframes drift { from { transform: translateX(-200px); } to { transform: translateX(1400px); } }
+.plume { animation: steam 5s ease-in-out infinite; }
+.flow { animation: flow 1.2s linear infinite; }
+@keyframes flow { to { stroke-dashoffset: -36; } }
+@media (prefers-reduced-motion: reduce) {
+  .walker .leg, .walker .arm, .cloud, .plume, .flow { animation: none; }
+}

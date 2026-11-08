@@ -2,6 +2,12 @@
 
 *Ce qui change pour le joueur, en mots simples. Une section par version (voir `docs/CONFIGURATION.md` §4).*
 
+## v0.2.1 — 2026-11-08 (retouches : dessins plus réalistes)
+- La ville est redessinée : vraie centrale (tour de refroidissement avec sa vapeur, bâtiment du réacteur, salle des machines), ligne électrique et conduite de chaleur jusqu'aux maisons, maisons à tuiles, immeuble en briques avec balcons, boulangerie, tour moderne.
+- Les habitants marchent vraiment (jambes et bras), la voiture et le vélo sont plus détaillés, les nuages passent, la nuit tombe doucement et les fenêtres s'allument.
+- Les dessins de la boutique sont plus beaux ; les lampadaires éclairent le trottoir la nuit et la piste cyclable longe la route.
+- Cassandra ne parle plus de chauffage ni de surprise pendant la journée d'été.
+
 ## v0.2.0 — 2026-11-08 (lot L1 : maquettes)
 - On peut déjà essayer le jeu en maquette : choisir une journée (été ou printemps), piloter l'électricité et la chaleur avec deux gros curseurs, suivre la courbe de la ville, gagner des euros, voir le bilan et acheter des améliorations dans la boutique.
 - Cassandra parle pendant la partie : elle explique, prévient des surprises, aide si tu bloques et te félicite.

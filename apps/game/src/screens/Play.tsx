@@ -3,22 +3,14 @@ import { clampSetpoints } from '@neutron/engine';
 import type { Pose } from '../assets';
 import { euros, t } from '../i18n';
 import {
-  END_HOUR, REAL_SECONDS_PER_GAME_HOUR, demandAt, gaugeOf, newPlay, stepMinute, type DayDef, type PlayState,
+  END_HOUR, REAL_SECONDS_PER_GAME_HOUR, START_HOUR, demandAt, gaugeOf, newPlay, playUntil, stepMinute, type DayDef, type PlayState,
 } from '../maquette/fakeDay';
+import { scriptFor } from '../maquette/script';
 import { City } from '../play/City';
 import { Clock, CoreBar, Slider } from '../play/Controls';
 import { Curves } from '../play/Curves';
 import { Button, Cassandra, Gauge, Icon, Rich } from '../ui/ui';
 
-/** Cassandra's scheduled lines of the mock-up day (ids in content/dialogues/fr.yaml). */
-const SCRIPT: { hour: number; id: string; pose: Pose }[] = [
-  { hour: 6, id: 'jeu.bonjour', pose: 'accueil' },
-  { hour: 6.6, id: 'jeu.curseurs', pose: 'explique' },
-  { hour: 8.5, id: 'jeu.chauffage.baisse', pose: 'explique' },
-  { hour: 16.5, id: 'jeu.soir', pose: 'attention' },
-  { hour: 18, id: 'jeu.surprise.match', pose: 'attention' },
-  { hour: 22, id: 'jeu.fin.proche', pose: 'explique' },
-];
 /** A bubble stays about 7 s (auto-advance, no "Continue" button). */
 const BUBBLE_SECONDS = 7;
 /** Hint after about 20 s far from demand without touching anything. */
@@ -27,7 +19,11 @@ const IDLE_HINT_SECONDS = 20;
 interface Line { id: string; pose: Pose; until: number }
 
 /** Mock-up only: `?vitesse=10` in the address plays the day 10 times faster, to review it quickly. */
-const MOCKUP_SPEED = Math.min(30, Math.max(1, Number(new URLSearchParams(window.location.search).get('vitesse')) || 1));
+const PARAMS = new URLSearchParams(window.location.search);
+const MOCKUP_SPEED = Math.min(30, Math.max(1, Number(PARAMS.get('vitesse')) || 1));
+/** Mock-up only: `?heure=19` starts the day at 19 h; add `&suivi=non` for a player who never touched anything. */
+const MOCKUP_START = Math.min(23.9, Math.max(START_HOUR, Number(PARAMS.get('heure')) || START_HOUR));
+const MOCKUP_FOLLOW = PARAMS.get('suivi') !== 'non';
 
 export function Play({ day, upgrades, onFinish, onHome }: {
   day: DayDef;
@@ -35,11 +31,15 @@ export function Play({ day, upgrades, onFinish, onHome }: {
   onFinish: (earned: number) => void;
   onHome: () => void;
 }) {
-  const [s, setS] = useState<PlayState>(() => newPlay(day));
+  const [script] = useState(() => scriptFor(day));
+  const [s, setS] = useState<PlayState>(() => (MOCKUP_START > START_HOUR ? playUntil(day, MOCKUP_START, MOCKUP_FOLLOW) : newPlay(day)));
   const [paused, setPaused] = useState(false);
   const [line, setLine] = useState<Line | null>(null);
   const [coins, setCoins] = useState<number[]>([]);
-  const clock = useRef({ real: 0, carry: 0, lastInput: 0, farSince: -1, scriptIdx: 0, coreToldAt: -1e9, praised: false, goodSince: -1 });
+  const clock = useRef({
+    real: 0, carry: 0, lastInput: 0, farSince: -1, coreToldAt: -1e9, praised: false, goodSince: -1,
+    scriptIdx: Math.max(0, script.filter((l) => l.hour < MOCKUP_START).length - 1),
+  });
   const state = useRef(s);
   state.current = s;
 
@@ -69,7 +69,7 @@ export function Play({ day, upgrades, onFinish, onHome }: {
       }
       // Script, hints and praise.
       const h = next.hour;
-      const step = SCRIPT[c.scriptIdx];
+      const step = script[c.scriptIdx];
       if (step && h >= step.hour) {
         c.scriptIdx += 1;
         say(step.id, step.pose);
@@ -101,7 +101,7 @@ export function Play({ day, upgrades, onFinish, onHome }: {
     };
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
-  }, [paused, day, onFinish]);
+  }, [paused, day, script, onFinish]);
 
   useEffect(() => {
     if (!line) return undefined;
@@ -146,7 +146,7 @@ export function Play({ day, upgrades, onFinish, onHome }: {
       </header>
 
       <section className="zone-city" aria-label={t('zone.city')}>
-        <City hour={s.hour} elecGauge={ge} heatGauge={gh} elecShort={s.elec < d.elec} heatShort={s.heat < d.heat} heatOn={heatOn && s.heat > 0} upgrades={upgrades} />
+        <City hour={Math.floor(s.hour * 12) / 12} elecGauge={ge} heatGauge={gh} elecShort={s.elec < d.elec} heatShort={s.heat < d.heat} elecOn={s.elec > 0} heatOn={heatOn && s.heat > 0} upgrades={upgrades} />
         <Cassandra pose={line?.pose ?? 'explique'} className="play-cassandra">
           {line ? <Rich text={t(line.id)} /> : null}
         </Cassandra>

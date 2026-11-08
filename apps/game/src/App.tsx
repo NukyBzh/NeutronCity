@@ -11,11 +11,21 @@ type Screen = 'home' | 'days' | 'play' | 'summary' | 'shop';
  * progress is kept in memory only (local save comes with the shop, lot L6). The wallet starts with 2 500 € so the shop
  * can be tried at once.
  */
+/**
+ * Mock-up review settings in the address: `?ecran=jeu&journee=ete&heure=19&achats=parc,fontaine` opens a screen
+ * directly (`accueil`, `journees`, `jeu`, `bilan`, `boutique`), with a day and upgrades already bought.
+ */
+const PARAMS = new URLSearchParams(window.location.search);
+const SCREENS: Record<string, Screen> = { accueil: 'home', journees: 'days', jeu: 'play', bilan: 'summary', boutique: 'shop' };
+const START_SCREEN = SCREENS[PARAMS.get('ecran') ?? ''] ?? 'home';
+const START_DAY = PARAMS.get('journee') === 'ete' ? SUMMER : SPRING;
+const START_OWNED = (PARAMS.get('achats') ?? '').split(',').filter(Boolean);
+
 export function App() {
-  const [screen, setScreen] = useState<Screen>('home');
-  const [day, setDay] = useState<DayDef>(SPRING);
+  const [screen, setScreen] = useState<Screen>(START_SCREEN);
+  const [day, setDay] = useState<DayDef>(START_DAY);
   const [wallet, setWallet] = useState(2500);
-  const [owned, setOwned] = useState<string[]>([]);
+  const [owned, setOwned] = useState<string[]>(START_OWNED);
   const [last, setLast] = useState({ earned: 0, stars: 1 });
   const [stars, setStars] = useState<Record<DayCard['id'], number>>({ ete: 3, printemps: 0, hiver: 0 });
   const [round, setRound] = useState(0);

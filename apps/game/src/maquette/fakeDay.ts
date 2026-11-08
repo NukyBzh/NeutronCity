@@ -107,6 +107,22 @@ export function newPlay(day: DayDef): PlayState {
 
 const toward = (from: number, to: number, max: number): number => (Math.abs(to - from) <= max ? to : from + Math.sign(to - from) * max);
 
+/**
+ * Mock-up review only: the day played up to `hour`, by a player who follows demand a quarter of an hour ahead
+ * (`follow`) or never touches anything. Used by the `?heure=` address setting.
+ */
+export function playUntil(day: DayDef, hour: number, follow: boolean): PlayState {
+  let s = newPlay(day);
+  while (s.hour < Math.min(hour, END_HOUR - 1 / 60)) {
+    if (follow) {
+      const d = demandAt(day, s.hour + 0.25);
+      s = { ...s, setElec: step5(d.elec), setHeat: step5(d.heat) };
+    }
+    s = stepMinute(day, s);
+  }
+  return s;
+}
+
 /** One game minute. */
 export function stepMinute(day: DayDef, s: PlayState): PlayState {
   if (s.minute >= (END_HOUR - START_HOUR) * 60) return s;
