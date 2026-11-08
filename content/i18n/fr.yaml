@@ -40,7 +40,12 @@ slider.valuetext: "{pct} pour cent, {mw} mégawatts"
 core.word: Cœur
 core.label: Cœur de la centrale, partagé entre électricité et chaleur
 core.full: Le cœur de la centrale est plein
-clock.label: "Il est {h} heures"
+clock.label: "Il est {h} h {m}"
+clock.time: "{hh}:{mm}"
+slider.demand: "La ville veut {pct} %"
+slider.demandtext: "La ville demande {pct} pour cent"
+speed.label: Vitesse du temps
+speed.x: "×{n}"
 gauge.bien: Bien suivi
 gauge.presque: Presque
 gauge.loin: Trop loin

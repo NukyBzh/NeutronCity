@@ -18,6 +18,8 @@ export interface TownOptions {
   elecOn: boolean;
   heatOn: boolean;
   upgrades: readonly string[];
+  /** Upgrade just bought: only it plays the "appear" animation (otherwise it would replay at every redraw). */
+  fresh?: string | null;
   /** URLs of the icons used inside the drawing (heart, snowflake, bolt, cross). */
   icons: { coeur: string; froid: string; electricite: string; loin: string };
 }
@@ -59,6 +61,9 @@ const CELLS: Record<string, Kind> = {
   '5,2': 'houses', '5,1': 'shop', '5,3': 'pink', '5,0': 'tower', '6,1': 'flats', '6,0': 'houses', '6,2': 'brick', '7,0': 'trees', '7,1': 'houses',
   '2,7': 'trees', '3,6': 'houses', '4,5': 'brick', '5,4': 'houses', '6,3': 'shop', '7,2': 'flats', '1,3': 'houses', '2,2': 'flats', '3,1': 'tower', '4,0': 'pink',
 };
+/** River banks (world x) and where cars start: on the road after the plant, never on the river (R1-01). */
+export const RIVER_X = [-11.6, -0.4] as const;
+export const CAR_START_X = 0.5;
 const FILL: Kind[] = ['houses', 'flats', 'trees', 'pink', 'houses', 'brick', 'trees', 'shop'];
 const kindOf = (i: number, j: number): Kind => CELLS[`${i},${j}`] ?? FILL[(i * 7 + j * 3) % FILL.length]!;
 const hash = (a: number, b: number, c = 0): number => ((a * 73856093) ^ (b * 19349663) ^ (c * 83492791)) >>> 0;
@@ -75,6 +80,8 @@ export function drawTown(o: TownOptions, view: 'band' | 'full'): string {
   const cold = o.mood === 'froid';
   const happy = o.mood === 'content';
   const lit = night > 0.3;
+  /** The "appear" animation, only for the upgrade just bought. */
+  const pop = (id: string): string => (o.fresh === id ? ' class="pop"' : '');
 
   const grass = winter ? '#EEF3FA' : o.season === 'printemps' ? '#8FD082' : '#9CC965';
   const leaf = o.season === 'printemps' ? '#5DBB5A' : '#3E9E48';
@@ -165,7 +172,7 @@ export function drawTown(o: TownOptions, view: 'band' | 'full'): string {
   }
   function person(x: number, y: number, shirt: string, k: number): string {
     const [bx, by] = P(x, y, 0);
-    let g = `<g class="walker-iso" style="animation-delay:${-k * 3}s">`;
+    let g = `<g class="walker-iso" style="--d:${-k * 3}s">`;
     g += `<rect x="${f1(bx - 2.6)}" y="${f1(by - 11)}" width="5.2" height="8" rx="2.5" fill="${tone(shirt)}" stroke="${tone(INK)}" stroke-width="1"/>`;
     g += `<rect x="${f1(bx - 2.2)}" y="${f1(by - 3.5)}" width="1.7" height="4" fill="${tone('#3B4A6B')}"/><rect x="${f1(bx + 0.5)}" y="${f1(by - 3.5)}" width="1.7" height="4" fill="${tone('#3B4A6B')}"/>`;
     g += `<circle cx="${f1(bx)}" cy="${f1(by - 14)}" r="3.2" fill="${tone('#E8B48A')}" stroke="${tone(INK)}" stroke-width="1"/>`;
@@ -234,13 +241,13 @@ export function drawTown(o: TownOptions, view: 'band' | 'full'): string {
         g += hipRoof(x - 0.3, y - 0.3, h, w + 0.6, d + 0.6, 2.4, '#E0443E');
         const [fx, fy] = P(x + w / 2, y + d / 2, h + 2.4);
         g += `<line x1="${f1(fx)}" y1="${f1(fy)}" x2="${f1(fx)}" y2="${f1(fy - 20)}" stroke="${tone(INK)}" stroke-width="1.5"/><polygon points="${f1(fx)},${f1(fy - 20)} ${f1(fx + 10)},${f1(fy - 16)} ${f1(fx)},${f1(fy - 12)}" fill="${tone('#2E9E5B')}"/>`;
-        return `<g class="pop">${g}</g>`;
+        return `<g${pop('ecole')}>${g}</g>`;
       }
       case 'park': {
         let g = flatPoly([P(X, Y), P(X + 8, Y), P(X + 8, Y + 8), P(X, Y + 8)], shade(grass, 1.08));
         g += flatPoly([P(X + 3, Y), P(X + 5, Y), P(X + 5, Y + 8), P(X + 3, Y + 8)], winter ? '#E4E7EF' : '#F3E6C4');
         if (o.upgrades.includes('fontaine')) {
-          g += `<g class="pop">${box(X + 3.1, Y + 3.1, 0, 1.8, 1.8, 0.5, '#D5DCEB')}${flatPoly([P(X + 3.4, Y + 3.4, 0.52), P(X + 4.6, Y + 3.4, 0.52), P(X + 4.6, Y + 4.6, 0.52), P(X + 3.4, Y + 4.6, 0.52)], winter ? '#DDEBFA' : '#5EC4F0')}${box(X + 3.8, Y + 3.8, 0.5, 0.4, 0.4, 1.3, '#D5DCEB')}</g>`;
+          g += `<g${pop('fontaine')}>${box(X + 3.1, Y + 3.1, 0, 1.8, 1.8, 0.5, '#D5DCEB')}${flatPoly([P(X + 3.4, Y + 3.4, 0.52), P(X + 4.6, Y + 3.4, 0.52), P(X + 4.6, Y + 4.6, 0.52), P(X + 3.4, Y + 4.6, 0.52)], winter ? '#DDEBFA' : '#5EC4F0')}${box(X + 3.8, Y + 3.8, 0.5, 0.4, 0.4, 1.3, '#D5DCEB')}</g>`;
         }
         const trees: [number, number, boolean][] = o.upgrades.includes('parc')
           ? [[1, 1, false], [1.4, 4.5, true], [1, 7, false], [6.8, 1.4, true], [6.6, 5, false], [7, 7.2, false]]
@@ -303,7 +310,7 @@ export function drawTown(o: TownOptions, view: 'band' | 'full'): string {
   for (let j = range.j0 - 1; j <= range.j1; j++) ground.push(flatPoly([P(0, 11 * j + 8), P(gx1, 11 * j + 8), P(gx1, 11 * j + 11), P(0, 11 * j + 11)], road));
   for (let i = 0; i <= range.i1; i++) ground.push(flatPoly([P(11 * i + 8, gy0), P(11 * i + 11, gy0), P(11 * i + 11, gy1), P(11 * i + 8, gy1)], road));
   for (let j = range.j0 - 1; j <= range.j1; j++) for (let x = 1; x < gx1; x += 3.6) ground.push(`<polyline points="${pts([P(x, 11 * j + 9.5), P(x + 1.4, 11 * j + 9.5)])}" stroke="${tone('#FFFFFF')}" stroke-width="1.6" stroke-linecap="round"/>`);
-  if (o.upgrades.includes('piste')) for (let j = range.j0 - 1; j <= range.j1; j++) ground.push(`<g class="pop">${flatPoly([P(0, 11 * j + 10.2), P(gx1, 11 * j + 10.2), P(gx1, 11 * j + 10.9), P(0, 11 * j + 10.9)], '#2E9E5B')}</g>`);
+  if (o.upgrades.includes('piste')) for (let j = range.j0 - 1; j <= range.j1; j++) ground.push(`<g${pop('piste')}>${flatPoly([P(0, 11 * j + 10.2), P(gx1, 11 * j + 10.2), P(gx1, 11 * j + 10.9), P(0, 11 * j + 10.9)], '#2E9E5B')}</g>`);
 
   // ---------- cells, row by row (painter order), with what moves on the road in front of each row ----------
   const out: string[] = [];
@@ -316,16 +323,16 @@ export function drawTown(o: TownOptions, view: 'band' | 'full'): string {
       else out.push(building('trees', X, Y, i, j));
       if (o.upgrades.includes('eclairage') && kindOf(i, j) !== 'cooling') {
         const [lx, ly] = P(X + 8.3, Y + 8.3, 0);
-        out.push(`<g class="pop"><line x1="${f1(lx)}" y1="${f1(ly)}" x2="${f1(lx)}" y2="${f1(ly - 26)}" stroke="${tone('#3B4A6B')}" stroke-width="2"/><circle cx="${f1(lx)}" cy="${f1(ly - 27)}" r="3" fill="${lit ? '#FFE27A' : tone('#D5DCEB')}" stroke="${tone(INK)}" stroke-width="1"/>${lit ? `<ellipse cx="${f1(lx)}" cy="${f1(ly)}" rx="16" ry="8" fill="#FFE9A8" opacity="${f1(0.5 * night)}"/>` : ''}</g>`);
+        out.push(`<g${pop('eclairage')}><line x1="${f1(lx)}" y1="${f1(ly)}" x2="${f1(lx)}" y2="${f1(ly - 26)}" stroke="${tone('#3B4A6B')}" stroke-width="2"/><circle cx="${f1(lx)}" cy="${f1(ly - 27)}" r="3" fill="${lit ? '#FFE27A' : tone('#D5DCEB')}" stroke="${tone(INK)}" stroke-width="1"/>${lit ? `<ellipse cx="${f1(lx)}" cy="${f1(ly)}" rx="16" ry="8" fill="#FFE9A8" opacity="${f1(0.5 * night)}"/>` : ''}</g>`);
       }
     }
     // People on the pavement in front of the row, cars on the road in front of it.
     if (j === 5 || j === 6) {
       out.push(person(11 * 1 + 2, 11 * j + 8.3, '#7B5CD6', j) + person(11 * 2 + 5, 11 * j + 8.3, '#2E9E5B', j + 1) + person(11 * 4 + 3, 11 * j + 8.3, '#FF8A3D', j + 2));
     }
-    if (j === 4) out.push(`<g class="iso-car">${car(-12, 11 * j + 9.9, '#E0443E')}</g>`);
-    if (j === 6) out.push(`<g class="iso-car slow">${car(-12, 11 * j + 8.4, '#1D47B8')}</g>`);
-    if (j === 5) out.push(`<g class="iso-car late">${car(-12, 11 * j + 9.9, '#F2A51F')}</g>`);
+    if (j === 4) out.push(`<g class="iso-car">${car(CAR_START_X, 11 * j + 9.9, '#E0443E')}</g>`);
+    if (j === 6) out.push(`<g class="iso-car slow">${car(CAR_START_X, 11 * j + 8.4, '#1D47B8')}</g>`);
+    if (j === 5) out.push(`<g class="iso-car late">${car(CAR_START_X, 11 * j + 9.9, '#F2A51F')}</g>`);
   }
 
   // Links from the plant: heating pipe and power line along the road in front of row 5.
@@ -341,10 +348,10 @@ export function drawTown(o: TownOptions, view: 'band' | 'full'): string {
   // Reaction of the dark quarter: a bolt with a cross above it.
   if (darkQuarter) {
     const [qx, qy] = P(40, 40, 12);
-    out.push(`<g class="pop"><circle cx="${f1(qx)}" cy="${f1(qy)}" r="40" fill="#FFFFFF" opacity="0.85" stroke="${INK}" stroke-width="2"/><image href="${o.icons.electricite}" x="${f1(qx - 32)}" y="${f1(qy - 32)}" width="64" height="64"/><image href="${o.icons.loin}" x="${f1(qx + 8)}" y="${f1(qy + 6)}" width="34" height="34"/></g>`);
+    out.push(`<g><circle cx="${f1(qx)}" cy="${f1(qy)}" r="40" fill="#FFFFFF" opacity="0.85" stroke="${INK}" stroke-width="2"/><image href="${o.icons.electricite}" x="${f1(qx - 32)}" y="${f1(qy - 32)}" width="64" height="64"/><image href="${o.icons.loin}" x="${f1(qx + 8)}" y="${f1(qy + 6)}" width="34" height="34"/></g>`);
   }
 
-  const snow = winter ? Array.from({ length: 50 }, (_, k) => `<circle class="flake" cx="${f1(-400 + ((k * 197) % 2000))}" cy="${view === 'band' ? f1(rowY(8) - 330) : -230}" r="${f1(1.6 + (k % 3))}" fill="#FFFFFF" opacity="0.9" style="animation-delay:${-((k * 13) % 11)}s;animation-duration:${8 + (k % 5)}s"/>`).join('') : '';
+  const snow = winter ? Array.from({ length: 50 }, (_, k) => `<circle class="flake" cx="${f1(-400 + ((k * 197) % 2000))}" cy="${view === 'band' ? f1(rowY(8) - 330) : -230}" r="${f1(1.6 + (k % 3))}" fill="#FFFFFF" opacity="0.9" style="--d:${-((k * 13) % 11)}s;animation-duration:${8 + (k % 5)}s"/>`).join('') : '';
   const defs = `<defs><linearGradient id="iso-concrete" x1="0" x2="1"><stop offset="0" stop-color="${tone('#FFFFFF')}"/><stop offset="0.6" stop-color="${tone('#E4E8F0')}"/><stop offset="1" stop-color="${tone('#A9B4C8')}"/></linearGradient><linearGradient id="iso-reactor" x1="0" x2="1"><stop offset="0" stop-color="${tone('#FFFFFF')}"/><stop offset="0.55" stop-color="${tone('#EEF2F8')}"/><stop offset="1" stop-color="${tone('#AEB9CD')}"/></linearGradient></defs>`;
   return defs + ground.join('') + out.join('') + snow;
 }

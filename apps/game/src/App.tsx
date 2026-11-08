@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { dayResult, isHeatingDay, type DayResult, type GameState } from '@neutron/engine';
 import { DAYS, SHOP, dayById } from './content';
 import { Days, Home, Shop, Summary, type DayCard } from './screens/Menus';
-import { Play } from './screens/Play';
+import { Play, type Speed } from './screens/Play';
 import { EMPTY, clearProgress, loadProgress, saveProgress } from './save';
 import './app.css';
 
@@ -38,6 +38,10 @@ export function App() {
   const [owned, setOwned] = useState<string[]>(SAVED.owned);
   const [last, setLast] = useState<DayResult>({ euros: 0, max: 0, stars: 1, advice: 'anticiper' });
   const [stars, setStars] = useState<Record<string, number>>(SAVED.stars);
+  // Speed chosen by the player, kept from one day to the next (not saved).
+  const [speed, setSpeed] = useState<Speed>(1);
+  // Upgrade just bought: it appears in the town with a short animation.
+  const [fresh, setFresh] = useState<string | null>(null);
 
   useEffect(() => {
     if (!REVIEW) saveProgress({ version: 1, wallet, owned, stars, lastDay: day.id });
@@ -80,13 +84,13 @@ export function App() {
     case 'days':
       return <Days cards={cards} onPick={startDay} onHome={() => setScreen('home')} />;
     case 'play':
-      return <Play key={round} day={day} seed={seed} upgrades={owned} onFinish={finish} onRestart={() => startDay(day.id)} onHome={() => setScreen('home')} />;
+      return <Play key={round} day={day} seed={seed} upgrades={owned} speed={speed} onSpeed={setSpeed} onFinish={finish} onRestart={() => startDay(day.id)} onHome={() => setScreen('home')} />;
     case 'summary':
       return <Summary earned={last.euros} stars={last.stars} advice={last.advice} season={day.id} upgrades={owned} onShop={() => setScreen('shop')} onAgain={() => startDay(day.id)} onDays={() => setScreen('days')} />;
     case 'shop':
       return (
-        <Shop items={SHOP} wallet={wallet} owned={owned} season={day.id} onBack={() => setScreen('home')}
-          onBuy={(item) => { if (wallet >= item.price && !owned.includes(item.id)) { setWallet(wallet - item.price); setOwned([...owned, item.id]); } }} />
+        <Shop items={SHOP} wallet={wallet} owned={owned} fresh={fresh} season={day.id} onBack={() => { setFresh(null); setScreen('home'); }}
+          onBuy={(item) => { if (wallet >= item.price && !owned.includes(item.id)) { setWallet(wallet - item.price); setOwned([...owned, item.id]); setFresh(item.id); } }} />
       );
   }
 }

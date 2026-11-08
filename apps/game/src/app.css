@@ -110,15 +110,27 @@ strong { font-weight: 800; }
 
 /* Play: 3 zones (town, curves + piggy bank, controls) under a thin header. */
 .play {
-  display: grid; grid-template-columns: 1fr 21rem; grid-template-rows: 3.4rem 16.6rem 1fr; gap: 0.5rem; padding: 0.5rem;
+  display: grid; grid-template-columns: 1fr 8.5rem 21rem; grid-template-rows: 3.4rem 16.6rem 1fr; gap: 0.5rem; padding: 0.5rem;
 }
+.zone-curves { grid-column: 1; grid-row: 3; }
+.play-guide { grid-column: 2; grid-row: 3; position: relative; z-index: 3; }
+.zone-controls { grid-column: 3; grid-row: 3; }
 .play-top { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; }
 .play-day { display: flex; align-items: center; gap: 0.6rem; font-size: 1.4rem; font-weight: 800; }
+.clock-box { display: inline-flex; align-items: center; gap: 0.5rem; }
 .clock { width: 2.6rem; height: 2.6rem; }
-.play-top-spacer { width: 8rem; }
+.clock-digits { font-size: 1.5rem; font-variant-numeric: tabular-nums; background: var(--blanc); border: 0.15rem solid var(--encre); border-radius: 0.7rem; padding: 0 0.6rem; }
+.speed { display: inline-flex; gap: 0.3rem; background: var(--blanc); border: 0.15rem solid var(--encre); border-radius: 1.4rem; padding: 0.2rem; }
+.speed-btn {
+  font: inherit; font-size: 1.15rem; font-weight: 800; min-width: 3.4rem; height: 2.4rem; border: 0; border-radius: 1.2rem;
+  background: transparent; color: var(--encre); cursor: pointer; touch-action: manipulation;
+}
+.speed-btn.on { background: var(--bleu); color: var(--blanc); }
+.speed-btn:focus-visible { outline: 0.2rem solid var(--bleu); outline-offset: 0.1rem; }
 .zone-city { grid-column: 1 / -1; position: relative; border: 0.15rem solid var(--encre); border-radius: 1.2rem; overflow: hidden; }
 .city { width: 100%; height: 100%; display: block; }
-.play-cassandra { position: absolute; right: 0.6rem; bottom: -0.2rem; height: 15.5rem; }
+.play-cassandra { position: absolute; left: 50%; bottom: -0.3rem; height: 19rem; transform: translateX(-50%); pointer-events: none; }
+.play-cassandra .bubble { right: auto; left: -9rem; top: auto; bottom: 100%; width: 19rem; pointer-events: auto; }
 
 .zone-curves { display: flex; flex-direction: column; padding: 0.5rem 0.8rem 0.4rem; min-width: 0; }
 .curves-head { display: flex; align-items: center; gap: 1.2rem; font-size: 0.9rem; height: 2.6rem; }
@@ -162,6 +174,8 @@ strong { font-weight: 800; }
 .slider-heat .knob { color: var(--chaleur-fonce); }
 .knob i { display: block; width: 1.8rem; height: 0.18rem; border-radius: 0.1rem; background: currentColor; }
 .slider-value { font-size: 1.05rem; font-weight: 800; background: var(--blanc); border-radius: 0.8rem; padding: 0.1rem 0.7rem; border: 0.15rem solid currentColor; white-space: nowrap; }
+.slider-demand { font-size: 1rem; font-weight: 800; color: var(--encre); white-space: nowrap; }
+.target { position: absolute; left: 50%; width: 7.4rem; height: 0; border-top: 0.3rem dashed var(--encre); transform: translate(-50%, 50%); pointer-events: none; transition: bottom 0.3s; }
 .slider-off { opacity: 0.4; }
 .slider-off .slider-track { cursor: default; }
 
@@ -230,10 +244,30 @@ svg .pop, svg .float { transform-box: fill-box; transform-origin: center; }
 @media (prefers-reduced-motion: reduce) { .flake { animation: none; transform: translateY(120px); } }
 
 /* Isometric town (D-13): cars drive along the streets, inhabitants stroll on the pavements. */
+/* Cars drive from the road after the plant (never on the river) to the end of the street, fading in and out, and
+   always forward. */
 .iso-car { animation: iso-drive 14s linear infinite; }
-.iso-car.slow { animation-duration: 19s; animation-delay: -7s; }
-.iso-car.late { animation-duration: 16s; animation-delay: -11s; }
-@keyframes iso-drive { from { transform: translate(-60px, -35px); } to { transform: translate(1040px, 600px); } }
+.iso-car.slow { animation-duration: 19s; --d: -7s; }
+.iso-car.late { animation-duration: 16s; --d: -11s; }
+@keyframes iso-drive {
+  0% { transform: translate(0, 0); opacity: 0; }
+  5% { opacity: 1; }
+  94% { opacity: 1; }
+  100% { transform: translate(1030px, 595px); opacity: 0; }
+}
+.iso-full .iso-car { animation-name: iso-drive-full; }
+@keyframes iso-drive-full {
+  0% { transform: translate(0, 0); opacity: 0; }
+  6% { opacity: 1; }
+  92% { opacity: 1; }
+  100% { transform: translate(840px, 485px); opacity: 0; }
+}
+/* The town is redrawn every 5 game minutes (hour, sky, lights): its animated parts are new elements then. Their
+   delay is shifted by the time elapsed since the page opened (--phase, set at each redraw), so every animation goes
+   on where it was instead of starting again (R1-02). --d is each element's own offset. */
+.city .iso-car, .city .walker-iso, .city .flake, .city .steam, .city .plume, .city .flow, .city .float {
+  animation-delay: calc(var(--d, 0s) - var(--phase, 0s));
+}
 .walker-iso { animation: iso-walk 9s ease-in-out infinite alternate; }
 @keyframes iso-walk { from { transform: translate(0, 0); } to { transform: translate(52px, 30px); } }
 @media (prefers-reduced-motion: reduce) { .iso-car, .walker-iso { animation: none; } }

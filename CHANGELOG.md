@@ -2,7 +2,13 @@
 
 *Ce qui change pour le joueur, en mots simples. Une section par version (voir `docs/CONFIGURATION.md` §4).*
 
-## Pas encore publié
+## v0.4.1 — 2026-11-08 (lot L3.1 : corrections après le premier test sur la tablette, à valider)
+- Les voitures ne roulent plus dans la rivière : elles partent après la centrale et avancent toujours, sans revenir en arrière.
+- La fontaine (et les autres achats) ne clignotent plus : ils n'apparaissent avec une petite animation qu'au moment de l'achat.
+- L'heure s'affiche aussi en chiffres (14:35), à côté de l'horloge.
+- Au-dessus de chaque curseur, la ville dit ce qu'elle veut en chiffres (« La ville veut 64 % »), et un trait en pointillés montre ce niveau sur le curseur.
+- Boutons ×1, ×2, ×4 en haut à droite pour faire passer le temps plus vite.
+- Cassandra se tient en bas, entre les courbes et les curseurs, et montre du doigt les curseurs ; ses bulles apparaissent au-dessus d'elle.
 - Le jeu existe en application Android pour la tablette : un fichier APK à installer à la main, qui marche hors ligne, en paysage et plein écran.
 
 ## v0.4.0 — 2026-11-08 (lot L3 : le pilotage)

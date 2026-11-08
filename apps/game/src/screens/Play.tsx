@@ -21,11 +21,16 @@ const PARAMS = new URLSearchParams(window.location.search);
 const SPEED = Math.min(30, Math.max(1, Number(PARAMS.get('vitesse')) || 1));
 const REVIEW_START = Math.min(23.9, Math.max(START_HOUR, Number(PARAMS.get('heure')) || START_HOUR));
 const REVIEW_FOLLOW = PARAMS.get('suivi') !== 'non';
+/** Speeds offered to the player (R1-06): the game time runs 1, 2 or 4 times faster. */
+export const SPEEDS = [1, 2, 4] as const;
+export type Speed = (typeof SPEEDS)[number];
 
-export function Play({ day, seed, upgrades, onFinish, onRestart, onHome }: {
+export function Play({ day, seed, upgrades, speed, onSpeed, onFinish, onRestart, onHome }: {
   day: DayDef;
   seed: number;
   upgrades: readonly string[];
+  speed: Speed;
+  onSpeed: (s: Speed) => void;
   onFinish: (game: GameState) => void;
   onRestart: () => void;
   onHome: () => void;
@@ -41,6 +46,8 @@ export function Play({ day, seed, upgrades, onFinish, onRestart, onHome }: {
   });
   const current = useRef(run);
   current.current = run;
+  const pace = useRef(speed);
+  pace.current = speed;
 
   const say = (id: string, pose: Pose) => setLine({ id, pose });
 
@@ -50,10 +57,11 @@ export function Play({ day, seed, upgrades, onFinish, onRestart, onHome }: {
     let last = performance.now();
     const frame = (now: number) => {
       const c = clock.current;
+      // c.real: time of the player (hints, reminders); c.carry: game time, sped up by the speed buttons.
       const dt = Math.min(0.1, (now - last) / 1000) * SPEED;
       last = now;
       c.real += dt;
-      c.carry += dt;
+      c.carry += dt * pace.current;
       let r: { game: GameState; history: Sample[] } = current.current;
       while (c.carry >= REAL_SECONDS_PER_GAME_MINUTE && !isOver(r.game)) {
         c.carry -= REAL_SECONDS_PER_GAME_MINUTE;
@@ -79,7 +87,8 @@ export function Play({ day, seed, upgrades, onFinish, onRestart, onHome }: {
         if (c.real - c.farSince > IDLE_HINT_SECONDS && c.real - c.lastInput > IDLE_HINT_SECONDS) {
           const which = view.elec === 'loin' ? 'elec' : 'heat';
           const up = which === 'elec' ? g.plant.elec < view.demand.elec : g.plant.heat < view.demand.heat;
-          say(`jeu.indice.${which}.${up ? 'monter' : 'baisser'}`, 'reflechit');
+          // Pointing pose: Cassandra shows the slider to move (R1-07).
+          say(`jeu.indice.${which}.${up ? 'monter' : 'baisser'}`, 'explique');
           c.farSince = c.real;
         }
       } else c.farSince = -1;
@@ -142,7 +151,13 @@ export function Play({ day, seed, upgrades, onFinish, onRestart, onHome }: {
           <span>{t(`day.${day.id}.title`)}</span>
           <Clock hour={hour} />
         </div>
-        <div className="play-top-spacer" />
+        <div className="speed" role="group" aria-label={t('speed.label')}>
+          {SPEEDS.map((s) => (
+            <button key={s} type="button" className={`speed-btn${s === speed ? ' on' : ''}`} aria-pressed={s === speed} onClick={() => onSpeed(s)}>
+              {t('speed.x', { n: String(s) })}
+            </button>
+          ))}
+        </div>
       </header>
 
       <section className="zone-city" aria-label={t('zone.city')}>
@@ -155,10 +170,14 @@ export function Play({ day, seed, upgrades, onFinish, onRestart, onHome }: {
           heatOn={heatDay && g.plant.heat > 0}
           upgrades={upgrades}
         />
+      </section>
+
+      {/* Cassandra stands at the bottom, between the curves and the controls, pointing at the sliders (R1-07). */}
+      <div className="play-guide">
         <Cassandra pose={line?.pose ?? 'explique'} className="play-cassandra">
           {line ? <Rich text={t(line.id)} /> : null}
         </Cassandra>
-      </section>
+      </div>
 
       <section className="zone-curves panel" aria-label={t('zone.curves')}>
         <div className="curves-head">
@@ -182,8 +201,8 @@ export function Play({ day, seed, upgrades, onFinish, onRestart, onHome }: {
       <section className="zone-controls panel" aria-label={t('zone.controls')}>
         <CoreBar elec={g.plant.setElec} heat={g.plant.setHeat} />
         <div className="sliders">
-          <Slider kind="elec" setpoint={g.plant.setElec} production={g.plant.elec} onChange={(v) => setOutput('elec', v)} pulse={pulseElec} />
-          <Slider kind="heat" setpoint={g.plant.setHeat} production={g.plant.heat} onChange={(v) => setOutput('heat', v)} pulse={pulseHeat} disabled={!heatDay} />
+          <Slider kind="elec" setpoint={g.plant.setElec} production={g.plant.elec} onChange={(v) => setOutput('elec', v)} pulse={pulseElec} demand={view.demand.elec} />
+          <Slider kind="heat" setpoint={g.plant.setHeat} production={g.plant.heat} onChange={(v) => setOutput('heat', v)} pulse={pulseHeat} demand={heatDay ? view.demand.heat : null} disabled={!heatDay} />
         </div>
       </section>
 

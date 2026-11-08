@@ -1,4 +1,4 @@
-import { memo, useMemo } from 'react';
+import { memo, useMemo, useRef, type CSSProperties } from 'react';
 import type { Mood } from '@neutron/engine';
 import { iconUrl } from '../assets';
 import { BAND_VIEWBOX, FULL_VIEWBOX, drawTown, nightAt, seasonOf } from './iso/town';
@@ -17,6 +17,8 @@ export interface IsoCityProps {
   elecOn: boolean;
   heatOn: boolean;
   upgrades: readonly string[];
+  /** Upgrade just bought, shown with an "appear" animation. */
+  fresh?: string | null;
 }
 
 const ICONS = { coeur: iconUrl('coeur'), froid: iconUrl('froid'), electricite: iconUrl('electricite'), loin: iconUrl('loin') };
@@ -33,10 +35,15 @@ function skyOf(hour: number): [string, string] {
 export const IsoCity = memo(function IsoCity(p: IsoCityProps) {
   const upgradesKey = p.upgrades.join(',');
   const inner = useMemo(
-    () => drawTown({ hour: p.hour, season: seasonOf(p.season), mood: p.mood, elecOn: p.elecOn, heatOn: p.heatOn, upgrades: upgradesKey ? upgradesKey.split(',') : [], icons: ICONS }, p.view),
+    () => drawTown({ hour: p.hour, season: seasonOf(p.season), mood: p.mood, elecOn: p.elecOn, heatOn: p.heatOn, upgrades: upgradesKey ? upgradesKey.split(',') : [], fresh: p.fresh ?? null, icons: ICONS }, p.view),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [p.hour, p.season, p.mood, p.elecOn, p.heatOn, upgradesKey, p.view],
+    [p.hour, p.season, p.mood, p.elecOn, p.heatOn, upgradesKey, p.fresh, p.view],
   );
+  // The phase changes only when the drawing really changes (new elements): then their animations go on where the old
+  // ones were. When the drawing is the same, React keeps the elements, and the phase must not move (R1-02).
+  const drawn = useRef({ inner: '', phase: '0' });
+  if (drawn.current.inner !== inner) drawn.current = { inner, phase: (performance.now() / 1000).toFixed(2) };
+  const { phase } = drawn.current;
   const [top, bottom] = skyOf(p.hour);
   return (
     <svg className={`city iso-${p.view}`} viewBox={p.view === 'band' ? BAND_VIEWBOX : FULL_VIEWBOX} preserveAspectRatio={p.view === 'band' ? 'xMidYMid slice' : 'xMidYMid meet'} role="img" aria-label="Neutron City">
@@ -47,7 +54,7 @@ export const IsoCity = memo(function IsoCity(p: IsoCityProps) {
         </linearGradient>
       </defs>
       <rect x="-2000" y="-2000" width="6000" height="6000" fill={`url(#iso-sky-${p.view})`} />
-      <g dangerouslySetInnerHTML={{ __html: inner }} />
+      <g style={{ '--phase': `${phase}s` } as CSSProperties} dangerouslySetInnerHTML={{ __html: inner }} />
     </svg>
   );
 });

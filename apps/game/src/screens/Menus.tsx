@@ -100,8 +100,8 @@ export function Summary({ earned, stars, advice, season, upgrades, onShop, onAga
 }
 
 /** Shop: buy upgrades that appear in the town and make its inhabitants happier for good. */
-export function Shop({ items, wallet, owned, season, onBuy, onBack }: {
-  items: readonly ShopItem[]; wallet: number; owned: readonly string[]; season: string; onBuy: (item: ShopItem) => void; onBack: () => void;
+export function Shop({ items, wallet, owned, fresh = null, season, onBuy, onBack }: {
+  items: readonly ShopItem[]; wallet: number; owned: readonly string[]; fresh?: string | null; season: string; onBuy: (item: ShopItem) => void; onBack: () => void;
 }) {
   const happiness = townHappiness(items, owned);
   return (
@@ -112,7 +112,7 @@ export function Shop({ items, wallet, owned, season, onBuy, onBack }: {
         <span className="piggy big"><Icon name="tirelire" size={2.6} /><b>{euros(wallet)}</b></span>
       </header>
       <div className="shop-body">
-      <div className="town-panel"><IsoCity view="full" hour={13} season={season} mood="content" elecOn heatOn={season !== 'ete'} upgrades={owned} /></div>
+      <div className="town-panel"><IsoCity view="full" hour={13} season={season} mood="content" elecOn heatOn={season !== 'ete'} upgrades={owned} fresh={fresh} /></div>
       <div className="shop-side">
       <div className="joy" role="img" aria-label={t('shop.joy')}>
         <Icon name="sourire" size={2.2} />

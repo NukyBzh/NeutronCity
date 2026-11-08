@@ -13,9 +13,11 @@ export function Slider(props: {
   production: number;
   onChange: (v: number) => void;
   pulse: boolean;
+  /** What the town asks for now, in % (shown as a number and a dashed mark on the track); null when not asked. */
+  demand: number | null;
   disabled?: boolean;
 }) {
-  const { kind, setpoint, production, onChange, pulse, disabled = false } = props;
+  const { kind, setpoint, production, onChange, pulse, demand, disabled = false } = props;
   const track = useRef<HTMLDivElement>(null);
   const fromPointer = (e: PointerEvent) => {
     const r = track.current!.getBoundingClientRect();
@@ -34,6 +36,9 @@ export function Slider(props: {
   return (
     <div className={`slider slider-${kind}${disabled ? ' slider-off' : ''}`}>
       <div className="slider-title"><Icon name={kind === 'elec' ? 'electricite' : 'chaleur'} size={1.6} />{label}</div>
+      <div className="slider-demand" aria-label={demand === null ? undefined : t('slider.demandtext', { pct: String(Math.round(demand)) })}>
+        {demand === null ? ' ' : t('slider.demand', { pct: String(Math.round(demand)) })}
+      </div>
       <div
         className="slider-track"
         ref={track}
@@ -51,6 +56,7 @@ export function Slider(props: {
       >
         {[0, 25, 50, 75, 100].map((g) => <span key={g} className={`tick${g % 50 === 0 ? ' tick-big' : ''}`} style={{ bottom: `${g}%` }} />)}
         <div className="rail"><div className="level" style={{ height: `${production}%` }} /></div>
+        {demand === null ? null : <span className="target" style={{ bottom: `${demand}%` }} />}
         <div className={`knob${pulse ? ' pulse' : ''}`} style={{ bottom: `${setpoint}%` }}><i /><i /><i /></div>
       </div>
       <div className="slider-value">{t('slider.value', { pct: String(setpoint), mw: String(mw) })}</div>
@@ -74,12 +80,16 @@ export function CoreBar({ elec, heat }: { elec: number; heat: number }) {
   );
 }
 
-/** Analog clock: the hour is read on the hands and the sky, never as a number on screen. */
+/** Clock: hands, and the time written hh:mm next to them (in steps of 5 minutes, so it can be read while it runs). */
 export function Clock({ hour }: { hour: number }) {
   const hh = ((hour % 12) / 12) * 360;
   const mm = ((hour % 1) * 360);
+  const h = Math.floor(hour) % 24;
+  const m = Math.floor(((hour % 1) * 60) / 5) * 5;
+  const two = (v: number) => String(v).padStart(2, '0');
   return (
-    <svg className="clock" viewBox="0 0 48 48" role="img" aria-label={t('clock.label', { h: String(Math.floor(hour) % 24) })}>
+    <span className="clock-box" role="img" aria-label={t('clock.label', { h: String(h), m: two(m) })}>
+    <svg className="clock" viewBox="0 0 48 48" aria-hidden>
       <circle cx={24} cy={24} r={21} fill="#FFFFFF" stroke="#1C2A4A" strokeWidth={3} />
       {Array.from({ length: 12 }, (_, i) => (
         <line key={i} x1={24} y1={6} x2={24} y2={i % 3 === 0 ? 10 : 8} stroke="#1C2A4A" strokeWidth={2} transform={`rotate(${i * 30} 24 24)`} />
@@ -88,5 +98,7 @@ export function Clock({ hour }: { hour: number }) {
       <line x1={24} y1={24} x2={24} y2={8} stroke="#1D47B8" strokeWidth={2.5} strokeLinecap="round" transform={`rotate(${mm} 24 24)`} />
       <circle cx={24} cy={24} r={2.5} fill="#1C2A4A" />
     </svg>
+    <b className="clock-digits" aria-hidden>{t('clock.time', { hh: two(h), mm: two(m) })}</b>
+    </span>
   );
 }
