@@ -18,14 +18,13 @@ btn.days: Journées
 days.title: Choisis ta journée
 days.elecOnly: Électricité
 days.both: Électricité et chaleur
-days.locked: Finis le printemps pour l'ouvrir
+days.locked: Finis la journée d'avant pour l'ouvrir
 day.ete.title: Journée d'été
 day.ete.level: Facile
 day.printemps.title: Journée de printemps
 day.printemps.level: Moyen
 day.hiver.title: Journée d'hiver
 day.hiver.level: Difficile
-maquette.note: "Maquette : les journées d'été et de printemps sont jouables pour essayer."
 
 zone.city: La ville
 zone.curves: La demande de la ville et ta production

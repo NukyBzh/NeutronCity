@@ -8,7 +8,7 @@ avant tout commit, installation, envoi sur GitHub ou action irréversible).*
 |---|---|---|
 | v0.1.0 | L0 Cadrage | **Fait** le 2026-11-08 : cadrage validé (D-01 à D-06), dépôt `NukyBzh/NeutronCity` (privé), squelette ; commit `addec57`, étiquette v0.1.0 |
 | v0.2.0 | L1 Maquettes | **Fait** le 2026-11-08 : page Style et 21 icônes dans Figma (limite Starter atteinte ensuite) ; maquette cliquable validée (D-08) : accueil, journées, jeu, pause, bilan, boutique ; captures dans `docs/maquettes/`. Passe dessins (D-09) faite, en attente de validation → v0.2.1 |
-| v0.3.0 | L2 Moteur | À faire |
+| v0.3.0 | L2 Moteur | **Fait**, en attente de validation (2026-11-08) : `packages/engine` (centrale, journées, surprises à graine, argent, bilan, bonheur), 3 journées et boutique en YAML, interface branchée sur le moteur (la maquette factice est supprimée) ; D-10 à D-12. Passe dessins prévue ensuite (saisons) → v0.3.1 |
 | v0.4.0 | L3 Pilotage | À faire |
 | v0.5.0 | L4 Ville animée | À faire |
 | v0.6.0 | L5 Cassandra | À faire |
@@ -19,7 +19,7 @@ avant tout commit, installation, envoi sur GitHub ou action irréversible).*
 
 ## Documents
 - `docs/CADRAGE.md` — cadrage validé.
-- `docs/DECISIONS.md` — décisions D-01 à D-09.
+- `docs/DECISIONS.md` — décisions D-01 à D-12.
 - `docs/CONFIGURATION.md` — règles Git, retour en arrière, journal des versions.
 - `CHANGELOG.md` — changements pour le joueur.
 
@@ -27,7 +27,7 @@ avant tout commit, installation, envoi sur GitHub ou action irréversible).*
 - Passe « dessins » : rendre plus réalistes les dessins utilisés par le lot qui vient de se terminer. Passe L1 faite le 2026-11-08 (ville, centrale, habitants, véhicules, boutique ; icônes gardées simples, ce sont des pictogrammes).
 
 ## Revoir la maquette
-- `npm.cmd run dev`, puis http://localhost:5180 ; réglages d'adresse : `?vitesse=20` (journée en 15 s), `?ecran=jeu&journee=ete&heure=19&suivi=non&achats=parc,fontaine` (écran, journée, heure de départ, joueur qui ne bouge pas, achats). Captures : Edge sans fenêtre (`msedge --headless=new --screenshot`).
+- `npm.cmd run dev`, puis http://localhost:5180 ; réglages d'adresse : `?vitesse=20` (journée en 15 s), `?ecran=jeu&journee=ete&heure=19&suivi=non&achats=parc,fontaine` (écran, journée, heure de départ, joueur qui ne bouge pas, achats) ; `&graine=42` pour rejouer les mêmes surprises. Captures : Edge sans fenêtre (`msedge --headless=new --screenshot`).
 
 ## Points ouverts
 - Fichier Figma créé le 2026-11-08 : https://www.figma.com/design/K1BdqYcOLPZ4vCc7bomwdC (lien dans `assets/SOURCES.md`).

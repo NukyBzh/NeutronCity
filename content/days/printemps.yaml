@@ -1,0 +1,28 @@
+id: printemps
+format: 1
+balance: balanced
+level: 2
+rampPctPerHour: 10
+# Un peu de chauffage le matin et le soir : une deuxième sortie qui va et vient.
+points:
+  - [0, 46, 10]
+  - [6, 42, 12]
+  - [8, 50, 15]
+  - [10, 54, 11]
+  - [11, 53, 8]
+  - [13, 51, 5]
+  - [15, 48, 5]
+  - [16, 51, 5]
+  - [17, 54, 7]
+  - [18, 58, 10]
+  - [19, 62, 12]
+  - [20, 61, 14]
+  - [21, 58, 13]
+  - [24, 46, 10]
+surprises: [peak, coldWave, mildSpell]
+lines:
+  - { hour: 6, say: jeu.printemps.bonjour, pose: accueil }
+  - { hour: 6.6, say: jeu.curseurs, pose: explique }
+  - { hour: 9.5, say: jeu.chauffage.baisse, pose: explique }
+  - { hour: 16.5, say: jeu.soir, pose: attention }
+  - { hour: 22, say: jeu.fin.proche, pose: explique }

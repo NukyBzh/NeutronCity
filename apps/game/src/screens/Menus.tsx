@@ -1,3 +1,4 @@
+import { townHappiness, type Advice, type ShopItem } from '@neutron/engine';
 import { shopUrl } from '../assets';
 import { euros, t } from '../i18n';
 import { Button, Cassandra, Icon, Rich, Stars } from '../ui/ui';
@@ -20,10 +21,11 @@ export function Home({ onPlay, onShop }: { onPlay: () => void; onShop: () => voi
   );
 }
 
-export interface DayCard { id: 'ete' | 'printemps' | 'hiver'; stars: number; locked: boolean; heat: boolean; playable: boolean }
+export interface DayCard { id: string; stars: number; locked: boolean; heat: boolean }
+const DAY_ICON: Record<string, string> = { ete: 'midi', printemps: 'matin', hiver: 'froid' };
 
-/** Choose a day: easiest first; a locked day says how to open it. */
-export function Days({ cards, onPick, onHome }: { cards: DayCard[]; onPick: (id: DayCard['id']) => void; onHome: () => void }) {
+/** Choose a day: easiest first; a locked day says how to open it; the next day to play pulses. */
+export function Days({ cards, onPick, onHome }: { cards: DayCard[]; onPick: (id: string) => void; onHome: () => void }) {
   const next = cards.find((c) => !c.locked && c.stars === 0)?.id;
   return (
     <main className="screen days">
@@ -34,7 +36,7 @@ export function Days({ cards, onPick, onHome }: { cards: DayCard[]; onPick: (id:
       <div className="day-cards">
         {cards.map((c) => (
           <article key={c.id} className={`day-card${c.locked ? ' locked' : ''}`}>
-            <Icon name={c.id === 'ete' ? 'midi' : c.id === 'printemps' ? 'matin' : 'froid'} size={4} />
+            <Icon name={DAY_ICON[c.id] ?? 'midi'} size={4} />
             <h2>{t(`day.${c.id}.title`)}</h2>
             <p className="day-level">{t(`day.${c.id}.level`)}</p>
             <p className="day-outputs">
@@ -47,20 +49,19 @@ export function Days({ cards, onPick, onHome }: { cards: DayCard[]; onPick: (id:
             ) : (
               <>
                 <Stars count={c.stars} size={2} />
-                <Button kind={c.id === next ? 'primary' : 'secondary'} pulse={c.id === next} icon="jouer" label={t('btn.play')} onClick={() => onPick(c.id)} disabled={!c.playable} />
+                <Button kind={c.id === next ? 'primary' : 'secondary'} pulse={c.id === next} icon="jouer" label={t('btn.play')} onClick={() => onPick(c.id)} />
               </>
             )}
           </article>
         ))}
       </div>
-      <p className="note">{t('maquette.note')}</p>
     </main>
   );
 }
 
-/** End of the day: euros, stars (pictograms) and one piece of advice. */
-export function Summary({ earned, stars, onShop, onAgain, onDays }: {
-  earned: number; stars: number; onShop: () => void; onAgain: () => void; onDays: () => void;
+/** End of the day: euros, stars (pictograms) and the one piece of advice chosen by the engine. */
+export function Summary({ earned, stars, advice, onShop, onAgain, onDays }: {
+  earned: number; stars: number; advice: Advice; onShop: () => void; onAgain: () => void; onDays: () => void;
 }) {
   return (
     <main className="screen summary">
@@ -74,24 +75,18 @@ export function Summary({ earned, stars, onShop, onAgain, onDays }: {
           <Button icon="etoile" label={t('btn.days')} onClick={onDays} />
         </div>
       </div>
-      <Cassandra pose={stars >= 2 ? 'bravo' : 'explique'} className="summary-cassandra">
-        <Rich text={t(stars >= 3 ? 'bilan.3' : stars === 2 ? 'bilan.2' : 'bilan.1')} />
+      <Cassandra pose={advice === 'bravo' ? 'bravo' : 'explique'} className="summary-cassandra">
+        <Rich text={t(`bilan.${advice}`)} />
       </Cassandra>
     </main>
   );
 }
 
-export const SHOP_ITEMS = [
-  { id: 'fontaine', price: 1000, joy: 5 },
-  { id: 'parc', price: 1500, joy: 8 },
-  { id: 'piste', price: 2500, joy: 10 },
-  { id: 'eclairage', price: 3000, joy: 10 },
-  { id: 'ecole', price: 5000, joy: 15 },
-] as const;
-
-/** Shop: buy upgrades that appear in the town and make its inhabitants happier. */
-export function Shop({ wallet, owned, onBuy, onBack }: { wallet: number; owned: readonly string[]; onBuy: (id: string, price: number) => void; onBack: () => void }) {
-  const happiness = Math.min(100, 40 + SHOP_ITEMS.filter((i) => owned.includes(i.id)).reduce((a, i) => a + i.joy * 2, 0));
+/** Shop: buy upgrades that appear in the town and make its inhabitants happier for good. */
+export function Shop({ items, wallet, owned, onBuy, onBack }: {
+  items: readonly ShopItem[]; wallet: number; owned: readonly string[]; onBuy: (item: ShopItem) => void; onBack: () => void;
+}) {
+  const happiness = townHappiness(items, owned);
   return (
     <main className="screen shop">
       <header className="screen-head">
@@ -105,7 +100,7 @@ export function Shop({ wallet, owned, onBuy, onBack }: { wallet: number; owned: 
         <div className="joy-bar"><span style={{ width: `${happiness}%` }} /></div>
       </div>
       <div className="shop-items">
-        {SHOP_ITEMS.map((item) => {
+        {items.map((item) => {
           const has = owned.includes(item.id);
           const can = !has && wallet >= item.price;
           return (
@@ -115,7 +110,7 @@ export function Shop({ wallet, owned, onBuy, onBack }: { wallet: number; owned: 
               {has ? (
                 <p className="shop-owned"><Icon name="bien" size={1.6} />{t('shop.owned')}</p>
               ) : (
-                <Button kind={can ? 'primary' : 'secondary'} icon="piece" label={euros(item.price)} onClick={() => onBuy(item.id, item.price)} disabled={!can} />
+                <Button kind={can ? 'primary' : 'secondary'} icon="piece" label={euros(item.price)} onClick={() => onBuy(item)} disabled={!can} />
               )}
             </article>
           );

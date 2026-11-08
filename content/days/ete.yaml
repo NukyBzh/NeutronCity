@@ -1,0 +1,23 @@
+id: ete
+format: 1
+balance: balanced
+level: 1
+rampPctPerHour: 10
+# Électricité seule : la climatisation fait monter la demande l'après-midi, petit pic du soir.
+points:
+  - [0, 42, 0]
+  - [6, 42, 0]
+  - [9, 54, 0]
+  - [12, 64, 0]
+  - [15, 70, 0]
+  - [17, 68, 0]
+  - [19, 62, 0]
+  - [20.5, 66, 0]
+  - [24, 51, 0]
+surprises: [peak]
+lines:
+  - { hour: 6, say: jeu.ete.bonjour, pose: accueil }
+  - { hour: 6.6, say: jeu.curseurs, pose: explique }
+  - { hour: 10.5, say: jeu.ete.clim, pose: explique }
+  - { hour: 18.5, say: jeu.ete.soir, pose: attention }
+  - { hour: 22, say: jeu.fin.proche, pose: explique }

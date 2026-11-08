@@ -2,6 +2,12 @@
 
 *Ce qui change pour le joueur, en mots simples. Une section par version (voir `docs/CONFIGURATION.md` §4).*
 
+## v0.3.0 — 2026-11-08 (lot L2 : le moteur)
+- Les trois journées sont jouables : été (facile), printemps (moyen) et hiver (difficile, il faut partager le cœur entre électricité et chaleur). Une journée s'ouvre quand on a fini la précédente.
+- À chaque partie, deux surprises différentes : un grand match à la télé, une vague de froid ou un redoux. Cassandra les annonce une heure avant.
+- À la fin de la journée, Cassandra donne un conseil adapté : penser au pic du soir, au chauffage, ou regarder la demande à venir.
+- Le bonheur de la ville monte avec chaque achat de la boutique et ne baisse jamais.
+
 ## v0.2.1 — 2026-11-08 (retouches : dessins plus réalistes)
 - La ville est redessinée : vraie centrale (tour de refroidissement avec sa vapeur, bâtiment du réacteur, salle des machines), ligne électrique et conduite de chaleur jusqu'aux maisons, maisons à tuiles, immeuble en briques avec balcons, boulangerie, tour moderne.
 - Les habitants marchent vraiment (jambes et bras), la voiture et le vélo sont plus détaillés, les nuages passent, la nuit tombe doucement et les fenêtres s'allument.

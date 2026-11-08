@@ -1,0 +1,9 @@
+# Améliorations de la ville (format : packages/engine/src/town.ts, validateShop).
+# price : euros du jeu ; joy : points de bonheur gagnés pour toujours (bonheur de départ 40, maximum 100).
+# Textes : shop.<id> dans content/i18n/fr.yaml ; dessin : assets/shop/<id>.svg ; place dans la ville : apps/game/src/play/City.tsx.
+items:
+  - { id: fontaine, price: 1000, joy: 8 }
+  - { id: parc, price: 1500, joy: 10 }
+  - { id: piste, price: 2500, joy: 12 }
+  - { id: eclairage, price: 3000, joy: 12 }
+  - { id: ecole, price: 5000, joy: 18 }

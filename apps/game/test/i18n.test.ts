@@ -34,7 +34,7 @@ describe('texts (content/i18n/fr.yaml, content/dialogues/fr.yaml)', () => {
       ...['ete', 'printemps', 'hiver'].flatMap((d) => [`day.${d}.title`, `day.${d}.level`]),
       ...['fontaine', 'parc', 'piste', 'eclairage', 'ecole'].map((s) => `shop.${s}`),
       ...['elec', 'heat'].flatMap((o) => [`jeu.indice.${o}.monter`, `jeu.indice.${o}.baisser`]),
-      'gauge.bien', 'gauge.presque', 'gauge.loin', 'bilan.1', 'bilan.2', 'bilan.3',
+      'gauge.bien', 'gauge.presque', 'gauge.loin', 'bilan.bravo', 'bilan.soir', 'bilan.chaleur', 'bilan.anticiper',
     ];
     expect(built.filter((id) => !(id in all))).toEqual([]);
   });

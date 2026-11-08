@@ -1,6 +1,7 @@
 import { iconUrl } from '../assets';
 import { t } from '../i18n';
-import { END_HOUR, LOOK_AHEAD_HOURS, START_HOUR, demandAt, type DayDef, type Sample } from '../maquette/fakeDay';
+import { ANNOUNCE_HOURS, END_HOUR, SURPRISE_SPEC, START_HOUR, demandAt, type DayDef, type Surprise } from '@neutron/engine';
+import { LOOK_AHEAD_HOURS, type Sample } from './session';
 
 /**
  * Demand of the town (dashed) and production of the plant (solid), one lane per output. Only the next
@@ -25,8 +26,9 @@ const y = (lane: Lane, v: number): number => {
 };
 const path = (pts: [number, number][]): string => pts.map(([a, b], i) => `${i ? 'L' : 'M'}${a.toFixed(1)} ${b.toFixed(1)}`).join(' ');
 
-export function Curves({ day, hour, history, current, heatOn }: {
+export function Curves({ day, surprises, hour, history, current, heatOn }: {
   day: DayDef;
+  surprises: readonly Surprise[];
   hour: number;
   history: readonly Sample[];
   current: Sample;
@@ -35,13 +37,14 @@ export function Curves({ day, hour, history, current, heatOn }: {
   const until = Math.min(END_HOUR, hour + LOOK_AHEAD_HOURS);
   const demandPts = (lane: Lane): [number, number][] => {
     const out: [number, number][] = [];
-    for (let h = START_HOUR; h <= until + 1e-9; h += 0.25) out.push([x(h), y(lane, demandAt(day, h)[lane])]);
-    out.push([x(until), y(lane, demandAt(day, until)[lane])]);
+    for (let h = START_HOUR; h <= until + 1e-9; h += 0.25) out.push([x(h), y(lane, demandAt(day, surprises, h)[lane])]);
+    out.push([x(until), y(lane, demandAt(day, surprises, until)[lane])]);
     return out;
   };
   const prodPts = (lane: Lane): [number, number][] => [...history, current].map((s) => [x(s.h), y(lane, s[lane])]);
-  const s = day.surprise;
-  const surpriseShown = s && hour >= s.start - 1;
+  // Surprises already announced by Cassandra, in the lane of the output they change.
+  const shown = surprises.filter((x) => hour >= x.start - ANNOUNCE_HOURS);
+  const laneOf = (x: Surprise): Lane => (SURPRISE_SPEC[x.kind].elec !== 0 ? 'elec' : 'heat');
   const lanes: Lane[] = heatOn ? ['elec', 'heat'] : ['elec'];
   return (
     <svg className="curves" viewBox={`0 0 ${VW} ${CURVES_VH}`} role="img" aria-label={t('curves.label')}>
@@ -69,12 +72,12 @@ export function Curves({ day, hour, history, current, heatOn }: {
             <rect x={X0} y={L.top} width={X1 - X0} height={L.h} rx={14} fill="#FFFFFF" stroke="#1C2A4A" strokeWidth={2.5} />
             <g clipPath={`url(#clip-${lane})`}>
               <rect x={x(until)} y={L.top} width={X1 - x(until)} height={L.h} fill="url(#hatch)" />
-              {lane === 'elec' && surpriseShown && s ? (
-                <g>
-                  <rect x={x(s.start)} y={L.top} width={x(s.end) - x(s.start)} height={L.h} fill="url(#hatch-surprise)" />
-                  <image href={iconUrl('surprise')} x={(x(s.start) + x(s.end)) / 2 - 14} y={L.top + 4} width={28} height={28} />
+              {shown.filter((sp) => laneOf(sp) === lane).map((sp) => (
+                <g key={sp.kind}>
+                  <rect x={x(sp.start)} y={L.top} width={x(sp.end) - x(sp.start)} height={L.h} fill="url(#hatch-surprise)" />
+                  <image href={iconUrl('surprise')} x={(x(sp.start) + x(sp.end)) / 2 - 14} y={L.top + 4} width={28} height={28} />
                 </g>
-              ) : null}
+              ))}
               {on ? (
                 <>
                   <path d={path(demandPts(lane))} fill="none" stroke="#1C2A4A" strokeWidth={3.5} strokeDasharray="10 8" strokeLinecap="round" />

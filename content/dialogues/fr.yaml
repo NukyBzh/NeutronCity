@@ -2,19 +2,33 @@
 # Règles : tutoiement, ≤ 15 mots si possible, un seul mot nouveau, écrit en gras avec **mot**.
 accueil.bonjour: "Salut ! Moi, c'est Cassandra. Viens piloter la **centrale** avec moi !"
 
-jeu.bonjour: "Bonjour ! La ville se réveille. Suis la ligne en pointillés : c'est sa **demande**."
+# Début des journées (heures fixées dans content/days/*.yaml).
+jeu.ete.bonjour: "Bonjour ! Suis la ligne en pointillés : c'est la **demande** de la ville."
+jeu.printemps.bonjour: "Ce matin, il fait encore frais : la ville veut un peu de **chaleur**."
+jeu.hiver.bonjour: "Brrr, il fait froid ! La ville veut de la lumière ET du chauffage."
 jeu.curseurs: "Monte ou baisse les curseurs. La centrale suit doucement, alors prends de l'avance !"
-jeu.chauffage.baisse: "Le soleil chauffe les maisons : il faut moins de **chaleur**."
+jeu.ete.clim: "Il fait chaud : les **climatiseurs** démarrent. L'électricité va monter."
+jeu.ete.soir: "Tout le monde rentre et cuisine : petit pic ce soir !"
+jeu.chauffage.baisse: "Le soleil chauffe les maisons : il faut moins de chaleur."
+jeu.hiver.coeur: "Le **cœur** se partage : plus de chaleur, c'est moins d'électricité possible."
 jeu.soir: "Ce soir, tout le monde rentre. La demande va monter !"
-jeu.surprise.match: "Surprise ! Un match à la télé ce soir : plus d'électricité !"
 jeu.fin.proche: "La ville va se coucher. Encore un effort jusqu'à minuit !"
-jeu.coeur.plein: "Le **cœur** est plein ! Baisse la chaleur pour monter l'électricité."
+
+# Surprises : annoncées une heure avant (packages/engine/src/surprises.ts).
+surprise.peak: "Dans une heure, un grand match à la télé : plus d'électricité !"
+surprise.coldWave: "Une vague de froid arrive dans une heure : plus de chaleur !"
+surprise.mildSpell: "Dans une heure, il fera plus doux : moins de chaleur."
+
+# Pendant la partie.
+jeu.coeur.plein: "Le cœur est plein ! Baisse la chaleur pour monter l'électricité."
 jeu.bravo: "Bravo, tu suis parfaitement la ville !"
 jeu.indice.elec.monter: "La ville manque d'électricité. Monte le curseur jaune !"
 jeu.indice.elec.baisser: "Trop d'électricité ! Baisse un peu le curseur jaune."
 jeu.indice.heat.monter: "Les habitants ont froid. Monte le curseur orange !"
 jeu.indice.heat.baisser: "Trop de chaleur ! Baisse un peu le curseur orange."
 
-bilan.3: "Génial ! Ta ville a eu juste ce qu'il fallait toute la journée."
-bilan.2: "Bien joué ! Pense à monter un peu avant les pics."
-bilan.1: "Bonne journée ! Regarde les pointillés pour monter à temps."
+# Bilan : un seul conseil, choisi par le moteur (dayResult).
+bilan.bravo: "Génial ! Ta ville a eu juste ce qu'il fallait toute la journée."
+bilan.soir: "Le soir, la demande monte vite : monte les curseurs avant 18 h."
+bilan.chaleur: "Pense aussi au curseur orange : les habitants ont eu froid."
+bilan.anticiper: "Regarde les pointillés : ils te montrent la demande à venir."

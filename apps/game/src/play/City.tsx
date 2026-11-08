@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { iconUrl, shopUrl } from '../assets';
-import type { GaugeState } from '../ui/ui';
+import type { Mood } from '@neutron/engine';
 import { BUILDINGS, BuildingDefs, Buildings, LitWindows } from './city/Buildings';
 import { Background, Bike, Car, Clouds, Person, Smoke, Street } from './city/Life';
 import { HeatPipe, Plant, PlantDefs } from './city/Plant';
@@ -13,11 +13,10 @@ import { GROUND, H, W, nightAt, skyAt } from './city/scene';
  */
 export interface CityProps {
   hour: number;
-  elecGauge: GaugeState;
-  heatGauge: GaugeState | null;
-  /** Production below demand (a surplus does not hurt the town). */
-  elecShort: boolean;
-  heatShort: boolean;
+  /** Day id (ete, printemps, hiver): the season the town is drawn in. */
+  season: string;
+  /** Mood of the day (engine `moodOf`): happy, dark quarter, cold inhabitants, or calm. */
+  mood: Mood;
   /** The plant sends electricity / heat (animates the links). */
   elecOn: boolean;
   heatOn: boolean;
@@ -38,9 +37,9 @@ export const City = memo(function City(p: CityProps) {
   const sunT = (p.hour - 6) / 14.5;
   const sunX = 140 + sunT * 1000;
   const sunY = 220 - Math.sin(Math.PI * Math.min(1, Math.max(0, sunT))) * 175;
-  const happy = p.elecGauge === 'bien' && (p.heatGauge === null || p.heatGauge === 'bien');
-  const darkQuarter = p.elecShort && p.elecGauge === 'loin' ? 2 : null;
-  const cold = p.heatShort && p.heatGauge === 'loin';
+  const happy = p.mood === 'content';
+  const darkQuarter = p.mood === 'noir' ? 2 : null;
+  const cold = p.mood === 'froid';
   const lamps = p.upgrades.includes('eclairage');
   const houses = BUILDINGS.filter((b) => b.kind === 'house');
   return (
