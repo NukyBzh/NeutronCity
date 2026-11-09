@@ -3,7 +3,7 @@
 *Ce qui change pour le joueur, en mots simples. Une section par version (voir `docs/CONFIGURATION.md` §4).*
 
 ## v0.8.1 — 2026-11-09 (lot L6.2 : les bâtiments dans la ville, à valider)
-- Chaque bâtiment de la boutique a son terrain dans la ville : un terrain vide avec un petit panneau tant qu'il n'est pas acheté.
+- Chaque bâtiment de la boutique a son terrain dans la ville : une tuile d'herbe tant qu'il n'est pas acheté (enneigée en hiver).
 - Quand tu l'achètes, le bâtiment arrive sur son terrain avec la même image que dans la boutique ; une flèche jaune le montre.
 - Les bâtiments se voient aussi pendant la journée, dans la bande de la ville ; le soir et la nuit, ils prennent la lumière comme le reste de la ville.
 - L'isolation pose un bonnet de laine sur la cheminée de la maison des Lilas.

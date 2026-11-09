@@ -51,8 +51,8 @@ au lieu d'un vrai stock ; l'immunité de l'hôpital et l'effet de la maison méd
 
 ### Intégration L6.2 (2026-11-09)
 Chaque bâtiment à image a **son terrain** dans la ville (`PLOTS` dans `apps/game/src/play/iso/town.ts`), dans les rangées
-visibles de la bande du jeu (i + j de 5 à 8) et dans la ville entière. Avant l'achat : **terrain vide** (sol nu, bord en
-pointillés, panneau avec une petite maison), choix de Yann. Après : la même image que la carte de la boutique, un peu plus
+visibles de la bande du jeu (i + j de 5 à 8) et dans la ville entière. Avant l'achat : **tuile d'herbe** (image Gemini
+`asset_23_tuile_herbe`, enneigée en hiver), choix de Yann ; le reste de la ville garde ses immeubles dessinés. Après : la même image que la carte de la boutique, un peu plus
 grande dans la ville entière ; arrivée animée et flèche jaune pour l'achat qui vient d'être fait. Le bonnet de
 l'isolation se pose sur la cheminée de la maison des Lilas (achetée pendant la découverte, donc toujours là). Fontaine,
 piste et lampadaires gardent leur dessin. L'ancienne école dessinée et les bancs du parc dessiné sont retirés : leurs

@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
 import { validateShop } from '@neutron/engine';
-import { CAR_START_X, HAT, PLOTS, RIVER_X, drawTown, drawTownLayers, lightKey, type TownImage, type TownOptions } from '../src/play/iso/town';
+import { CAR_START_X, HAT, PLOTS, RIVER_X, TILE, drawTown, drawTownLayers, lightKey, type TownImage, type TownOptions } from '../src/play/iso/town';
 import { skyColours } from '../src/play/iso/Sky';
 
 const ICONS = { coeur: 'c.svg', froid: 'f.svg', electricite: 'e.svg', loin: 'l.svg' };
@@ -11,7 +11,7 @@ const SHOP = validateShop(parse(readFileSync(fileURLToPath(new URL('../../../con
 /** Buildings that keep their own drawing (D-19 E8). */
 const DRAWN = ['fontaine', 'piste', 'eclairage'];
 const ALL = SHOP.map((i) => i.id);
-const IMAGES: Record<string, TownImage> = Object.fromEntries(ALL.filter((id) => !DRAWN.includes(id)).map((id) => [id, { href: `data:image/webp;base64,${id}`, w: 100, h: 90 }]));
+const IMAGES: Record<string, TownImage> = Object.fromEntries([...ALL.filter((id) => !DRAWN.includes(id)), TILE].map((id) => [id, { href: `data:image/webp;base64,${id}`, w: 100, h: 90 }]));
 const town = (o: Partial<TownOptions> = {}, view: 'band' | 'full' = 'band') =>
   drawTown({ hour: 14, season: 'ete', mood: 'content', elecOn: true, heatOn: false, upgrades: ALL, icons: ICONS, images: IMAGES, ...o }, view);
 
@@ -103,23 +103,25 @@ describe('shop buildings in the town (lot L6.2)', () => {
     expect(iso.unlockAt).toBeGreaterThanOrEqual(8);
   });
 
-  it('an empty plot before the purchase, the same picture as in the shop after it', () => {
+  it('a grass tile before the purchase, the same picture as in the shop after it', () => {
     for (const view of ['band', 'full'] as const) {
       const none = town({ upgrades: [] }, view);
       for (const id of Object.keys(PLOTS)) expect(none).not.toContain(IMAGES[id]!.href);
-      expect(none.match(/stroke-dasharray="6 5"/g)?.length).toBe(Object.keys(PLOTS).length);
+      expect(none.split(`href="${IMAGES[TILE]!.href}"`).length - 1).toBe(Object.keys(PLOTS).length);
       const all = town({}, view);
       for (const id of [...Object.keys(PLOTS), 'isolation']) expect(all, id).toContain(`href="${IMAGES[id]!.href}"`);
-      expect(all).not.toContain('stroke-dasharray="6 5"');
+      expect(all).not.toContain(IMAGES[TILE]!.href);
     }
     expect(town({ upgrades: ['ferme'] })).toContain(IMAGES.ferme!.href);
     expect(town({ upgrades: ['ferme'] })).not.toContain(IMAGES.ecole!.href);
   });
 
   it('a building bought whose picture is not loaded yet keeps its plot (no broken picture)', () => {
-    const s = town({ upgrades: ['ferme'], images: {} });
-    expect(s).not.toContain('<image href="data:');
-    expect(s.match(/stroke-dasharray="6 5"/g)?.length).toBe(Object.keys(PLOTS).length);
+    const s = town({ upgrades: ['ferme'], images: { [TILE]: IMAGES[TILE]! } });
+    expect(s).not.toContain(IMAGES.ferme!.href);
+    expect(s.split(`href="${IMAGES[TILE]!.href}"`).length - 1).toBe(Object.keys(PLOTS).length);
+    // Before the tile itself is loaded: plain grass with a dashed edge.
+    expect(town({ upgrades: [], images: {} }).match(/stroke-dasharray="6 5"/g)?.length).toBe(Object.keys(PLOTS).length);
   });
 
   it('the building just bought arrives with its animation and the arrow, in a moving layer', () => {

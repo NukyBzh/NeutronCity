@@ -1,7 +1,7 @@
 import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import type { Mood } from '@neutron/engine';
 import { iconUrl, shopUrl } from '../assets';
-import { BAND_VIEWBOX, FULL_VIEWBOX, PLOTS, drawTownLayers, lightKey, seasonOf, type TownImage, type TownLayer } from './iso/town';
+import { BAND_VIEWBOX, FULL_VIEWBOX, PLOTS, TILE, drawTownLayers, lightKey, seasonOf, type TownImage, type TownLayer } from './iso/town';
 import { Sky } from './iso/Sky';
 
 /**
@@ -50,7 +50,7 @@ async function readImage(id: string): Promise<[string, TownImage] | null> {
   }
 }
 function loadImages(): Promise<Images> {
-  loading ??= Promise.all([...Object.keys(PLOTS), 'isolation'].map(readImage)).then((all) => {
+  loading ??= Promise.all([...Object.keys(PLOTS), 'isolation', TILE].map(readImage)).then((all) => {
     loaded = Object.fromEntries(all.filter((x): x is [string, TownImage] => x !== null));
     return loaded;
   });

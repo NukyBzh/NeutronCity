@@ -41,6 +41,7 @@ maison-lilas ← `asset_26`, maison-ve ← `asset_27`, epicerie ← `asset_28`, 
 maison-medicale ← `asset_30`, batterie ← `asset_31`, parc ← `asset_32_parc_arbore`, piscine ← `asset_33`,
 isolation ← `asset_46_bonnet_laine_cheminee`, solaire ← `asset_35`, hopital ← `asset_14_hopital`, cuve ← `asset_34`.
 Fontaine, piste cyclable et lampadaires gardent leur dessin SVG (`shop/`).
+`tuile-herbe.webp` ← `asset_23_tuile_herbe` (lot L6.2) : tuile des terrains pas encore achetés.
 
 ## Musique (`audio/`) — 2026-11-09
 - `musique-happy-clappy-loop.wav` : « Happy Clappy Loop » de **OwlishMedia**, licence **CC0** (domaine public, aucune

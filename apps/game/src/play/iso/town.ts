@@ -58,6 +58,9 @@ export const PLOTS: Readonly<Record<string, { i: number; j: number; size: number
  * shares of that picture.
  */
 export const HAT = { on: 'maison-lilas', x: 0.69, bottom: 0.3, size: 0.3 } as const;
+/** Grass tile of the empty plots (lot L6.2) and the share of its height taken by its top face. */
+export const TILE = 'tuile-herbe';
+const TILE_FACE = 600 / 675;
 const plotAt = (i: number, j: number): string | undefined => Object.keys(PLOTS).find((id) => PLOTS[id]!.i === i && PLOTS[id]!.j === j);
 
 const S = 12;
@@ -417,15 +420,24 @@ function build(o: TownOptions, view: 'band' | 'full'): { defs: string; layers: T
     if (hat) g += image(o.images!.isolation!.href, hat, filter);
     return g;
   }
-  /** Empty plot waiting for its building: bare ground, dashed edge and a sign with a little house on it. */
+  /**
+   * Empty plot waiting for its building: a grass tile (Gemini picture, owner's choice), its top face fitted on the cell;
+   * snow on it in winter. Until the tile is loaded: plain grass with a dashed edge.
+   */
   function lot(X: number, Y: number): string {
-    let g = flatPoly([P(X + 0.3, Y + 0.3), P(X + 7.7, Y + 0.3), P(X + 7.7, Y + 7.7), P(X + 0.3, Y + 7.7)], winter ? '#E6ECF5' : '#DCC38E');
-    g += `<polygon points="${pts([P(X + 1, Y + 1), P(X + 7, Y + 1), P(X + 7, Y + 7), P(X + 1, Y + 7)])}" fill="none" stroke="${tone('#FFFFFF')}" stroke-width="1.8" stroke-dasharray="6 5" stroke-linecap="round"/>`;
-    for (const [dx, dy] of [[2.2, 5.4], [5, 2.4], [3.6, 3.2]] as const) { const [px, py] = P(X + dx, Y + dy); g += `<ellipse cx="${f1(px)}" cy="${f1(py)}" rx="3" ry="1.6" fill="${tone(winter ? '#C9D3E2' : '#B89C66')}"/>`; }
-    const [sx, sy] = P(X + 5.6, Y + 6.4);
-    g += `<rect x="${f1(sx - 1.6)}" y="${f1(sy - 30)}" width="3.2" height="30" fill="${tone('#8A5A3B')}"${line}/>`;
-    g += `<rect x="${f1(sx - 15)}" y="${f1(sy - 44)}" width="30" height="20" rx="3" fill="${tone('#FFD166')}"${line}/>`;
-    g += `<polygon points="${f1(sx - 7)},${f1(sy - 28)} ${f1(sx - 7)},${f1(sy - 35)} ${f1(sx)},${f1(sy - 40.5)} ${f1(sx + 7)},${f1(sy - 35)} ${f1(sx + 7)},${f1(sy - 28)}" fill="${tone('#1D47B8')}"/>`;
+    const tile = o.images?.[TILE];
+    if (!tile) {
+      return flatPoly([P(X + 0.3, Y + 0.3), P(X + 7.7, Y + 0.3), P(X + 7.7, Y + 7.7), P(X + 0.3, Y + 7.7)], shade(grass, 0.95))
+        + `<polygon points="${pts([P(X + 1, Y + 1), P(X + 7, Y + 1), P(X + 7, Y + 7), P(X + 1, Y + 7)])}" fill="none" stroke="${tone('#FFFFFF')}" stroke-width="1.8" stroke-dasharray="6 5" stroke-linecap="round"/>`;
+    }
+    const [, ty] = P(X, Y);
+    const [lx] = P(X, Y + 8);
+    const [rx] = P(X + 8, Y);
+    const [, by] = P(X + 8, Y + 8);
+    // The top face (rim included) takes TILE_FACE of the picture's height.
+    const h = (by - ty) / TILE_FACE;
+    let g = `<image href="${tile.href}" x="${f1(lx)}" y="${f1(ty)}" width="${f1(rx - lx)}" height="${f1(h)}" preserveAspectRatio="none"${lightMatrix ? ' filter="url(#iso-light)"' : ''}/>`;
+    if (winter) g += `<polygon points="${pts([P(X + 0.6, Y + 0.6), P(X + 7.4, Y + 0.6), P(X + 7.4, Y + 7.4), P(X + 0.6, Y + 7.4)])}" fill="#F7FAFE" opacity="0.8"/>`;
     return g;
   }
 
