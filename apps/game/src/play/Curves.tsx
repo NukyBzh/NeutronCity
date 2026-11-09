@@ -1,6 +1,6 @@
 import { iconUrl } from '../assets';
 import { t } from '../i18n';
-import { ANNOUNCE_HOURS, BAND_PCT, END_HOUR, SURPRISE_SPEC, START_HOUR, demandAt, type DayDef, type Surprise, type TownEffect } from '@neutron/engine';
+import { ANNOUNCE_HOURS, BAND_PCT, END_HOUR, SURPRISE_SPEC, START_HOUR, demandAt, surpriseOver, type DayDef, type Surprise, type TownEffect } from '@neutron/engine';
 import { LOOK_AHEAD_HOURS, type Sample } from './session';
 
 /**
@@ -55,8 +55,10 @@ export function Curves({ day, surprises, effects = [], hour, history, current, h
   };
   const prodPts = (lane: Lane): [number, number][] => [...history, current].map((s) => [x(s.h), y(lane, s[lane])]);
   // Surprises already announced by Cassandra, in the lane of the output they change.
-  const shown = surprises.filter((x) => hour >= x.start - ANNOUNCE_HOURS);
-  const laneOf = (x: Surprise): Lane => (SURPRISE_SPEC[x.kind].elec !== 0 ? 'elec' : 'heat');
+  const shown = surprises.filter((x) => hour >= x.start - (SURPRISE_SPEC[x.kind].announce ? ANNOUNCE_HOURS : 0));
+  // Heat events in the heat lane; all the others (electricity, heatwave, party, visit, family) in the electricity lane.
+  const laneOf = (x: Surprise): Lane => (SURPRISE_SPEC[x.kind].heat !== 0 && SURPRISE_SPEC[x.kind].elec === 0 ? 'heat' : 'elec');
+  const endOf = (x: Surprise): number => Math.max(surpriseOver(x), x.start + 0.5);
   const lanes: Lane[] = heatOn ? ['elec', 'heat'] : ['elec'];
   return (
     <svg className="curves" viewBox={`0 0 ${VW} ${CURVES_VH}`} role="img" aria-label={t('curves.label')}>
@@ -86,8 +88,8 @@ export function Curves({ day, surprises, effects = [], hour, history, current, h
               <rect x={x(until)} y={L.top} width={X1 - x(until)} height={L.h} fill="url(#hatch)" />
               {shown.filter((sp) => laneOf(sp) === lane).map((sp) => (
                 <g key={sp.kind}>
-                  <rect x={x(sp.start)} y={L.top} width={x(sp.end) - x(sp.start)} height={L.h} fill="url(#hatch-surprise)" />
-                  <image href={iconUrl('surprise')} x={(x(sp.start) + x(sp.end)) / 2 - 14} y={L.top + 4} width={28} height={28} />
+                  <rect x={x(sp.start)} y={L.top} width={x(endOf(sp)) - x(sp.start)} height={L.h} fill="url(#hatch-surprise)" />
+                  <image href={iconUrl('surprise')} x={(x(sp.start) + x(endOf(sp))) / 2 - 14} y={L.top + 4} width={28} height={28} />
                 </g>
               ))}
               {on ? (

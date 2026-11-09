@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  DAY_MINUTES, START_HOUR, dayBonus, dayEffects, dayResult, demandAt, drawSurprises, effectsAt, heatOpen, hourOf, momentWeight,
+  DAY_MINUTES, NO_MODS, START_HOUR, dayBonus, dayEffects, dayResult, demandAt, drawSurprises, effectsAt, heatOpen, hourOf, momentWeight,
   nextDiscovery, shopStatus, simulate, validateShop, type DayDef, type GameState, type ShopItem,
 } from '../src/index';
 import { DAYS, SHOP, TEXTS } from './content';
@@ -125,7 +125,7 @@ describe('effects of the buildings on demand (E2)', () => {
 
       it('a player who looks ahead still gets 3 stars', () => {
         const effects = dayEffects(day, SHOP, owned);
-        for (const seed of [1, 2, 3, 4, 5]) expect(dayResult(day, simulate(day, seed, ahead(day), effects)).stars).toBe(3);
+        for (const seed of [1, 2, 3, 4, 5]) expect(dayResult(day, simulate(day, seed, ahead(day), effects, NO_MODS, true)).stars).toBe(3);
       });
     });
 });

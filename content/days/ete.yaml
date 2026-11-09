@@ -14,7 +14,7 @@ points:
   - [19, 70, 0]
   - [20.5, 78, 0]
   - [24, 50, 0]
-surprises: [peak]
+surprises: [peak, heatwave, squirrel, newcomers, classVisit, party]
 lines:
   - { hour: 6, say: jeu.ete.bonjour, pose: accueil }
   - { hour: 6.6, say: jeu.curseurs, pose: explique }

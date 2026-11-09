@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  clampSetpoints, gaugesOf, hourOf, isHeatingDay, isOver, isSurplus, moodOf, setSetpoints, type DayDef, type GameState, type Pose, type TownEffect,
+  NO_MODS, SURPRISE_SPEC, canFix, clampSetpoints, fixSurprise, gaugesOf, hourOf, isActive, isHeatingDay, isOver, isSurplus, moodOf, setSetpoints,
+  type DayDef, type EventMods, type GameState, type Pose, type SurpriseKind, type TownEffect,
 } from '@neutron/engine';
+import { townUrl } from '../assets';
 import { euros, t } from '../i18n';
 import { IsoCity } from '../play/IsoCity';
 import { Clock, CoreBar, Slider } from '../play/Controls';
@@ -32,6 +34,45 @@ const TUTO: { id: string; target: TutoTarget; pose: Pose; wait?: boolean }[] = [
 /** The yellow slider must move this many points before the tutorial goes on. */
 const TUTO_MOVE = 5;
 
+/** Events the child acts on (lot L7.1): the Gemini picture on the button, and how to act. */
+const EVENT_PICTURE: Partial<Record<SurpriseKind, string>> = {
+  storm: 'camion-maintenance', squirrel: 'panneau-alerte', heatLeak: 'fumee', scale: 'reseau-chaleur', newcomers: 'famille-1', classVisit: 'enfants',
+};
+/** Long press on the valve (milliseconds of real time) and taps to clean the exchanger. */
+const HOLD_MS = 1200;
+const TAPS = 5;
+/** Where a button stands over the town band (% from the left): over its quarter, or in the middle. */
+const QUARTER_X = [38, 58, 78];
+
+/** A big button on the town to act on an event: a tap, a long press, or several taps. */
+function EventButton({ kind, quarter, onAct }: { kind: SurpriseKind; quarter?: number; onAct: () => void }) {
+  const how = SURPRISE_SPEC[kind].fix;
+  const [taps, setTaps] = useState(0);
+  const [holding, setHolding] = useState(false);
+  const timer = useRef<number | null>(null);
+  const stop = () => {
+    if (timer.current !== null) window.clearTimeout(timer.current);
+    timer.current = null;
+    setHolding(false);
+  };
+  useEffect(() => stop, []);
+  const left = quarter !== undefined ? QUARTER_X[quarter] ?? 50 : 50;
+  const label = how === 'taps' ? `${t(`event.${kind}.action`)} · ${t('event.scale.left', { n: String(TAPS - taps) })}` : t(`event.${kind}.action`);
+  const handlers = how === 'hold'
+    ? {
+      onPointerDown: () => { setHolding(true); timer.current = window.setTimeout(() => { stop(); onAct(); }, HOLD_MS); },
+      onPointerUp: stop, onPointerLeave: stop, onPointerCancel: stop,
+    }
+    : { onClick: () => { sound.play('click'); if (how === 'taps' && taps + 1 < TAPS) setTaps(taps + 1); else onAct(); } };
+  return (
+    <button type="button" className={`event-btn pulse${holding ? ' holding' : ''}`} style={{ left: `${left}%` }} aria-label={label} {...handlers}>
+      {EVENT_PICTURE[kind] ? <img src={townUrl(EVENT_PICTURE[kind]!)} alt="" draggable={false} /> : null}
+      <span>{label}</span>
+      {how === 'hold' ? <i className="event-hold" style={{ animationDuration: `${HOLD_MS}ms` }} /> : null}
+    </button>
+  );
+}
+
 /** Review settings in the address (mock-up): `?vitesse=10` plays 10× faster; `?heure=19` starts at 19 h (add `&suivi=non` for a player who never moved). */
 const PARAMS = new URLSearchParams(window.location.search);
 const SPEED = Math.min(30, Math.max(1, Number(PARAMS.get('vitesse')) || 1));
@@ -43,10 +84,17 @@ const REVIEW_STEP = Math.max(1, Number(PARAMS.get('etape')) || 1) - 1;
 export const SPEEDS = [1, 2, 4] as const;
 export type Speed = (typeof SPEEDS)[number];
 
-export function Play({ day, seed, upgrades, effects = [], speed, onSpeed, onFinish, onRestart, onHome, tutorial = false, onTutorialDone }: {
+export function Play({
+  day, seed, upgrades, effects = [], mods = NO_MODS, seen = [], onSeen, speed, onSpeed, onFinish, onRestart, onHome, tutorial = false, onTutorialDone,
+}: {
   day: DayDef;
   /** Effects of the buildings bought on this day's demand (lot L6). */
   effects?: readonly TownEffect[];
+  /** How the buildings bought soften the events (lot L7.1). */
+  mods?: EventMods;
+  /** Events Cassandra has already explained, and what to call once she explains a new one. */
+  seen?: readonly string[];
+  onSeen?: (kind: string) => void;
   seed: number;
   upgrades: readonly string[];
   speed: Speed;
@@ -57,8 +105,8 @@ export function Play({ day, seed, upgrades, effects = [], speed, onSpeed, onFini
   tutorial?: boolean;
   onTutorialDone?: () => void;
 }) {
-  const [run, setRun] = useState(() => (REVIEW_START > START_HOUR ? playUntil(day, seed, REVIEW_START, REVIEW_FOLLOW, effects) : startOf(day, seed, effects)));
-  const [timeline] = useState(() => timelineOf(day, run.game));
+  const [run, setRun] = useState(() => (REVIEW_START > START_HOUR ? playUntil(day, seed, REVIEW_START, REVIEW_FOLLOW, effects, mods) : startOf(day, seed, effects, mods)));
+  const [timeline] = useState(() => timelineOf(day, run.game, seen));
   const [paused, setPaused] = useState(false);
   const [tuto, setTuto] = useState<number | null>(tutorial ? Math.min(REVIEW_STEP, TUTO.length - 1) : null);
   const tutoStart = useRef(run.game.plant.setElec);
@@ -124,7 +172,9 @@ export function Play({ day, seed, upgrades, effects = [], speed, onSpeed, onFini
       if (step && h >= step.hour) {
         c.next += 1;
         say(step.say, step.pose);
-        if (step.say.startsWith('surprise.')) sound.play('alert');
+        // An event explained once is not explained again (lot L7.1).
+        if (step.say.endsWith('.why')) onSeen?.(step.say.split('.')[1]!);
+        else if (step.say.startsWith('surprise.')) sound.play('alert');
       }
       const view = gaugesOf(day, g);
       if (view.elec === 'loin' || view.heat === 'loin') {
@@ -168,6 +218,27 @@ export function Play({ day, seed, upgrades, effects = [], speed, onSpeed, onFini
     return () => window.clearTimeout(id);
   }, [line]);
 
+  // The child acts on an event (lot L7.1): the repair starts or the reward is given.
+  const act = (index: number) => {
+    const r = current.current;
+    const game = fixSurprise(r.game, index);
+    if (game === r.game) return;
+    const next = { ...r, game };
+    current.current = next;
+    setRun(next);
+  };
+
+  // Each event the child acted on (or a class visit succeeded): Cassandra says so, coins for a reward.
+  const told = useRef(new Set<number>());
+  useEffect(() => {
+    run.game.surprises.forEach((e, i) => {
+      if (e.fixedAt === undefined || told.current.has(i)) return;
+      told.current.add(i);
+      say(`surprise.${e.kind}.done`, 'bravo');
+      if (SURPRISE_SPEC[e.kind].reward) sound.play('coin');
+    });
+  }, [run.game.surprises]);
+
   const setOutput = (moved: 'elec' | 'heat', v: number) => {
     const c = clock.current;
     c.lastInput = c.real;
@@ -200,6 +271,20 @@ export function Play({ day, seed, upgrades, effects = [], speed, onSpeed, onFini
   const step = tuto === null ? null : TUTO[tuto]!;
   const pulseElec = step ? step.target === 'elec' : needs(g.plant.elec, g.plant.setElec, view.demand.elec);
   const pulseHeat = !step && view.heat !== null && needs(g.plant.heat, g.plant.setHeat, view.demand.heat);
+
+  // Events in the town (lot L7.1): what the child can act on, repairs going on, the class visit, what the town shows.
+  const acts = step ? [] : g.surprises.map((e, i) => ({ e, i })).filter(({ e }) => canFix(e, hour));
+  const on = g.surprises.filter((e) => isActive(e, hour));
+  const cutEv = on.find((e) => SURPRISE_SPEC[e.kind].cut);
+  const repairing = on.find((e) => e.fixedAt !== undefined && SURPRISE_SPEC[e.kind].fix && !SURPRISE_SPEC[e.kind].reward);
+  const visit = on.find((e) => SURPRISE_SPEC[e.kind].visit !== undefined && e.fixedAt === undefined);
+  const scene = {
+    cut: cutEv?.quarter ?? null,
+    truck: cutEv && cutEv.fixedAt !== undefined ? cutEv.quarter ?? null : null,
+    leak: on.some((e) => e.kind === 'heatLeak'),
+    family: on.some((e) => e.kind === 'newcomers' && e.fixedAt === undefined),
+    visit: visit !== undefined,
+  };
 
   return (
     <main className={`screen play${step ? ' tuto-on' : ''}`} data-tuto={step?.target}>
@@ -236,7 +321,22 @@ export function Play({ day, seed, upgrades, effects = [], speed, onSpeed, onFini
           elecOn={g.plant.elec > 0}
           heatOn={heatDay && g.plant.heat > 0}
           upgrades={upgrades}
+          scene={scene}
         />
+        {acts.length || repairing || visit ? (
+          <div className="event-layer">
+            {acts.map(({ e, i }) => <EventButton key={`${e.kind}${i}`} kind={e.kind} quarter={e.quarter} onAct={() => act(i)} />)}
+            {repairing ? (
+              <span className="event-chip"><img src={townUrl('camion-maintenance')} alt="" />{t('event.repair')}</span>
+            ) : null}
+            {visit ? (
+              <span className="event-chip visit">
+                <img src={townUrl('enfants')} alt="" />{t('event.classVisit.progress')}
+                <i className="visit-bar"><b style={{ width: `${Math.min(100, (g.visitRun / (SURPRISE_SPEC.classVisit.visit ?? 60)) * 100)}%` }} /></i>
+              </span>
+            ) : null}
+          </div>
+        ) : null}
       </section>
 
       {/* Cassandra stands at the bottom, between the curves and the controls, pointing at the sliders (R1-07). */}

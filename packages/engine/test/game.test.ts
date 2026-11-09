@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  DAY_MINUTES, SURPRISE_SPEC, dayResult, demandAt, drawSurprises, gaugeOf, hourOf, isHeatingDay, maxEuros, newGame,
+  DAY_MINUTES, MAX_SURPRISES, NO_MODS, SURPRISE_SPEC, dayResult, demandAt, drawSurprises, gaugeOf, hourOf, isHeatingDay, maxEuros, newGame,
   isSurplus, setSetpoints, simulate, stepMinute, townHappiness, type DayDef, type GameState,
 } from '../src/index';
 import { DAYS, SHOP } from './content';
@@ -15,20 +15,21 @@ const idle = () => null;
 describe.each(DAYS.map((d) => [d.id, d] as const))('game on %s', (_id, day) => {
   it('same seed and same moves ⇒ same result, to the euro', () => {
     for (const seed of [1, 42, 2026]) {
-      const a = simulate(day, seed, ahead(day));
-      const b = simulate(day, seed, ahead(day));
+      const a = simulate(day, seed, ahead(day), [], NO_MODS, true);
+      const b = simulate(day, seed, ahead(day), [], NO_MODS, true);
       expect(a).toEqual(b);
       expect(Number.isInteger(a.euros)).toBe(true);
     }
   });
 
-  it('a player who anticipates gets 3 stars; one who never moves gets at least 1 but not 3 (D-02)', () => {
+  it('a player who anticipates (and repairs at once) gets 3 stars; one who never moves gets at least 1 but not 3 (D-02)', () => {
     for (const seed of [3, 17, 99, 512, 777]) {
-      const good = dayResult(day, simulate(day, seed, ahead(day)));
+      const played = simulate(day, seed, ahead(day), [], NO_MODS, true);
+      const good = dayResult(day, played);
       const lazy = dayResult(day, simulate(day, seed, idle));
       expect(good.stars, `seed ${seed}`).toBe(3);
       expect(good.advice).toBe('bravo');
-      expect(good.euros).toBeLessThanOrEqual(good.max);
+      expect(good.euros - played.stats.rewards).toBeLessThanOrEqual(good.max);
       expect(lazy.stars, `seed ${seed}`).toBeGreaterThanOrEqual(1);
       expect(lazy.stars, `seed ${seed}`).toBeLessThan(3);
       expect(lazy.advice).not.toBe('bravo');
@@ -53,28 +54,36 @@ describe.each(DAYS.map((d) => [d.id, d] as const))('game on %s', (_id, day) => {
   });
 
   it('pays only what the D-02 scale allows', () => {
-    const s = simulate(day, 8, ahead(day));
-    expect(s.euros).toBeLessThanOrEqual(maxEuros(day, s.surprises));
+    const s = simulate(day, 8, ahead(day), [], NO_MODS, true);
+    expect(s.euros - s.stats.rewards).toBeLessThanOrEqual(maxEuros(day, s.surprises));
     if (isHeatingDay(day)) expect(maxEuros(day, s.surprises)).toBeGreaterThan(DAY_MINUTES * 2);
-    else expect(maxEuros(day, s.surprises)).toBe(DAY_MINUTES * 2);
+    // A day with no event changing the gain pays at most 2 € a minute for electricity alone.
+    else if (!s.surprises.some((e) => SURPRISE_SPEC[e.kind].gain)) expect(maxEuros(day, s.surprises)).toBe(DAY_MINUTES * 2);
   });
 });
 
 describe('surprises', () => {
-  it('two different kinds an hour apart on heating days, one peak in summer, all over before midnight', () => {
+  it('1 to 3 events of different kinds, one at a time and an hour apart, in their own hours, over before midnight (D-21)', () => {
     for (const day of DAYS) {
+      const counts = new Set<number>();
       for (let seed = 0; seed < 300; seed++) {
         const sur = drawSurprises(day, seed);
-        expect(sur.length).toBe(Math.min(2, day.surprises.length));
-        if (sur.length === 2) {
-          expect(sur[0]!.kind).not.toBe(sur[1]!.kind);
-          expect(sur[1]!.start).toBeGreaterThanOrEqual(sur[0]!.end + 1);
-        }
+        counts.add(sur.length);
+        expect(sur.length).toBeGreaterThanOrEqual(1);
+        expect(sur.length).toBeLessThanOrEqual(MAX_SURPRISES);
+        expect(new Set(sur.map((x) => x.kind)).size).toBe(sur.length);
+        for (let i = 1; i < sur.length; i++) expect(sur[i]!.start).toBeGreaterThanOrEqual(sur[i - 1]!.end + 1);
         for (const x of sur) {
+          const spec = SURPRISE_SPEC[x.kind];
+          expect(day.surprises).toContain(x.kind);
+          expect(x.start).toBeGreaterThanOrEqual(spec.from);
+          expect(x.start).toBeLessThanOrEqual(spec.to);
           expect(x.end).toBeLessThanOrEqual(24);
-          if (!isHeatingDay(day)) expect(SURPRISE_SPEC[x.kind].needsHeat).toBe(false);
+          if (!isHeatingDay(day)) expect(spec.needsHeat).toBe(false);
+          expect(x.quarter !== undefined).toBe(spec.cut === true);
         }
       }
+      expect(counts.has(MAX_SURPRISES), day.id).toBe(true);
     }
   });
 

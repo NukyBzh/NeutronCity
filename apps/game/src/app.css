@@ -367,3 +367,27 @@ svg .pop, svg .float { transform-box: fill-box; transform-origin: center; }
 .shop-side .shop-items { grid-auto-rows: max-content; }
 .shop-side .shop-item { min-height: 12.5rem; }
 .shop-side .shop-item h2 { min-height: 2.6rem; }
+
+/* Events (lot L7.1): big buttons on the town band to act, repair and class-visit chips. */
+.zone-city { position: relative; }
+.event-layer { position: absolute; inset: 0; pointer-events: none; }
+.event-btn {
+  position: absolute; top: 18%; transform: translateX(-50%); pointer-events: auto; display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.5rem 1.1rem 0.5rem 0.6rem; border: 0.18rem solid var(--encre); border-radius: 1.2rem; background: #FFF7D6;
+  font: inherit; font-weight: 800; font-size: 1.15rem; color: var(--encre); box-shadow: 0 0.35rem 0 rgba(28, 42, 74, 0.35);
+  cursor: pointer; touch-action: none; user-select: none; overflow: hidden; min-height: 4.2rem;
+}
+.event-btn img { height: 3.2rem; width: auto; pointer-events: none; }
+.event-btn span { position: relative; z-index: 1; }
+.event-hold { position: absolute; left: 0; bottom: 0; height: 0.45rem; width: 0; background: #2E9E5B; }
+.event-btn.holding .event-hold { animation: hold-fill linear forwards; }
+@keyframes hold-fill { to { width: 100%; } }
+.event-chip {
+  position: absolute; left: 50%; bottom: 0.8rem; transform: translateX(-50%); display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.35rem 0.9rem 0.35rem 0.5rem; border-radius: 1rem; background: rgba(255, 255, 255, 0.92); border: 0.12rem solid var(--encre);
+  font-weight: 700; font-size: 1rem; color: var(--encre);
+}
+.event-chip img { height: 2.2rem; width: auto; }
+.event-chip.visit { bottom: auto; top: 0.8rem; }
+.visit-bar { display: inline-block; width: 7rem; height: 0.7rem; border-radius: 0.4rem; background: #E4E7EF; border: 0.1rem solid var(--encre); overflow: hidden; }
+.visit-bar b { display: block; height: 100%; background: #2E9E5B; transition: width 0.3s; }

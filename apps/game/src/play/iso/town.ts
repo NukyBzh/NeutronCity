@@ -33,7 +33,28 @@ export interface TownOptions {
    * pictures (TOWN_IMAGES) and those of the shop buildings. What is not loaded yet is simply not drawn.
    */
   images?: Readonly<Record<string, TownImage>>;
+  /** What the day's events show in the town (lot L7.1). */
+  scene?: TownScene;
 }
+
+/** Events seen in the town: a dark quarter, the repair truck, a heat leak, a family arriving, a class visiting. */
+export interface TownScene {
+  cut?: number | null;
+  truck?: number | null;
+  leak?: boolean;
+  family?: boolean;
+  visit?: boolean;
+}
+
+/** Quarters of the town (engine's QUARTERS): the lots' columns of the left, centre and right blocks. */
+export const QUARTER_COLS: readonly (readonly number[])[] = [[3, 4], [6, 7], [9, 10]];
+/** Quarter of a shop building's plot (the hospital protects its own, lot L7.1). */
+export const quarterOfPlot = (id: string): number | null => {
+  const pl = PLOTS[id as keyof typeof PLOTS];
+  if (!pl) return null;
+  const q = QUARTER_COLS.findIndex((cols) => cols.includes(pl.c));
+  return q >= 0 ? q : null;
+};
 
 // ---------- the map ----------
 const T = 8;
@@ -126,7 +147,7 @@ export const TOWN_IMAGES = [
   'salle-commande', 'combustible', 'diesel', 'arbre', 'lampadaire', 'panneau-alerte', 'balancoire', 'enfants', 'oiseaux',
   'immeuble-moderne', 'immeuble-brique', 'tour-bureaux', 'boulangerie', 'maison-jardin', 'immeuble-rose', 'piste',
   'voiture-rouge-avant', 'voiture-rouge-arriere', 'voiture-bleue-avant', 'voiture-bleue-arriere', 'bus',
-  'habitant-adulte', 'habitant-enfant', 'famille-1', 'famille-2',
+  'habitant-adulte', 'habitant-enfant', 'famille-1', 'famille-2', 'camion-maintenance', 'fumee',
 ] as const;
 
 /**
@@ -222,6 +243,8 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
     light,
     'light-n': lightNight,
     winter: winter ? '0.35 0 0 0 0.62 0 0.35 0 0 0.64 0 0 0.35 0 0.68 0 0 0 1 0' : null,
+    // A quarter without electricity (lot L7.1): darker and bluer, whatever the hour.
+    dark: '0.42 0 0 0 0.03 0 0.42 0 0 0.05 0 0 0.48 0 0.12 0 0 0 1 0',
   };
   const filterDefs = (used: Set<string>): string => [...used]
     .filter((f) => FILTERS[f])
@@ -309,7 +332,9 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
   // ---------- buildings, trees, plant ----------
   const things: Item[] = [];
   const top: string[] = [];
-  const darkQuarter = (c: number, r: number): boolean => o.mood === 'noir' && c >= 3 && c - r >= 2;
+  const scene = o.scene ?? {};
+  const cutCols = scene.cut !== undefined && scene.cut !== null ? QUARTER_COLS[scene.cut] ?? [] : [];
+  const darkQuarter = (c: number, r: number): boolean => cutCols.includes(c) || (o.mood === 'noir' && c >= 3 && c - r >= 2);
   const flats = (c: number, r: number): { id: string; filters: string[] } => {
     const snow = winter ? '-neige' : '';
     if (darkQuarter(c, r)) return { id: `immeuble-coupure${snow}`, filters: ['light-n'] };
@@ -369,6 +394,9 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
     for (let c: number = COLS[0]; c <= COLS[1]; c++) {
       const x = T * c + 4;
       const y = T * r + 4;
+      // Everything of a cut quarter goes dark (lot L7.1).
+      const first = things.length;
+      const dim = (): void => { if (cutCols.includes(c)) for (let k = first; k < things.length; k++) things[k]!.filters = [...things[k]!.filters, 'dark']; };
       const plot = plotAt(c, r);
       if (plot) {
         const box = o.upgrades.includes(plot) && img[plot] ? pictureBox(plot) : null;
@@ -382,6 +410,7 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
             if (hatItem) (o.fresh === 'isolation' ? fresh : things).push(hatItem);
           }
         }
+        dim();
         continue;
       }
       const thing = thingAt(c, r);
@@ -401,6 +430,7 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
       if (o.upgrades.includes('eclairage') && isRoadCol(c) && isRoadRow(r)) push('lampadaire', T * c + 1, T * r + 1, 0.14, L());
       // Pylons of the power line along the road in front of row 5.
       if (r === 5) for (const px of PYLONS) if (Math.floor(px / T) === c) push('pylone', px, WIRE_Y, 0.36, L());
+      dim();
     }
     rowItems.push(...things);
     const moving = isRoadRow(r) ? traffic(r) : '';
@@ -421,8 +451,28 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
     top.push(`<polyline points="${pts}" stroke="#4A5878" stroke-width="1.2" fill="none"/>`);
     if (o.elecOn) top.push(`<polyline class="flow" points="${pts}" stroke="#FFC83D" stroke-width="2.4" stroke-dasharray="3 12" fill="none" stroke-linecap="round"/>`);
   }
+  // Events (lot L7.1): warning sign above a cut quarter, repair truck in front of it, smoke of a heat leak, a family
+  // arriving, a class visiting the plant.
+  const sceneItems: Item[] = [];
+  const at = (id: string, wx: number, wy: number, size: number, lift = 0, mirror = false): void => {
+    const b = boxAt(id, wx, wy, size);
+    if (b) sceneItems.push({ id, box: { ...b, y: b.y - lift }, mirror, filters: L() });
+  };
+  if (cutCols.length) at('panneau-alerte', T * (cutCols[0]! + 1), T * 4, 0.42, 120);
+  if (scene.truck !== undefined && scene.truck !== null) {
+    const cols = QUARTER_COLS[scene.truck] ?? [];
+    // On the street above the quarter (row 2), which the band of the play screen always shows.
+    if (cols.length) at('camion-maintenance', T * cols[0]! + 6, T * 2 + 5, 0.34, 0, true);
+  }
+  if (scene.leak) {
+    const pl = o.upgrades.includes('reseau-chaleur') ? PLOTS['reseau-chaleur'] : null;
+    if (pl) at('fumee', T * pl.c + 4, T * pl.r + 4, 0.35, 40); else at('fumee', T * 1 + 4, T * 8 + 4, 0.35, 60);
+  }
+  if (scene.family) at('famille-1', T * 5 + 6, T * 4 + 7, 0.26);
+  if (scene.visit) at('enfants', T * 2 + 3, T * 7 + 4, 0.3);
+  if (sceneItems.length) top.push(`<g class="float">${render(sceneItems)}</g>`);
   // A quarter without electricity: the Gemini warning sign above it.
-  if (o.mood === 'noir') {
+  if (o.mood === 'noir' && !cutCols.length) {
     const b = boxAt('panneau-alerte', T * 8 + 4, T * 2 + 4, 0.5);
     if (b) top.push(`<g class="float">${render([{ id: 'panneau-alerte', box: { ...b, y: b.y - 90 }, filters: [] }])}</g>`);
   }

@@ -10,10 +10,12 @@ export interface Progress {
   lastDay: string | null;
   /** The guided tutorial has been seen (lot L5); « Nouveau joueur » shows it again. */
   tuto: boolean;
+  /** Events Cassandra has already explained (lot L7.1): she explains each one the first time only. */
+  seen: string[];
 }
 
 const KEY = 'neutron-city.progress';
-export const EMPTY: Progress = { version: 1, wallet: 0, owned: [], stars: {}, lastDay: null, tuto: false };
+export const EMPTY: Progress = { version: 1, wallet: 0, owned: [], stars: {}, lastDay: null, tuto: false, seen: [] };
 
 /** Reads the saved progress; anything missing or unreadable gives a fresh start. */
 export function loadProgress(storage: Pick<Storage, 'getItem'> | undefined = globalThis.localStorage): Progress {
@@ -31,6 +33,7 @@ export function loadProgress(storage: Pick<Storage, 'getItem'> | undefined = glo
       lastDay: typeof p.lastDay === 'string' ? p.lastDay : null,
       // Saved before v0.7.0 (no tutorial yet): a child who has already finished a day does not need it.
       tuto: typeof p.tuto === 'boolean' ? p.tuto : Object.keys(stars).length > 0,
+      seen: Array.isArray(p.seen) ? p.seen.filter((x): x is string => typeof x === 'string') : [],
     };
   } catch {
     return { ...EMPTY };

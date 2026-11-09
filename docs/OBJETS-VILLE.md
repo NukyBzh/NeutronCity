@@ -39,7 +39,7 @@ les écarts :
 | E4 | Tutoriel de 8 achats imposés, puis phase libre avec déblocage selon le nombre de bâtiments | Journées par saison (`content/days/`), boutique entre les journées | Le tutoriel se fait-il sur les premières journées ? |
 | E5 | Le **réseau de chaleur** (objet 2) débloque la chaleur | La chaleur existe dès la première journée (printemps : de 6 à 28 %) | Garder une première journée sans chaleur, ou retirer cet effet |
 | E6 | Journée de 4 min sur 24 h, saisons continues | Journée de 6 h à minuit, environ 5 min, une saison par journée | Recalculer les temps de retour sur investissement |
-| E7 | 10 événements, ville en au moins 3 quartiers | Surprises du moteur : `peak`, `coldWave`, `mildSpell` ; quartiers à vérifier dans le moteur | Quels événements reprendre, et à quel lot |
+| E7 | 10 événements, ville en au moins 3 quartiers *(fait au lot L7.1, D-21)* | Surprises du moteur : `peak`, `coldWave`, `mildSpell` ; quartiers à vérifier dans le moteur | Quels événements reprendre, et à quel lot |
 | E8 | Prompts en **palette pastel** (trame de Yann) | D-13 : **couleurs vives**, contours foncés | Vérifier que les images Gemini restent cohérentes avec la ville dessinée |
 
 ### Intégration L6.1 (2026-11-09)

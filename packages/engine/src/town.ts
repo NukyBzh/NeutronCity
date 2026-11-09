@@ -10,6 +10,7 @@
 import type { DayDef } from './day';
 import { isHeatingDay } from './day';
 import { effectErrors, type TownEffect } from './effects';
+import { NO_MODS, type EventMods } from './surprises';
 import type { Gauge } from './game';
 
 export interface ShopItem {
@@ -25,6 +26,12 @@ export interface ShopItem {
   unlockAt?: number;
   /** Buying it opens the days with heat (D-19 E5). */
   opensHeat?: boolean;
+  /** Its quarter never goes dark (hospital, lot L7.1). */
+  protects?: boolean;
+  /** Bad events change demand this much once it is bought (maison médicale: 0.8). */
+  softens?: number;
+  /** Core limit during a heatwave once it is bought (battery: 90). */
+  heatwaveCap?: number;
   effects: TownEffect[];
 }
 
@@ -56,6 +63,9 @@ export function validateShop(raw: unknown, where = 'shop'): ShopItem[] {
     }
     if (unlock !== undefined && (!Number.isInteger(unlock) || (unlock as number) < 0)) errors.push(`${at}.unlockAt: whole number ≥ 0 expected`);
     if (o.opensHeat !== undefined && typeof o.opensHeat !== 'boolean') errors.push(`${at}.opensHeat: true or false expected`);
+    if (o.protects !== undefined && typeof o.protects !== 'boolean') errors.push(`${at}.protects: true or false expected`);
+    if (o.softens !== undefined && !(typeof o.softens === 'number' && o.softens > 0 && o.softens <= 1)) errors.push(`${at}.softens: number between 0 and 1 expected`);
+    if (o.heatwaveCap !== undefined && !(typeof o.heatwaveCap === 'number' && o.heatwaveCap > 0 && o.heatwaveCap <= 100)) errors.push(`${at}.heatwaveCap: % of the core expected`);
     const eff = o.effects ?? [];
     if (!Array.isArray(eff)) errors.push(`${at}.effects: list expected`);
     else eff.forEach((e, k) => errors.push(...effectErrors(e, `${at}.effects[${k}]`)));
@@ -110,6 +120,21 @@ export function dayEffects(day: DayDef, shop: readonly ShopItem[], owned: readon
     .filter((i) => owned.includes(i.id))
     .flatMap((i) => i.effects)
     .filter((e) => (!e.days || e.days.includes(day.id)) && (e.out === 'elec' || heating));
+}
+
+/**
+ * How the buildings bought soften the day's events (lot L7.1): the quarter of a building that `protects` never goes
+ * dark (`quarterOf` says in which quarter of the town a building stands), `softens` weakens bad events, `heatwaveCap`
+ * lets the plant produce more during a heatwave.
+ */
+export function eventMods(shop: readonly ShopItem[], owned: readonly string[], quarterOf: (id: string) => number | null): EventMods {
+  const mine = shop.filter((i) => owned.includes(i.id));
+  const guard = mine.find((i) => i.protects);
+  return {
+    protectedQuarter: guard ? quarterOf(guard.id) : NO_MODS.protectedQuarter,
+    strength: mine.reduce((k, i) => k * (i.softens ?? 1), 1),
+    heatwaveCap: Math.max(NO_MODS.heatwaveCap, ...mine.map((i) => i.heatwaveCap ?? 0)),
+  };
 }
 
 /** Euros the town's buildings pay at the end of a day (D-19 E1). */

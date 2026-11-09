@@ -81,8 +81,8 @@ export function Days({ cards, onPick, onHome }: { cards: DayCard[]; onPick: (id:
 }
 
 /** End of the day: euros, stars (pictograms) and the one piece of advice chosen by the engine. */
-export function Summary({ earned, bonus = 0, stars, advice, season, upgrades, onShop, onAgain, onDays }: {
-  earned: number; bonus?: number; stars: number; advice: Advice; season: string; upgrades: readonly string[]; onShop: () => void; onAgain: () => void; onDays: () => void;
+export function Summary({ earned, bonus = 0, townBonus = bonus, stars, advice, season, upgrades, onShop, onAgain, onDays }: {
+  earned: number; bonus?: number; townBonus?: number; stars: number; advice: Advice; season: string; upgrades: readonly string[]; onShop: () => void; onAgain: () => void; onDays: () => void;
 }) {
   // A short jingle when the day ends (lot L5).
   useEffect(() => sound.play('jingle'), []);
@@ -93,7 +93,12 @@ export function Summary({ earned, bonus = 0, stars, advice, season, upgrades, on
         <h1>{t('summary.title')}</h1>
         <Stars count={stars} size={4} />
         <p className="summary-money"><Icon name="tirelire" size={3} />{t('summary.earned', { amount: euros(earned) })}</p>
-        {bonus > 0 ? <p className="summary-bonus"><Icon name="piece" size={2} />{t('summary.bonus', { amount: euros(bonus) })}</p> : null}
+        {/* The town's bonus depends on the stars (D-21): all with 3, half with 2, none with 1. */}
+        {townBonus > 0 ? (
+          <p className="summary-bonus"><Icon name="piece" size={2} />
+            {t(stars >= 3 ? 'summary.bonus' : stars === 2 ? 'summary.bonus.half' : 'summary.bonus.none', { amount: euros(bonus) })}
+          </p>
+        ) : null}
         <div className="row">
           <Button kind="primary" pulse icon="boutique" label={t('btn.shop')} onClick={onShop} />
           <Button icon="recommencer" label={t('btn.again')} onClick={onAgain} />

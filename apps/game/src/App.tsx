@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
-import { dayBonus, dayEffects, dayResult, heatOpen, isHeatingDay, shopStatus, type DayResult, type GameState } from '@neutron/engine';
+import {
+  dayBonus, dayEffects, dayResult, eventMods, heatOpen, isHeatingDay, shopStatus, starBonus, type DayResult, type GameState,
+} from '@neutron/engine';
 import { DAYS, SHOP, dayById } from './content';
 import { Days, Home, Shop, Summary, type DayCard } from './screens/Menus';
 import { Play, type Speed } from './screens/Play';
 import { EMPTY, clearProgress, loadProgress, saveProgress } from './save';
+import { quarterOfPlot } from './play/iso/town';
 import './app.css';
 
 type Screen = 'home' | 'days' | 'play' | 'summary' | 'shop';
@@ -43,6 +46,10 @@ export function App() {
   const [last, setLast] = useState<DayResult>({ euros: 0, max: 0, stars: 1, advice: 'anticiper' });
   // Euros paid by the town's buildings at the end of the last day (D-19 E1).
   const [lastBonus, setLastBonus] = useState(REVIEW ? dayBonus(SHOP, START_OWNED) : 0);
+  // What the town's buildings would pay with 3 stars (the summary says why it paid less, D-21).
+  const [townBonus, setTownBonus] = useState(REVIEW ? dayBonus(SHOP, START_OWNED) : 0);
+  // Events Cassandra has already explained (lot L7.1).
+  const [seen, setSeen] = useState<string[]>(SAVED.seen);
   const [stars, setStars] = useState<Record<string, number>>(SAVED.stars);
   // Speed chosen by the player, kept from one day to the next (not saved).
   const [speed, setSpeed] = useState<Speed>(1);
@@ -53,8 +60,8 @@ export function App() {
   const [tutoAsked, setTutoAsked] = useState(false);
 
   useEffect(() => {
-    if (!REVIEW) saveProgress({ version: 1, wallet, owned, stars, lastDay: day.id, tuto: tutoSeen });
-  }, [wallet, owned, stars, day, tutoSeen]);
+    if (!REVIEW) saveProgress({ version: 1, wallet, owned, stars, lastDay: day.id, tuto: tutoSeen, seen });
+  }, [wallet, owned, stars, day, tutoSeen, seen]);
 
   const reset = () => {
     clearProgress();
@@ -63,6 +70,7 @@ export function App() {
     setStars({});
     setDay(DAYS[0]!);
     setTutoSeen(false);
+    setSeen([]);
   };
 
   // A day opens once the day before it has been finished (one star at least); a day with heat also needs the heat
@@ -76,9 +84,11 @@ export function App() {
 
   const finish = useCallback((game: GameState) => {
     const r = dayResult(day, game);
-    const bonus = dayBonus(SHOP, owned);
+    const full = dayBonus(SHOP, owned);
+    const bonus = starBonus(full, r.stars);
     setLast(r);
     setLastBonus(bonus);
+    setTownBonus(full);
     setWallet((w) => w + r.euros + bonus);
     setStars((s) => ({ ...s, [day.id]: Math.max(s[day.id] ?? 0, r.stars) }));
     setScreen('summary');
@@ -98,11 +108,12 @@ export function App() {
       return <Days cards={cards} onPick={startDay} onHome={() => setScreen('home')} />;
     case 'play':
       return (
-        <Play key={round} day={day} seed={seed} upgrades={owned} effects={dayEffects(day, SHOP, owned)} speed={speed} onSpeed={setSpeed} onFinish={finish} onRestart={() => startDay(day.id)}
+        <Play key={round} day={day} seed={seed} upgrades={owned} effects={dayEffects(day, SHOP, owned)} mods={eventMods(SHOP, owned, quarterOfPlot)}
+          seen={seen} onSeen={(k) => setSeen((s) => (s.includes(k) ? s : [...s, k]))} speed={speed} onSpeed={setSpeed} onFinish={finish} onRestart={() => startDay(day.id)}
           onHome={() => setScreen('home')} tutorial={!tutoSeen || tutoAsked} onTutorialDone={() => { setTutoSeen(true); setTutoAsked(false); }} />
       );
     case 'summary':
-      return <Summary earned={last.euros} bonus={lastBonus} stars={last.stars} advice={last.advice} season={day.id} upgrades={owned} onShop={() => setScreen('shop')} onAgain={() => startDay(day.id)} onDays={() => setScreen('days')} />;
+      return <Summary earned={last.euros} bonus={lastBonus} townBonus={townBonus} stars={last.stars} advice={last.advice} season={day.id} upgrades={owned} onShop={() => setScreen('shop')} onAgain={() => startDay(day.id)} onDays={() => setScreen('days')} />;
     case 'shop':
       return (
         <Shop items={SHOP} wallet={wallet} owned={owned} fresh={fresh} season={day.id} onBack={() => { setFresh(null); setScreen('home'); }}

@@ -9,7 +9,7 @@ const memory = () => {
 describe('progress saved on the device', () => {
   it('comes back as it was saved', () => {
     const s = memory();
-    const p = { version: 1 as const, wallet: 3120, owned: ['parc'], stars: { ete: 3, printemps: 1 }, lastDay: 'printemps', tuto: true };
+    const p = { version: 1 as const, wallet: 3120, owned: ['parc'], stars: { ete: 3, printemps: 1 }, lastDay: 'printemps', tuto: true, seen: ['storm'] };
     saveProgress(p, s);
     expect(loadProgress(s)).toEqual(p);
   });

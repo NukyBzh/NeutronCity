@@ -2,6 +2,14 @@
 
 *Ce qui change pour le joueur, en mots simples. Une section par version (voir `docs/CONFIGURATION.md` §4).*
 
+## v0.9.0 — 2026-11-09 (lot L7.1 : les événements, à valider)
+- Chaque journée a 2 ou 3 événements, un à la fois : match à la télé, canicule, vague de froid, redoux, tempête, écureuil dans le transformateur, fuite de chaleur, échangeur entartré, nouveaux habitants, visite de classe, fête de la ville.
+- Cassandra annonce certains événements une heure avant ; d'autres arrivent d'un coup. La première fois, elle explique ce qui se passe.
+- Pour certains, tu agis en touchant la ville : envoyer le camion de réparation, faire sortir l'écureuil, appuyer longtemps sur la vanne, nettoyer l'échangeur en 5 touchers, accueillir une famille (+150 €).
+- Une tempête ou un écureuil éteint un quartier : il gagne moins tant qu'il n'est pas réparé. La canicule oblige la centrale à produire moins ; la fête de la ville fait gagner double ; la visite de classe rapporte 100 € si tu restes « bien suivi » une heure.
+- L'hôpital protège son quartier, la maison médicale rend les pannes moins fortes, la batterie aide pendant la canicule.
+- Le bonus de la ville dépend des étoiles : en entier avec 3 étoiles, la moitié avec 2, rien avec 1.
+
 ## v0.8.2 — 2026-11-09 (lot L6.3 : la ville en images, à valider)
 - Toute la ville est faite avec les mêmes images que la boutique : un damier de tuiles (herbe, routes, carrefours, rivière, béton) avec la centrale, des immeubles de toutes sortes (haussmannien, moderne, brique, rose, tour de bureaux, boulangerie), des maisons, les usines, la gare, les arbres et une aire de jeux.
 - Des voitures, un bus et des habitants circulent dans les rues.

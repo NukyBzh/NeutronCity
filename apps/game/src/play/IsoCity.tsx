@@ -1,7 +1,9 @@
 import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import type { Mood } from '@neutron/engine';
 import { townUrl } from '../assets';
-import { BAND_VIEWBOX, FULL_VIEWBOX, PLOTS, TOWN_IMAGES, drawTownLayers, lightKey, seasonOf, type TownImage, type TownLayer } from './iso/town';
+import {
+  BAND_VIEWBOX, FULL_VIEWBOX, PLOTS, TOWN_IMAGES, drawTownLayers, lightKey, seasonOf, type TownImage, type TownLayer, type TownScene,
+} from './iso/town';
 import { Sky } from './iso/Sky';
 
 /**
@@ -23,6 +25,8 @@ export interface IsoCityProps {
   upgrades: readonly string[];
   /** Upgrade just bought, shown with an arrow. */
   fresh?: string | null;
+  /** What the day's events show in the town (lot L7.1). */
+  scene?: TownScene;
 }
 
 
@@ -101,12 +105,13 @@ export const IsoCity = memo(function IsoCity(p: IsoCityProps) {
     return () => { live = false; };
   }, [images]);
   const upgradesKey = p.upgrades.join(',');
+  const sceneKey = JSON.stringify(p.scene ?? {});
   const light = lightKey(p.hour);
   const layers = useMemo(
-    () => drawTownLayers({ hour: p.hour, season: seasonOf(p.season), mood: p.mood, elecOn: p.elecOn, heatOn: p.heatOn, upgrades: upgradesKey ? upgradesKey.split(',') : [], fresh: p.fresh ?? null, images: images ?? undefined }, p.view),
+    () => drawTownLayers({ hour: p.hour, season: seasonOf(p.season), mood: p.mood, elecOn: p.elecOn, heatOn: p.heatOn, upgrades: upgradesKey ? upgradesKey.split(',') : [], fresh: p.fresh ?? null, images: images ?? undefined, scene: JSON.parse(sceneKey) as TownScene }, p.view),
     // The hour only matters through the light (night and sunset levels).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [light, p.season, p.mood, p.elecOn, p.heatOn, upgradesKey, p.fresh, p.view, images],
+    [light, p.season, p.mood, p.elecOn, p.heatOn, upgradesKey, p.fresh, p.view, images, sceneKey],
   );
   // Each moving layer has its own phase, changed only when that layer's drawing changes (React then creates new
   // elements, whose animations must go on where the old ones were, R1-02). A layer whose drawing is the same keeps its

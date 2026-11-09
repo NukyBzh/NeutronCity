@@ -21,10 +21,37 @@ jeu.hiver.coeur: "Le **cœur** se partage : plus de chaleur, c'est moins d'élec
 jeu.soir: "Ce soir, tout le monde rentre. La demande va monter !"
 jeu.fin.proche: "La ville va se coucher. Encore un effort jusqu'à minuit !"
 
-# Surprises : annoncées une heure avant (packages/engine/src/surprises.ts).
+# Événements (lot L7.1, packages/engine/src/surprises.ts) : surprise.<id> est dit une heure avant pour les événements
+# annoncés, au début pour les autres ; .why la première fois qu'il arrive (phrase pour comprendre) ; .done quand
+# l'enfant a agi ou gagné.
 surprise.peak: "Dans une heure, un grand match à la télé : plus d'électricité !"
+surprise.peak.why: "Tout le monde allume la télé en même temps : la demande monte d'un coup !"
 surprise.coldWave: "Une vague de froid arrive dans une heure : plus de chaleur !"
+surprise.coldWave.why: "Quand il fait très froid, les maisons veulent plus de **chaleur**."
 surprise.mildSpell: "Dans une heure, il fera plus doux : moins de chaleur."
+surprise.mildSpell.why: "Quand il fait doux, les maisons ont besoin de moins de chauffage."
+surprise.heatwave: "Canicule dans une heure : la centrale devra produire moins !"
+surprise.heatwave.why: "La centrale se refroidit avec la rivière. Trop chaude, elle produit moins pour protéger les poissons."
+surprise.storm: "Une tempête arrive dans une heure : une ligne électrique pourrait tomber !"
+surprise.storm.why: "Les lignes portent le courant aux maisons. Si une ligne tombe, le quartier s'éteint."
+surprise.storm.done: "Le camion de réparation est parti ! Le quartier sera rallumé bientôt."
+surprise.squirrel: "Oh ! Un écureuil dans le transformateur : un quartier est dans le noir !"
+surprise.squirrel.why: "Le transformateur prépare l'électricité des maisons. Un petit animal peut tout couper !"
+surprise.squirrel.done: "L'écureuil est reparti, tout content. On rallume le quartier !"
+surprise.heatLeak: "Une fuite sur le réseau de chaleur ! Ferme vite la vanne."
+surprise.heatLeak.why: "La chaleur de la centrale voyage dans des tuyaux d'eau chaude jusqu'aux maisons."
+surprise.heatLeak.done: "Vanne fermée ! L'équipe répare le tuyau."
+surprise.scale: "L'échangeur est plein de calcaire : la chaleur passe mal. Nettoie-le !"
+surprise.scale.why: "Comme dans une bouilloire, le calcaire empêche la chaleur de bien passer. Il faut nettoyer !"
+surprise.scale.done: "Tout propre ! La chaleur passe de nouveau bien."
+surprise.newcomers: "Une famille arrive en ville ! Touche-la pour l'accueillir."
+surprise.newcomers.why: "Plus d'habitants, c'est plus d'électricité… et plus d'euros pour la ville."
+surprise.newcomers.done: "Bienvenue ! La ville t'offre **150 €**."
+surprise.classVisit: "Dans une heure, une classe visite la centrale : montre-lui ton savoir-faire !"
+surprise.classVisit.why: "Reste bien sur les pointillés une heure : les élèves verront ton savoir-faire !"
+surprise.classVisit.done: "Les élèves applaudissent ! Tu gagnes **100 €**."
+surprise.party: "Ce soir, c'est la fête de la ville ! Les euros comptent double."
+surprise.party.why: "Jour de fête : la ville consomme plus. Suis bien la courbe, tu gagnes double !"
 
 # Pendant la partie.
 jeu.coeur.plein: "Le cœur est plein ! Baisse la chaleur pour monter l'électricité."

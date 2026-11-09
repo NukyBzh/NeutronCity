@@ -5,6 +5,8 @@
 # pour l'ouvrir ensuite ; opensHeat : ouvre les journées avec chaleur.
 # effects : ajout à la demande, en % du cœur, à un moment de la journée (jour 9–17 h, soir 19–21 h, nuit 23–5 h,
 # toujours), avec rampes de 2 h ; days : journées concernées (toutes si absent). Le moteur garde élec + chaleur ≤ 100 %.
+# Événements (lot L7.1) : protects : son quartier n'est jamais coupé ; softens : les pannes sont moins fortes (0,8) ;
+# heatwaveCap : limite du cœur pendant une canicule (90 au lieu de 80).
 # Textes : shop.<id> (nom) et shop.where.<id> (effet) dans content/i18n/fr.yaml ; shop.discover.<id> dans les répliques.
 items:
   # Phase découverte (D-19 E4), dans l'ordre.
@@ -15,9 +17,9 @@ items:
   - { id: epicerie, price: 1000, joy: 3, bonus: 650, discovery: 5, effects: [{ out: elec, add: 1, when: toujours }] }
   - { id: ecole, price: 1500, joy: 5, bonus: 1000, discovery: 6, effects: [{ out: elec, add: 2, when: jour, days: [printemps, hiver] }] }
   - { id: usine-cereales, price: 2000, joy: 3, bonus: 1300, discovery: 7, effects: [{ out: heat, add: 2, when: toujours }] }
-  - { id: maison-medicale, price: 1500, joy: 4, bonus: 1000, discovery: 8, effects: [{ out: elec, add: 1, when: jour }] }
+  - { id: maison-medicale, price: 1500, joy: 4, bonus: 1000, discovery: 8, softens: 0.8, effects: [{ out: elec, add: 1, when: jour }] }
   # Phase libre : s'ouvre avec la taille de la ville.
-  - { id: batterie, price: 3000, joy: 3, bonus: 1500, unlockAt: 8, effects: [{ out: elec, add: -2, when: soir }, { out: elec, add: 2, when: nuit }] }
+  - { id: batterie, price: 3000, joy: 3, bonus: 1500, unlockAt: 8, heatwaveCap: 90, effects: [{ out: elec, add: -2, when: soir }, { out: elec, add: 2, when: nuit }] }
   - { id: parc, price: 1600, joy: 5, bonus: 800, unlockAt: 8, effects: [{ out: elec, add: -1, when: jour, days: [ete] }] }
   - { id: fontaine, price: 1000, joy: 4, bonus: 500, unlockAt: 8 }
   - { id: piste, price: 2000, joy: 4, bonus: 1000, unlockAt: 10 }
@@ -25,5 +27,5 @@ items:
   - { id: eclairage, price: 2400, joy: 3, bonus: 1200, unlockAt: 10, effects: [{ out: elec, add: 1, when: soir }] }
   - { id: isolation, price: 3000, joy: 3, bonus: 1500, unlockAt: 12, effects: [{ out: heat, add: -2, when: toujours, days: [hiver] }, { out: heat, add: -1, when: toujours, days: [printemps] }] }
   - { id: solaire, price: 3600, joy: 3, bonus: 1800, unlockAt: 12, effects: [{ out: elec, add: -3, when: jour, days: [ete] }, { out: elec, add: -1, when: jour, days: [printemps, hiver] }] }
-  - { id: hopital, price: 4000, joy: 4, bonus: 2000, unlockAt: 14, effects: [{ out: elec, add: 2, when: toujours }] }
+  - { id: hopital, price: 4000, joy: 4, bonus: 2000, unlockAt: 14, protects: true, effects: [{ out: elec, add: 2, when: toujours }] }
   - { id: cuve, price: 4000, joy: 3, bonus: 2000, unlockAt: 16, effects: [{ out: heat, add: -2, when: soir }, { out: heat, add: 2, when: nuit }] }

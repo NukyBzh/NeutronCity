@@ -51,7 +51,7 @@ describe('content/days', () => {
 describe('content/shop', () => {
   it('every item has its text and a sensible price', () => {
     expect(SHOP.filter((i) => !(`shop.${i.id}` in TEXTS))).toEqual([]);
-    expect(SURPRISE_KINDS.length).toBe(3);
+    expect(SURPRISE_KINDS.length).toBe(11);
     expect(END_HOUR - START_HOUR).toBe(18);
   });
 });

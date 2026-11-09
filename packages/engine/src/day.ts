@@ -9,8 +9,12 @@ export const START_HOUR = 6;
 export const END_HOUR = 24;
 export const DAY_MINUTES = (END_HOUR - START_HOUR) * 60;
 
-export type SurpriseKind = 'peak' | 'coldWave' | 'mildSpell';
-export const SURPRISE_KINDS: readonly SurpriseKind[] = ['peak', 'coldWave', 'mildSpell'];
+/** Events of a day (lot L7.1, D-21): see surprises.ts. */
+export type SurpriseKind =
+  | 'peak' | 'coldWave' | 'mildSpell' | 'heatwave' | 'storm' | 'squirrel' | 'heatLeak' | 'scale' | 'newcomers' | 'classVisit' | 'party';
+export const SURPRISE_KINDS: readonly SurpriseKind[] = [
+  'peak', 'coldWave', 'mildSpell', 'heatwave', 'storm', 'squirrel', 'heatLeak', 'scale', 'newcomers', 'classVisit', 'party',
+];
 export type Pose = 'accueil' | 'explique' | 'attention' | 'bravo' | 'reflechit';
 const POSES: readonly Pose[] = ['accueil', 'explique', 'attention', 'bravo', 'reflechit'];
 

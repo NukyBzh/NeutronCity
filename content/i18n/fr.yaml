@@ -124,6 +124,8 @@ shop.locked: "Dès {n} bâtiments"
 shop.discovery: "Découverte : bâtiment {n} sur {total}"
 shop.free: "Ta ville a {n} bâtiments"
 summary.bonus: "Ta ville rapporte {amount}"
+summary.bonus.half: "Avec 2 étoiles, ta ville rapporte la moitié : {amount}"
+summary.bonus.none: "Avec 1 étoile, ta ville ne rapporte rien aujourd'hui. Vise 3 étoiles !"
 days.locked.heat: Achète le réseau de chaleur dans la boutique
 
 btn.newPlayer: Nouveau joueur
@@ -142,3 +144,14 @@ btn.next: Suivant
 btn.skip: Passer
 btn.go: C'est parti !
 btn.tutorial: Revoir l'aide
+
+# Événements (lot L7.1) : boutons pour agir sur la ville et petites étiquettes.
+event.storm.action: Envoyer le camion
+event.squirrel.action: Faire sortir l'écureuil
+event.heatLeak.action: Appuie longtemps sur la vanne
+event.scale.action: Nettoie l'échangeur
+event.scale.left: "Encore {n} fois"
+event.newcomers.action: Accueillir la famille
+event.classVisit.progress: Visite de la classe
+event.repair: Réparation en cours…
+event.label: Événement
