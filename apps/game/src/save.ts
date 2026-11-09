@@ -8,10 +8,12 @@ export interface Progress {
   owned: string[];
   stars: Record<string, number>;
   lastDay: string | null;
+  /** The guided tutorial has been seen (lot L5); « Nouveau joueur » shows it again. */
+  tuto: boolean;
 }
 
 const KEY = 'neutron-city.progress';
-export const EMPTY: Progress = { version: 1, wallet: 0, owned: [], stars: {}, lastDay: null };
+export const EMPTY: Progress = { version: 1, wallet: 0, owned: [], stars: {}, lastDay: null, tuto: false };
 
 /** Reads the saved progress; anything missing or unreadable gives a fresh start. */
 export function loadProgress(storage: Pick<Storage, 'getItem'> | undefined = globalThis.localStorage): Progress {
@@ -20,12 +22,15 @@ export function loadProgress(storage: Pick<Storage, 'getItem'> | undefined = glo
     if (!raw) return { ...EMPTY };
     const p = JSON.parse(raw) as Partial<Progress>;
     if (p.version !== 1) return { ...EMPTY };
+    const stars = p.stars && typeof p.stars === 'object' ? Object.fromEntries(Object.entries(p.stars).filter(([, v]) => typeof v === 'number')) : {};
     return {
       version: 1,
       wallet: Number.isInteger(p.wallet) && (p.wallet as number) >= 0 ? (p.wallet as number) : 0,
       owned: Array.isArray(p.owned) ? p.owned.filter((x): x is string => typeof x === 'string') : [],
-      stars: p.stars && typeof p.stars === 'object' ? Object.fromEntries(Object.entries(p.stars).filter(([, v]) => typeof v === 'number')) : {},
+      stars,
       lastDay: typeof p.lastDay === 'string' ? p.lastDay : null,
+      // Saved before v0.7.0 (no tutorial yet): a child who has already finished a day does not need it.
+      tuto: typeof p.tuto === 'boolean' ? p.tuto : Object.keys(stars).length > 0,
     };
   } catch {
     return { ...EMPTY };

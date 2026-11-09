@@ -7,7 +7,8 @@ import { IsoCity } from '../play/IsoCity';
 import { Clock, CoreBar, Slider } from '../play/Controls';
 import { Curves } from '../play/Curves';
 import { REAL_SECONDS_PER_GAME_MINUTE, START_HOUR, advance, playUntil, startOf, timelineOf, type Sample } from '../play/session';
-import { Button, Cassandra, Gauge, Icon, Rich } from '../ui/ui';
+import { sound } from '../sound';
+import { Button, Cassandra, Gauge, Icon, Rich, SoundButton } from '../ui/ui';
 
 /** A bubble stays about 7 s (auto-advance, no "Continue" button). */
 const BUBBLE_SECONDS = 7;
@@ -16,16 +17,33 @@ const IDLE_HINT_SECONDS = 20;
 
 interface Line { id: string; pose: Pose }
 
+/**
+ * Guided tutorial of the first game (lot L5): the time stays still while Cassandra shows one thing at a time; the part
+ * she talks about is lit, the rest is dimmed. Step « curseur » waits until the child has moved the yellow slider.
+ */
+type TutoTarget = 'city' | 'curves' | 'elec' | 'controls' | 'piggy';
+const TUTO: { id: string; target: TutoTarget; pose: Pose; wait?: boolean }[] = [
+  { id: 'tuto.ville', target: 'city', pose: 'accueil' },
+  { id: 'tuto.demande', target: 'curves', pose: 'explique' },
+  { id: 'tuto.curseur', target: 'elec', pose: 'explique', wait: true },
+  { id: 'tuto.centrale', target: 'controls', pose: 'reflechit' },
+  { id: 'tuto.tirelire', target: 'piggy', pose: 'bravo' },
+];
+/** The yellow slider must move this many points before the tutorial goes on. */
+const TUTO_MOVE = 5;
+
 /** Review settings in the address (mock-up): `?vitesse=10` plays 10× faster; `?heure=19` starts at 19 h (add `&suivi=non` for a player who never moved). */
 const PARAMS = new URLSearchParams(window.location.search);
 const SPEED = Math.min(30, Math.max(1, Number(PARAMS.get('vitesse')) || 1));
 const REVIEW_START = Math.min(23.9, Math.max(START_HOUR, Number(PARAMS.get('heure')) || START_HOUR));
 const REVIEW_FOLLOW = PARAMS.get('suivi') !== 'non';
+/** Review: `&tuto=oui&etape=3` opens the tutorial at its third step. */
+const REVIEW_STEP = Math.max(1, Number(PARAMS.get('etape')) || 1) - 1;
 /** Speeds offered to the player (R1-06): the game time runs 1, 2 or 4 times faster. */
 export const SPEEDS = [1, 2, 4] as const;
 export type Speed = (typeof SPEEDS)[number];
 
-export function Play({ day, seed, upgrades, speed, onSpeed, onFinish, onRestart, onHome }: {
+export function Play({ day, seed, upgrades, speed, onSpeed, onFinish, onRestart, onHome, tutorial = false, onTutorialDone }: {
   day: DayDef;
   seed: number;
   upgrades: readonly string[];
@@ -34,10 +52,14 @@ export function Play({ day, seed, upgrades, speed, onSpeed, onFinish, onRestart,
   onFinish: (game: GameState) => void;
   onRestart: () => void;
   onHome: () => void;
+  tutorial?: boolean;
+  onTutorialDone?: () => void;
 }) {
   const [run, setRun] = useState(() => (REVIEW_START > START_HOUR ? playUntil(day, seed, REVIEW_START, REVIEW_FOLLOW) : startOf(day, seed)));
   const [timeline] = useState(() => timelineOf(day, run.game));
   const [paused, setPaused] = useState(false);
+  const [tuto, setTuto] = useState<number | null>(tutorial ? Math.min(REVIEW_STEP, TUTO.length - 1) : null);
+  const tutoStart = useRef(run.game.plant.setElec);
   const [line, setLine] = useState<Line | null>(null);
   const [coins, setCoins] = useState<number[]>([]);
   // Red coins leaving the piggy bank while electricity is wasted (D-15).
@@ -53,8 +75,20 @@ export function Play({ day, seed, upgrades, speed, onSpeed, onFinish, onRestart,
 
   const say = (id: string, pose: Pose) => setLine({ id, pose });
 
+  const endTuto = () => {
+    setTuto(null);
+    onTutorialDone?.();
+  };
+  const nextTuto = () => {
+    if (tuto === null || tuto + 1 >= TUTO.length) endTuto();
+    else setTuto(tuto + 1);
+  };
+
+  // Music a little quieter at night (21 h - 7 h); back to day volume when leaving the game.
+  useEffect(() => () => sound.setNight(false), []);
+
   useEffect(() => {
-    if (paused) return undefined;
+    if (paused || tuto !== null) return undefined;
     let raf = 0;
     let last = performance.now();
     const frame = (now: number) => {
@@ -70,7 +104,10 @@ export function Play({ day, seed, upgrades, speed, onSpeed, onFinish, onRestart,
         const paid = r.game.paidMinutes;
         r = advance(day, r.game, r.history);
         const p = r.game.paidMinutes;
-        if (p > paid && p % 10 === 0) setCoins((k) => [...k.slice(-4), p]);
+        if (p > paid && p % 10 === 0) {
+          setCoins((k) => [...k.slice(-4), p]);
+          sound.play('coin');
+        }
         const w = r.game.stats.surplusElec;
         if (w > 0 && w % 10 === 0 && w !== c.lastLoss) { c.lastLoss = w; setLosses((k) => [...k.slice(-4), w]); }
       }
@@ -80,10 +117,12 @@ export function Play({ day, seed, upgrades, speed, onSpeed, onFinish, onRestart,
       }
       const g = r.game;
       const h = hourOf(g);
+      sound.setNight(h >= 21 || h < 7);
       const step = timeline[c.next];
       if (step && h >= step.hour) {
         c.next += 1;
         say(step.say, step.pose);
+        if (step.say.startsWith('surprise.')) sound.play('alert');
       }
       const view = gaugesOf(day, g);
       if (view.elec === 'loin' || view.heat === 'loin') {
@@ -119,7 +158,7 @@ export function Play({ day, seed, upgrades, speed, onSpeed, onFinish, onRestart,
     };
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
-  }, [paused, day, timeline, onFinish]);
+  }, [paused, tuto, day, timeline, onFinish]);
 
   useEffect(() => {
     if (!line) return undefined;
@@ -141,6 +180,11 @@ export function Play({ day, seed, upgrades, speed, onSpeed, onFinish, onRestart,
     const next = { ...r, game: setSetpoints(r.game, wanted.e, wanted.h, moved) };
     current.current = next;
     setRun(next);
+    // Tutorial: the child moved the yellow slider enough, Cassandra goes on by herself.
+    if (tuto !== null && TUTO[tuto]?.wait && moved === 'elec' && Math.abs(next.game.plant.setElec - tutoStart.current) >= TUTO_MOVE) {
+      tutoStart.current = Number.NaN;
+      window.setTimeout(() => setTuto((k) => (k === null ? null : k + 1)), 700);
+    }
   };
 
   const g = run.game;
@@ -151,11 +195,12 @@ export function Play({ day, seed, upgrades, speed, onSpeed, onFinish, onRestart,
   const heatShort = g.plant.heat < view.demand.heat;
   // Pulse the slider to act on: the output far from demand whose setpoint is not already heading the right way.
   const needs = (prod: number, set: number, dem: number) => Math.abs(prod - dem) > 3 && Math.abs(set - dem) > 3;
-  const pulseElec = needs(g.plant.elec, g.plant.setElec, view.demand.elec);
-  const pulseHeat = view.heat !== null && needs(g.plant.heat, g.plant.setHeat, view.demand.heat);
+  const step = tuto === null ? null : TUTO[tuto]!;
+  const pulseElec = step ? step.target === 'elec' : needs(g.plant.elec, g.plant.setElec, view.demand.elec);
+  const pulseHeat = !step && view.heat !== null && needs(g.plant.heat, g.plant.setHeat, view.demand.heat);
 
   return (
-    <main className="screen play">
+    <main className={`screen play${step ? ' tuto-on' : ''}`} data-tuto={step?.target}>
       <header className="play-top">
         <Button icon="pause" label={t('btn.pause')} onClick={() => setPaused(true)} />
         <div className="play-day">
@@ -194,9 +239,21 @@ export function Play({ day, seed, upgrades, speed, onSpeed, onFinish, onRestart,
 
       {/* Cassandra stands at the bottom, between the curves and the controls, pointing at the sliders (R1-07). */}
       <div className="play-guide">
-        <Cassandra pose={line?.pose ?? 'explique'} className="play-cassandra">
-          {line ? <Rich text={t(line.id)} /> : null}
-        </Cassandra>
+        {step ? (
+          <Cassandra pose={step.pose} className="play-cassandra">
+            <Rich text={t(step.id)} />
+            <span className="tuto-buttons">
+              {step.wait ? null : (
+                <Button kind="primary" pulse icon="jouer" label={t(tuto === TUTO.length - 1 ? 'btn.go' : 'btn.next')} onClick={nextTuto} />
+              )}
+              {tuto === TUTO.length - 1 ? null : <Button icon="passer" label={t('btn.skip')} onClick={endTuto} />}
+            </span>
+          </Cassandra>
+        ) : (
+          <Cassandra pose={line?.pose ?? 'explique'} className="play-cassandra">
+            {line ? <Rich text={t(line.id)} /> : null}
+          </Cassandra>
+        )}
       </div>
 
       <section className="zone-curves panel" aria-label={t('zone.curves')}>
@@ -232,6 +289,7 @@ export function Play({ day, seed, upgrades, speed, onSpeed, onFinish, onRestart,
               <Button icon="recommencer" label={t('btn.restart')} onClick={onRestart} />
               <Button icon="accueil" label={t('btn.home')} onClick={onHome} />
             </div>
+            <SoundButton />
           </div>
         </div>
       ) : null}

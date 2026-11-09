@@ -22,7 +22,9 @@ const START_FRESH = PARAMS.get('nouveau');
 const FIXED_SEED = PARAMS.has('graine') ? Number(PARAMS.get('graine')) >>> 0 : null;
 /** Reviewing a screen through the address never reads nor changes the player's saved progress. */
 const REVIEW = PARAMS.has('ecran') || PARAMS.has('achats');
-const SAVED = REVIEW ? { ...EMPTY, wallet: 2500, owned: START_OWNED } : loadProgress();
+const SAVED = REVIEW ? { ...EMPTY, wallet: 2500, owned: START_OWNED, tuto: true } : loadProgress();
+/** Review: `&tuto=oui` opens the game with the guided tutorial. */
+const FORCE_TUTO = PARAMS.get('tuto') === 'oui';
 
 /** A new seed for each game (the surprises change); the user interface is the only place that draws randomness. */
 const newSeed = (): number => FIXED_SEED ?? Math.floor(Math.random() * 2 ** 31);
@@ -44,10 +46,13 @@ export function App() {
   const [speed, setSpeed] = useState<Speed>(1);
   // Upgrade just bought: it appears in the town with a short animation.
   const [fresh, setFresh] = useState<string | null>(START_FRESH);
+  // Guided tutorial (lot L5): seen once per player, shown again with « Revoir l'aide ».
+  const [tutoSeen, setTutoSeen] = useState(SAVED.tuto && !FORCE_TUTO);
+  const [tutoAsked, setTutoAsked] = useState(false);
 
   useEffect(() => {
-    if (!REVIEW) saveProgress({ version: 1, wallet, owned, stars, lastDay: day.id });
-  }, [wallet, owned, stars, day]);
+    if (!REVIEW) saveProgress({ version: 1, wallet, owned, stars, lastDay: day.id, tuto: tutoSeen });
+  }, [wallet, owned, stars, day, tutoSeen]);
 
   const reset = () => {
     clearProgress();
@@ -55,6 +60,7 @@ export function App() {
     setOwned([]);
     setStars({});
     setDay(DAYS[0]!);
+    setTutoSeen(false);
   };
 
   // A day opens once the day before it has been finished (one star at least).
@@ -82,11 +88,14 @@ export function App() {
 
   switch (screen) {
     case 'home':
-      return <Home onPlay={() => setScreen('days')} onShop={() => setScreen('shop')} onReset={reset} />;
+      return <Home onPlay={() => setScreen('days')} onShop={() => setScreen('shop')} onReset={reset} onTutorial={() => { setTutoAsked(true); startDay(DAYS[0]!.id); }} />;
     case 'days':
       return <Days cards={cards} onPick={startDay} onHome={() => setScreen('home')} />;
     case 'play':
-      return <Play key={round} day={day} seed={seed} upgrades={owned} speed={speed} onSpeed={setSpeed} onFinish={finish} onRestart={() => startDay(day.id)} onHome={() => setScreen('home')} />;
+      return (
+        <Play key={round} day={day} seed={seed} upgrades={owned} speed={speed} onSpeed={setSpeed} onFinish={finish} onRestart={() => startDay(day.id)}
+          onHome={() => setScreen('home')} tutorial={!tutoSeen || tutoAsked} onTutorialDone={() => { setTutoSeen(true); setTutoAsked(false); }} />
+      );
     case 'summary':
       return <Summary earned={last.euros} stars={last.stars} advice={last.advice} season={day.id} upgrades={owned} onShop={() => setScreen('shop')} onAgain={() => startDay(day.id)} onDays={() => setScreen('days')} />;
     case 'shop':

@@ -1,6 +1,7 @@
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { iconUrl, poseUrl, type Pose } from '../assets';
 import { t } from '../i18n';
+import { sound } from '../sound';
 
 /** Decorative icon: the word always sits next to it, so it has no text alternative of its own. */
 export function Icon({ name, size = 2.2, className }: { name: string; size?: number; className?: string }) {
@@ -18,7 +19,7 @@ export function Button(props: {
 }) {
   const { icon, label, onClick, kind = 'secondary', pulse = false, disabled = false } = props;
   return (
-    <button type="button" className={`btn btn-${kind}${pulse ? ' pulse' : ''}`} onClick={onClick} disabled={disabled}>
+    <button type="button" className={`btn btn-${kind}${pulse ? ' pulse' : ''}`} onClick={() => { sound.play('click'); onClick(); }} disabled={disabled}>
       <span className="btn-icon"><Icon name={icon} size={1.7} /></span>
       <span>{label}</span>
     </button>
@@ -62,5 +63,18 @@ export function Stars({ count, max = 3, size = 2.4 }: { count: number; max?: num
         <Icon key={i} name="etoile" size={size} className={i < count ? 'star-on' : 'star-off'} />
       ))}
     </span>
+  );
+}
+
+/** « Son » button (lot L5): one switch for the music and the sound effects, the choice is kept on the device. */
+export function SoundButton() {
+  const [on, setOn] = useState(sound.enabled);
+  useEffect(() => sound.subscribe(setOn), []);
+  return (
+    <button type="button" className="btn btn-secondary btn-sound" aria-pressed={on} title={t('sound.label')}
+      onClick={() => { sound.unlock(); sound.setEnabled(!on); }}>
+      <span className="btn-icon"><Icon name={on ? 'son' : 'son-coupe'} size={1.7} /></span>
+      <span>{t(on ? 'btn.soundOn' : 'btn.soundOff')}</span>
+    </button>
   );
 }

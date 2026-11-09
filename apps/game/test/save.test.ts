@@ -9,7 +9,7 @@ const memory = () => {
 describe('progress saved on the device', () => {
   it('comes back as it was saved', () => {
     const s = memory();
-    const p = { version: 1 as const, wallet: 3120, owned: ['parc'], stars: { ete: 3, printemps: 1 }, lastDay: 'printemps' };
+    const p = { version: 1 as const, wallet: 3120, owned: ['parc'], stars: { ete: 3, printemps: 1 }, lastDay: 'printemps', tuto: true };
     saveProgress(p, s);
     expect(loadProgress(s)).toEqual(p);
   });
@@ -24,5 +24,14 @@ describe('progress saved on the device', () => {
     saveProgress({ ...EMPTY, wallet: 10 }, s);
     clearProgress(s);
     expect(loadProgress(s)).toEqual(EMPTY);
+  });
+
+  it('shows the tutorial to a new player only (lot L5), also for progress saved before v0.7.0', () => {
+    const s = memory();
+    expect(loadProgress(s).tuto).toBe(false);
+    s.setItem('neutron-city.progress', JSON.stringify({ version: 1, wallet: 40, owned: [], stars: { ete: 2 }, lastDay: 'ete' }));
+    expect(loadProgress(s).tuto).toBe(true);
+    s.setItem('neutron-city.progress', JSON.stringify({ version: 1, wallet: 0, owned: [], stars: {}, lastDay: null }));
+    expect(loadProgress(s).tuto).toBe(false);
   });
 });

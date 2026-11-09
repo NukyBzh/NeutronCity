@@ -19,11 +19,11 @@ l'ordre des lots, après feu vert du porteur du projet.
 | R1-10 | Les variations de consommation sur la journée sont faibles ; en vouloir de plus fortes. | Courbes plus creusées (nuit basse, pics marqués) ; demande de revoir D-12 (pente ≤ 4,5 %/h) et la rampe D-05 (10 %/h) pour que la journée reste faisable. | **Fait v0.5.0** (décision D-16) |
 | R1-11 | Animation du coucher de soleil moche. | Dégradé du ciel calculé par mélange de couleurs. Refaire le ciel heure par heure (aube, jour, coucher orangé, nuit bleue). | **Fait v0.6.0** : ciel heure par heure (aube rose, jour, heure dorée, coucher orangé, crépuscule, nuit), soleil qui se couche derrière la ville, lumière chaude sur les façades |
 | R1-12 | Améliorer le ciel ; la nuit, ajouter une lune. | Soleil qui se déplace, lune et étoiles la nuit, quelques nuages. | **Fait v0.6.0** : lune en croissant, étoiles qui scintillent, nuages teintés par la lumière |
-| R1-13 | Musique de fond sympa, pas prise de tête. | Aucune musique aujourd'hui. Choix de la source à faire (musique composée pour le projet ou morceau libre de droits), bouton couper le son. | L5 |
+| R1-13 | Musique de fond sympa, pas prise de tête. | Aucune musique aujourd'hui. Choix de la source à faire (musique composée pour le projet ou morceau libre de droits), bouton couper le son. | **Fait v0.7.0** : « Happy Clappy Loop » (CC0, choisie par Yann), plus douce la nuit, bruitages légers, bouton « Son » (D-18) |
 | R1-14 | Dessins de qualité insuffisante. | Travail de dessin prévu (D-09). | **En partie v0.6.0** : ombres portées des immeubles, arbres avec volume, lumière du soir ; à poursuivre selon tes retours (centrale, habitants, voitures) |
 
 ### Lots proposés (à valider)
 - **L3.1 — corrections du test (v0.4.1)** : R1-01 à R1-07. **Fait le 2026-11-08**, validé (étiquette v0.4.1).
 - **L3.2 — règles et boutique (v0.5.0)** : R1-08 à R1-10, décisions D-15 (bande ±7 % et malus) et D-16 (journées plus contrastées). **Fait le 2026-11-08**, validé (étiquette v0.5.0).
 - **L4 — ville animée et dessins** : R1-11, R1-12, R1-14 ; fluidité sur la tablette (D-17). **Fait le 2026-11-08**, validé (étiquette v0.6.0).
-- **L5 — Cassandra et son** : musique (R1-13), tutoriel ; une pose dédiée « montre le curseur » si la pose « explique » ne suffit pas (R1-07).
+- **L5 — Cassandra et son (v0.7.0)** : musique (R1-13), tutoriel. **Fait le 2026-11-09**, en attente de validation. Pose « montre le curseur » : la pose « explique » est gardée (R1-07), à revoir selon tes retours.

@@ -2,6 +2,13 @@
 # Règles : tutoiement, ≤ 15 mots si possible, un seul mot nouveau, écrit en gras avec **mot**.
 accueil.bonjour: "Salut ! Moi, c'est Cassandra. Viens piloter la **centrale** avec moi !"
 
+# Tutoriel de la première partie (lot L5) : le temps est arrêté, une chose à la fois.
+tuto.ville: "Voici ta ville. Pour vivre, elle a besoin de ta **centrale** !"
+tuto.demande: "La ligne en pointillés, c'est la **demande** : ce que la ville veut."
+tuto.curseur: "À toi ! Fais glisser le **curseur** jaune vers le haut."
+tuto.centrale: "La centrale suit **doucement**. Bouge le curseur un peu en avance !"
+tuto.tirelire: "Reste près de la demande : ta **tirelire** se remplit. C'est parti !"
+
 # Début des journées (heures fixées dans content/days/*.yaml).
 jeu.ete.bonjour: "Bonjour ! Suis la ligne en pointillés : c'est la **demande** de la ville."
 jeu.printemps.bonjour: "Ce matin, il fait encore frais : la ville veut un peu de **chaleur**."

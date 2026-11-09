@@ -34,6 +34,14 @@ Dessins vectoriels écrits à la main en SVG (aucune image externe, aucune IA), 
   (D-09) le 2026-11-08 : centrale, bâtiments, rue, habitants, véhicules. Dessins de la boutique refaits le même jour. Saisons (neige, fleurs, climatiseurs, arbres nus) ajoutées le 2026-11-08 (passe L2).
   À reprendre dans Figma quand la limite le permettra.
 
+## Musique (`audio/`) — 2026-11-09
+- `musique-happy-clappy-loop.wav` : « Happy Clappy Loop » de **OwlishMedia**, licence **CC0** (domaine public, aucune
+  citation obligatoire), https://opengameart.org/content/happy-clappy-loop ; fichier d'origine `HappyClappyLoop.wav`
+  (6 162 894 o, WAV stéréo 44,1 kHz, empreinte SHA-256 `1ca66b4e4d41e14a…`). Choisie par Yann parmi 3 morceaux CC0.
+  Allégée par Claude (mono, 32 kHz, 16 bits, 1,1 Mo ; boucle de 17,4 s gardée sans coupure ; SHA-256 `f2ad60897d9547e2…`).
+- Les bruitages (clic, pièce, alerte, petite musique du bilan) sont des notes calculées dans le code
+  (`apps/game/src/sound.ts`) : aucun fichier, aucune source externe.
+
 ## Images Gemini (`gemini/`) — 2026-11-08
 56 PNG transparents (30 le 2026-11-08 après-midi, 26 le soir) générés par Yann avec l'app Gemini (IA) à partir des prompts de `docs/GEMINI.md`, livrés en JPG
 puis détourés par Claude (`tools/detourage/detoure.py`). Liste, empreintes et remarques : `docs/GEMINI.md` § 3.

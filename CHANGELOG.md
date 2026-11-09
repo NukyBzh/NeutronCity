@@ -2,7 +2,14 @@
 
 *Ce qui change pour le joueur, en mots simples. Une section par version (voir `docs/CONFIGURATION.md` §4).*
 
-## v0.6.0 — 2026-11-08 (lot L4 : la ville vivante, à valider)
+## v0.7.0 — 2026-11-09 (lot L5 : Cassandra et le son, à valider)
+- À la première partie, Cassandra montre le jeu pas à pas, le temps arrêté : la ville, la demande en pointillés, le curseur jaune (à toi de le bouger !), la centrale qui suit doucement, la tirelire. Bouton « Passer » pour sauter l'aide.
+- « Revoir l'aide » sur l'accueil relance le tutoriel ; « Nouveau joueur » le remontre aussi.
+- Une musique de fond joyeuse au piano, en boucle, plus douce la nuit.
+- Petits bruitages : clic des boutons, pièces qui tombent dans la tirelire, alerte avant une surprise, petite musique au bilan.
+- Bouton « Son » (sur l'accueil et dans la pause) pour couper ou remettre la musique et les bruitages ; la tablette s'en souvient.
+
+## v0.6.0 — 2026-11-08 (lot L4 : la ville vivante)
 - Le ciel change avec l'heure : aube rose, plein jour, heure dorée, coucher de soleil orangé, puis la nuit.
 - Le soleil traverse le ciel et se couche derrière la ville ; la nuit, la lune et les étoiles apparaissent ; des nuages passent doucement.
 - Au coucher du soleil, une lumière chaude éclaire les façades ; les immeubles font des ombres sur le sol ; les arbres ont du volume.

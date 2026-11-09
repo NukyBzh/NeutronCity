@@ -78,3 +78,14 @@ btn.cancel: Annuler
 btn.erase: Oui, effacer
 reset.title: Effacer la partie ?
 reset.text: Les euros, les étoiles et les achats de la ville seront effacés.
+
+# Son (lot L5) : un seul bouton pour la musique et les bruitages.
+btn.soundOn: "Son : oui"
+btn.soundOff: "Son : non"
+sound.label: Couper ou remettre la musique et les bruitages
+
+# Tutoriel (lot L5).
+btn.next: Suivant
+btn.skip: Passer
+btn.go: C'est parti !
+btn.tutorial: Revoir l'aide

@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { townHappiness, type Advice, type ShopItem } from '@neutron/engine';
 import { shopUrl } from '../assets';
 import { euros, t } from '../i18n';
 import { IsoCity } from '../play/IsoCity';
-import { Button, Cassandra, Icon, Rich, Stars } from '../ui/ui';
+import { sound } from '../sound';
+import { Button, Cassandra, Icon, Rich, SoundButton, Stars } from '../ui/ui';
 
 /** Welcome screen: one goal, "Play" pulses. */
-export function Home({ onPlay, onShop, onReset }: { onPlay: () => void; onShop: () => void; onReset: () => void }) {
+export function Home({ onPlay, onShop, onReset, onTutorial }: { onPlay: () => void; onShop: () => void; onReset: () => void; onTutorial: () => void }) {
   const [asking, setAsking] = useState(false);
   return (
     <main className="screen home">
@@ -19,7 +20,11 @@ export function Home({ onPlay, onShop, onReset }: { onPlay: () => void; onShop: 
         </div>
       </div>
       <Cassandra pose="accueil" className="home-cassandra"><Rich text={t('accueil.bonjour')} /></Cassandra>
-      <div className="home-reset"><Button icon="recommencer" label={t('btn.newPlayer')} onClick={() => setAsking(true)} /></div>
+      <div className="home-reset">
+        <Button icon="recommencer" label={t('btn.newPlayer')} onClick={() => setAsking(true)} />
+        <Button icon="jouer" label={t('btn.tutorial')} onClick={onTutorial} />
+      </div>
+      <div className="home-sound"><SoundButton /></div>
       <p className="version">{t('app.version', { version: __APP_VERSION__ })}</p>
       {asking ? (
         <div className="overlay" role="dialog" aria-modal aria-label={t('reset.title')}>
@@ -79,6 +84,8 @@ export function Days({ cards, onPick, onHome }: { cards: DayCard[]; onPick: (id:
 export function Summary({ earned, stars, advice, season, upgrades, onShop, onAgain, onDays }: {
   earned: number; stars: number; advice: Advice; season: string; upgrades: readonly string[]; onShop: () => void; onAgain: () => void; onDays: () => void;
 }) {
+  // A short jingle when the day ends (lot L5).
+  useEffect(() => sound.play('jingle'), []);
   return (
     <main className="screen summary">
       <div className="town-panel"><IsoCity view="full" hour={21.5} season={season} mood={stars >= 2 ? 'content' : 'calme'} elecOn heatOn={season !== 'ete'} upgrades={upgrades} /></div>
