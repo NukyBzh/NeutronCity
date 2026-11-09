@@ -8,3 +8,4 @@ export * from './rng';
 export * from './surprises';
 export * from './game';
 export * from './town';
+export * from './effects';

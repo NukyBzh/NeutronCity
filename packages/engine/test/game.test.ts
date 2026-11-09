@@ -7,7 +7,7 @@ import { DAYS, SHOP } from './content';
 
 /** Follows the demand a quarter of an hour ahead, on the sliders' 5 % steps. */
 const ahead = (day: DayDef) => (s: GameState) => {
-  const d = demandAt(day, s.surprises, hourOf(s) + 0.25);
+  const d = demandAt(day, s.surprises, hourOf(s) + 0.25, s.effects);
   return { elec: Math.round(d.elec / 5) * 5, heat: Math.round(d.heat / 5) * 5 };
 };
 const idle = () => null;

@@ -24,7 +24,10 @@ lot, sans doute **L6 Boutique**.*
 | `docs/conception/objets_ville.json` | les 15 objets (16 820 o, identique au fichier sur Drive) |
 | `docs/conception/avaries_evenements.json` | les 10 événements (10 324 o, copie du fichier sur Drive) |
 
-## 3. Écarts avec le moteur actuel — à trancher avant d'intégrer
+## 3. Écarts avec le moteur actuel — tranchés le 2026-11-09 (décision D-19)
+*Réponses de Yann : E1, E2, E3, E6, E7 comme recommandé ; E4 phase découverte de 8 achats imposés ; E5 chaleur ouverte par
+le réseau de chaleur ; E8 images Gemini dans le jeu (WebP). Détail : `docs/DECISIONS.md` D-19.*
+
 Ces fichiers ont été conçus sans lire le dépôt. En le comparant avec `docs/DECISIONS.md` et `packages/engine`, voici
 les écarts :
 
@@ -38,6 +41,13 @@ les écarts :
 | E6 | Journée de 4 min sur 24 h, saisons continues | Journée de 6 h à minuit, environ 5 min, une saison par journée | Recalculer les temps de retour sur investissement |
 | E7 | 10 événements, ville en au moins 3 quartiers | Surprises du moteur : `peak`, `coldWave`, `mildSpell` ; quartiers à vérifier dans le moteur | Quels événements reprendre, et à quel lot |
 | E8 | Prompts en **palette pastel** (trame de Yann) | D-13 : **couleurs vives**, contours foncés | Vérifier que les images Gemini restent cohérentes avec la ville dessinée |
+
+### Intégration L6.1 (2026-11-09)
+Valeurs du jeu : `content/shop/shop.yaml` (prix, bonheur, bonus par journée, effets en % du cœur). Simplifications
+annoncées à Yann et acceptées avec le feu vert : batterie et cuve **lissent** la courbe (moins le soir, plus la nuit)
+au lieu d'un vrai stock ; l'immunité de l'hôpital et l'effet de la maison médicale sur les avaries attendent les
+événements (L7) ; **un seul exemplaire** de chaque bâtiment (pas de rachat à +15 %). Parc et école du jeu fusionnés avec
+`parc_arbore` et `ecole` ; l'isolation utilise l'image du bonnet sur la cheminée.
 
 ## 4. Les 15 objets (valeurs du JSON)
 Hypothèses du JSON : 1 unité servie en zone verte = 1 pièce/min ; ville de départ = 100 unités d'électricité ;

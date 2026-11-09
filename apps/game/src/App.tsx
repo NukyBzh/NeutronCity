@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { dayResult, isHeatingDay, type DayResult, type GameState } from '@neutron/engine';
+import { dayBonus, dayEffects, dayResult, heatOpen, isHeatingDay, shopStatus, type DayResult, type GameState } from '@neutron/engine';
 import { DAYS, SHOP, dayById } from './content';
 import { Days, Home, Shop, Summary, type DayCard } from './screens/Menus';
 import { Play, type Speed } from './screens/Play';
@@ -41,6 +41,8 @@ export function App() {
   const [wallet, setWallet] = useState(SAVED.wallet);
   const [owned, setOwned] = useState<string[]>(SAVED.owned);
   const [last, setLast] = useState<DayResult>({ euros: 0, max: 0, stars: 1, advice: 'anticiper' });
+  // Euros paid by the town's buildings at the end of the last day (D-19 E1).
+  const [lastBonus, setLastBonus] = useState(REVIEW ? dayBonus(SHOP, START_OWNED) : 0);
   const [stars, setStars] = useState<Record<string, number>>(SAVED.stars);
   // Speed chosen by the player, kept from one day to the next (not saved).
   const [speed, setSpeed] = useState<Speed>(1);
@@ -63,21 +65,24 @@ export function App() {
     setTutoSeen(false);
   };
 
-  // A day opens once the day before it has been finished (one star at least).
-  const cards: DayCard[] = DAYS.map((d, i) => ({
-    id: d.id,
-    stars: stars[d.id] ?? 0,
-    locked: i > 0 && !(stars[DAYS[i - 1]!.id] ?? 0),
-    heat: isHeatingDay(d),
-  }));
+  // A day opens once the day before it has been finished (one star at least); a day with heat also needs the heat
+  // network (D-19 E5), unless the player already has stars on it (progress saved before v0.8.0).
+  const heat = heatOpen(SHOP, owned);
+  const cards: DayCard[] = DAYS.map((d, i) => {
+    const prev = i > 0 && !(stars[DAYS[i - 1]!.id] ?? 0);
+    const noHeat = isHeatingDay(d) && !heat && !(stars[d.id] ?? 0);
+    return { id: d.id, stars: stars[d.id] ?? 0, locked: prev || noHeat, lockReason: noHeat ? 'heat' : 'prev', heat: isHeatingDay(d) };
+  });
 
   const finish = useCallback((game: GameState) => {
     const r = dayResult(day, game);
+    const bonus = dayBonus(SHOP, owned);
     setLast(r);
-    setWallet((w) => w + r.euros);
+    setLastBonus(bonus);
+    setWallet((w) => w + r.euros + bonus);
     setStars((s) => ({ ...s, [day.id]: Math.max(s[day.id] ?? 0, r.stars) }));
     setScreen('summary');
-  }, [day]);
+  }, [day, owned]);
 
   const startDay = (id: string) => {
     setDay(dayById(id) ?? DAYS[0]!);
@@ -93,15 +98,15 @@ export function App() {
       return <Days cards={cards} onPick={startDay} onHome={() => setScreen('home')} />;
     case 'play':
       return (
-        <Play key={round} day={day} seed={seed} upgrades={owned} speed={speed} onSpeed={setSpeed} onFinish={finish} onRestart={() => startDay(day.id)}
+        <Play key={round} day={day} seed={seed} upgrades={owned} effects={dayEffects(day, SHOP, owned)} speed={speed} onSpeed={setSpeed} onFinish={finish} onRestart={() => startDay(day.id)}
           onHome={() => setScreen('home')} tutorial={!tutoSeen || tutoAsked} onTutorialDone={() => { setTutoSeen(true); setTutoAsked(false); }} />
       );
     case 'summary':
-      return <Summary earned={last.euros} stars={last.stars} advice={last.advice} season={day.id} upgrades={owned} onShop={() => setScreen('shop')} onAgain={() => startDay(day.id)} onDays={() => setScreen('days')} />;
+      return <Summary earned={last.euros} bonus={lastBonus} stars={last.stars} advice={last.advice} season={day.id} upgrades={owned} onShop={() => setScreen('shop')} onAgain={() => startDay(day.id)} onDays={() => setScreen('days')} />;
     case 'shop':
       return (
         <Shop items={SHOP} wallet={wallet} owned={owned} fresh={fresh} season={day.id} onBack={() => { setFresh(null); setScreen('home'); }}
-          onBuy={(item) => { if (wallet >= item.price && !owned.includes(item.id)) { setWallet(wallet - item.price); setOwned([...owned, item.id]); setFresh(item.id); } }} />
+          onBuy={(item) => { if (wallet >= item.price && shopStatus(SHOP, owned, item).kind === 'open') { setWallet(wallet - item.price); setOwned([...owned, item.id]); setFresh(item.id); } }} />
       );
   }
 }

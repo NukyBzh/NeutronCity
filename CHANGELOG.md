@@ -2,7 +2,15 @@
 
 *Ce qui change pour le joueur, en mots simples. Une section par version (voir `docs/CONFIGURATION.md` §4).*
 
-## v0.7.0 — 2026-11-09 (lot L5 : Cassandra et le son, à valider)
+## v0.8.0 — 2026-11-09 (lot L6.1 : la boutique de la ville, à valider)
+- La boutique propose 18 bâtiments : ferme, réseau de chaleur, maisons, épicerie, école, usine, maison médicale, puis batterie, parc, fontaine, piste cyclable, piscine, lampadaires, maisons isolées, panneaux solaires, hôpital, cuve de chaleur.
+- Au début, c'est la découverte : un seul bâtiment à la fois, que Cassandra présente. Après les 8 premiers, tu choisis ; les autres s'ouvrent quand la ville grandit (8, 10, 12, 14, 16 bâtiments).
+- Chaque bâtiment rapporte des euros à la fin de chaque journée (« Ta ville rapporte… » au bilan) et rend les habitants plus heureux.
+- Les bâtiments changent un peu la demande : la ferme veut de l'électricité le jour, la voiture électrique la nuit, les panneaux solaires en demandent moins… La courbe en pointillés en tient compte.
+- Le printemps et l'hiver s'ouvrent quand tu achètes le réseau de chaleur.
+- Chaque carte de la boutique montre l'image du bâtiment, ce qu'il change et ce qu'il rapporte.
+
+## v0.7.0 — 2026-11-09 (lot L5 : Cassandra et le son)
 - À la première partie, Cassandra montre le jeu pas à pas, le temps arrêté : la ville, la demande en pointillés, le curseur jaune (à toi de le bouger !), la centrale qui suit doucement, la tirelire. Bouton « Passer » pour sauter l'aide.
 - « Revoir l'aide » sur l'accueil relance le tutoriel ; « Nouveau joueur » le remontre aussi.
 - Une musique de fond joyeuse au piano, en boucle, plus douce la nuit.

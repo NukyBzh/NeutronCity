@@ -333,3 +333,26 @@ svg .pop, svg .float { transform-box: fill-box; transform-origin: center; }
 .tuto-on[data-tuto='elec'] .slider-elec, .tuto-on[data-tuto='piggy'] .play-top-right .piggy { background: var(--blanc); padding: 0.2rem 0.5rem; }
 .tuto-buttons { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.7rem; }
 .tuto-buttons .btn { min-height: 3rem; font-size: 1rem; padding-top: 0.2rem; padding-bottom: 0.2rem; }
+
+/* Lot L6 — boutique : phase découverte, effet et bonus sur chaque carte, objets à venir grisés. */
+.shop-side .shop-items { overflow-y: auto; align-content: start; padding: 0.2rem; }
+.shop-guide { display: flex; align-items: flex-end; min-height: 6.5rem; margin-bottom: 0.3rem; }
+.shop-cassandra { height: 6.5rem; flex-direction: row-reverse; justify-content: flex-end; gap: 0.6rem; width: 100%; }
+.shop-cassandra .bubble { position: static; width: auto; flex: 1; font-size: 1.05rem; }
+.shop-phase { font-weight: 800; color: var(--bleu); margin: 0 0 0.3rem; }
+.shop-item .shop-effect { font-size: 0.95rem; margin: 0; }
+.shop-item .shop-bonus { display: inline-flex; align-items: center; gap: 0.3rem; font-weight: 800; color: var(--bien-fonce); margin: 0; font-size: 0.95rem; }
+.shop-item .shop-lock { display: inline-flex; align-items: center; gap: 0.3rem; color: #3B4A6B; font-weight: 700; margin: 0; }
+.shop-item.shop-later, .shop-item.shop-locked { background: #F1F3F8; border-style: dashed; }
+.shop-item.shop-later img, .shop-item.shop-locked img { filter: grayscale(1); opacity: 0.55; }
+.shop-item.shop-open { border-width: 0.2rem; border-color: var(--bleu); }
+.shop-item.owned, .shop-item.shop-owned { background: #E8F6EE; }
+.shop-side .shop-item img { object-fit: contain; }
+.summary-bonus { display: flex; align-items: center; gap: 0.5rem; font-size: 1.3rem; font-weight: 800; color: var(--bien-fonce); }
+.shop-body { grid-template-rows: minmax(0, 1fr); }
+.shop-side { min-height: 0; }
+.shop-side .shop-items { flex: 1; min-height: 0; }
+.shop-side .shop-item { justify-content: flex-start; }
+.shop-side .shop-items { grid-auto-rows: max-content; }
+.shop-side .shop-item { min-height: 12.5rem; }
+.shop-side .shop-item h2 { min-height: 2.6rem; }

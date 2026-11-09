@@ -35,6 +35,18 @@ jeu.indice.heat.monter: "Les habitants ont froid. Monte le curseur orange !"
 jeu.indice.heat.baisser: "Trop de chaleur ! Baisse un peu le curseur orange."
 jeu.surplus: "L'électricité en **trop** est perdue et te coûte des euros. Baisse le curseur jaune !"
 
+# Boutique, phase découverte (lot L6) : Cassandra présente le bâtiment proposé.
+shop.discover.ferme: "Une **ferme** pour nourrir la ville ! Elle rapporte des euros chaque jour."
+shop.discover.reseau-chaleur: "Le **réseau de chaleur** chauffe les maisons. Il ouvre le printemps et l'hiver !"
+shop.discover.maison-lilas: "De nouveaux **habitants** ! Ils allument la lumière le soir."
+shop.discover.maison-ve: "Cette voiture **électrique** se recharge la nuit."
+shop.discover.epicerie: "L'épicerie garde tout au **frais**, jour et nuit."
+shop.discover.ecole: "Une école ! Les **élèves** y vont tous les jours, sauf l'été."
+shop.discover.usine-cereales: "L'usine **sèche** les céréales avec la chaleur de ta centrale."
+shop.discover.maison-medicale: "Des **médecins** pour soigner les habitants. Dernière découverte !"
+shop.say.free: "Bravo, la ville grandit ! Choisis ce que tu veux construire."
+shop.say.wait: "Encore quelques euros ! Joue une journée pour remplir ta tirelire."
+
 # Bilan : un seul conseil, choisi par le moteur (dayResult).
 bilan.bravo: "Génial ! Ta ville a eu juste ce qu'il fallait toute la journée."
 bilan.soir: "Le soir, la demande monte vite : monte les curseurs avant 18 h."

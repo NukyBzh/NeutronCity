@@ -66,12 +66,65 @@ shop.parc: Un parc
 shop.piste: Une piste cyclable
 shop.eclairage: De beaux lampadaires
 shop.ecole: Une nouvelle école
+shop.ferme: Une ferme moderne
+shop.reseau-chaleur: Le réseau de chaleur
+shop.maison-lilas: La maison des Lilas
+shop.maison-ve: Une maison et sa voiture électrique
+shop.epicerie: Une épicerie
+shop.usine-cereales: Une usine de céréales
+shop.maison-medicale: Une maison médicale
+shop.batterie: Une batterie de quartier
+shop.piscine: Une piscine
+shop.isolation: Des maisons bien isolées
+shop.solaire: Des panneaux solaires
+shop.hopital: Un hôpital
+shop.cuve: Une cuve de chaleur
 shop.new: "Nouveau dans ta ville !"
 shop.where.fontaine: La fontaine est au milieu du parc, près de la centrale.
 shop.where.parc: Le parc a maintenant des arbres et des bancs.
 shop.where.piste: Une piste cyclable verte longe toutes les rues.
 shop.where.eclairage: Un lampadaire éclaire chaque coin de rue.
 shop.where.ecole: La nouvelle école est au cœur de la ville, sous la flèche jaune.
+shop.where.ferme: La ferme demande un peu plus d'électricité pendant la journée.
+shop.where.reseau-chaleur: "Les tuyaux portent la chaleur de la centrale : le printemps et l'hiver s'ouvrent !"
+shop.where.maison-lilas: Ses habitants allument la lumière le soir et se chauffent en hiver.
+shop.where.maison-ve: "La voiture se recharge la nuit : plus d'électricité quand tout dort."
+shop.where.epicerie: Les frigos de l'épicerie tournent jour et nuit.
+shop.where.usine-cereales: L'usine sèche les céréales avec de la chaleur, toute la journée.
+shop.where.maison-medicale: Les médecins soignent les habitants de la ville.
+shop.where.batterie: La batterie se remplit la nuit et aide la ville le soir.
+shop.where.piscine: L'eau de la piscine est chauffée par la centrale.
+shop.where.isolation: "Les maisons gardent mieux la chaleur : moins de chauffage en hiver."
+shop.where.solaire: Le soleil donne un peu d'électricité pendant la journée.
+shop.where.hopital: L'hôpital a besoin d'électricité jour et nuit.
+shop.where.cuve: La cuve garde la chaleur de la nuit pour le soir.
+
+# Boutique (lot L6) : effet court sur chaque carte, bonus, déblocages.
+shop.effect.ferme: Électricité + le jour
+shop.effect.reseau-chaleur: Ouvre le printemps et l'hiver
+shop.effect.maison-lilas: Électricité + le soir, chaleur +
+shop.effect.maison-ve: Électricité + la nuit
+shop.effect.epicerie: Électricité + tout le temps
+shop.effect.ecole: Électricité + le jour (pas l'été)
+shop.effect.usine-cereales: Chaleur + tout le temps
+shop.effect.maison-medicale: Électricité + le jour
+shop.effect.batterie: Électricité − le soir, + la nuit
+shop.effect.parc: Électricité − l'été (ombre)
+shop.effect.fontaine: Rend la ville plus belle
+shop.effect.piste: Rend la ville plus belle
+shop.effect.piscine: Chaleur + tout le temps
+shop.effect.eclairage: Électricité + le soir
+shop.effect.isolation: Chaleur − en hiver
+shop.effect.solaire: Électricité − le jour
+shop.effect.hopital: Électricité + tout le temps
+shop.effect.cuve: Chaleur − le soir, + la nuit
+shop.bonus: "+{amount} par journée"
+shop.later: Bientôt
+shop.locked: "Dès {n} bâtiments"
+shop.discovery: "Découverte : bâtiment {n} sur {total}"
+shop.free: "Ta ville a {n} bâtiments"
+summary.bonus: "Ta ville rapporte {amount}"
+days.locked.heat: Achète le réseau de chaleur dans la boutique
 
 btn.newPlayer: Nouveau joueur
 btn.cancel: Annuler

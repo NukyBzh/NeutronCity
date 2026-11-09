@@ -34,6 +34,14 @@ Dessins vectoriels écrits à la main en SVG (aucune image externe, aucune IA), 
   (D-09) le 2026-11-08 : centrale, bâtiments, rue, habitants, véhicules. Dessins de la boutique refaits le même jour. Saisons (neige, fleurs, climatiseurs, arbres nus) ajoutées le 2026-11-08 (passe L2).
   À reprendre dans Figma quand la limite le permettra.
 
+## Bâtiments de la boutique (`objets/`) — 2026-11-09 (lot L6.1)
+15 images WebP (256 px au plus, 179 Ko en tout), réduites par Claude à partir des PNG Gemini de `gemini/` (images IA,
+même point ouvert que Cassandra avant diffusion) : ferme ← `asset_25_ferme_moderne`, reseau-chaleur ← `asset_39_tuyau_chaleur`,
+maison-lilas ← `asset_26`, maison-ve ← `asset_27`, epicerie ← `asset_28`, ecole ← `asset_29`, usine-cereales ← `asset_13_usine_1`,
+maison-medicale ← `asset_30`, batterie ← `asset_31`, parc ← `asset_32_parc_arbore`, piscine ← `asset_33`,
+isolation ← `asset_46_bonnet_laine_cheminee`, solaire ← `asset_35`, hopital ← `asset_14_hopital`, cuve ← `asset_34`.
+Fontaine, piste cyclable et lampadaires gardent leur dessin SVG (`shop/`).
+
 ## Musique (`audio/`) — 2026-11-09
 - `musique-happy-clappy-loop.wav` : « Happy Clappy Loop » de **OwlishMedia**, licence **CC0** (domaine public, aucune
   citation obligatoire), https://opengameart.org/content/happy-clappy-loop ; fichier d'origine `HappyClappyLoop.wav`

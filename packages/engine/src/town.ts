@@ -1,11 +1,32 @@
 /**
- * The town's happiness and the shop. Happiness of the town only grows with what the player buys (never lost); the
- * mood of the day is only shown in the town and costs nothing (owner's choice, 2026-11-08). Buying and saving come
- * with lot L6; this file fixes the rule and the shop format (content/shop/shop.yaml).
+ * The town's happiness and the shop (lot L6, D-11, D-19). Happiness only grows with what the player buys (never lost);
+ * the mood of the day is only shown in the town and costs nothing. Each building also pays a fixed bonus at the end of
+ * every day (E1) and changes the demand a little (E2, effects.ts).
+ *
+ * Order of the shop (E4): a « discovery » phase offers the 8 buildings of the tutorial one at a time, in order; then a
+ * free phase opens the others as the town grows (number of buildings bought). The heat network opens the days with
+ * heat (E5). Format: content/shop/shop.yaml.
  */
+import type { DayDef } from './day';
+import { isHeatingDay } from './day';
+import { effectErrors, type TownEffect } from './effects';
 import type { Gauge } from './game';
 
-export interface ShopItem { id: string; price: number; joy: number }
+export interface ShopItem {
+  id: string;
+  price: number;
+  /** Happiness points gained for good (D-11). */
+  joy: number;
+  /** Euros paid at the end of every day once bought (D-19 E1). */
+  bonus: number;
+  /** Place in the discovery phase (1 = first); absent for the free phase. */
+  discovery?: number;
+  /** Free phase: buildings needed before it can be bought. */
+  unlockAt?: number;
+  /** Buying it opens the days with heat (D-19 E5). */
+  opensHeat?: boolean;
+  effects: TownEffect[];
+}
 
 /** Happiness of a town with nothing bought yet. */
 export const BASE_HAPPINESS = 40;
@@ -15,21 +36,85 @@ export function validateShop(raw: unknown, where = 'shop'): ShopItem[] {
   const errors: string[] = [];
   if (!Array.isArray(items) || items.length === 0) throw new Error(`${where}: items: list expected`);
   const ids = new Set<string>();
+  const steps: number[] = [];
+  const out: ShopItem[] = [];
   items.forEach((it, i) => {
     const o = (it ?? {}) as Record<string, unknown>;
-    if (typeof o.id !== 'string' || !/^[a-z][a-z0-9-]*$/.test(o.id)) errors.push(`items[${i}].id: lower-case word expected`);
-    else if (ids.has(o.id)) errors.push(`items[${i}].id: "${o.id}" twice`);
+    const at = `items[${i}]`;
+    if (typeof o.id !== 'string' || !/^[a-z][a-z0-9-]*$/.test(o.id)) errors.push(`${at}.id: lower-case word expected`);
+    else if (ids.has(o.id)) errors.push(`${at}.id: "${o.id}" twice`);
     else ids.add(o.id);
-    if (!Number.isInteger(o.price) || (o.price as number) <= 0) errors.push(`items[${i}].price: whole euros expected`);
-    if (!Number.isInteger(o.joy) || (o.joy as number) <= 0) errors.push(`items[${i}].joy: positive whole number expected`);
+    if (!Number.isInteger(o.price) || (o.price as number) <= 0) errors.push(`${at}.price: whole euros expected`);
+    if (!Number.isInteger(o.joy) || (o.joy as number) <= 0) errors.push(`${at}.joy: positive whole number expected`);
+    if (!Number.isInteger(o.bonus) || (o.bonus as number) < 0) errors.push(`${at}.bonus: whole euros ≥ 0 expected`);
+    const disc = o.discovery;
+    const unlock = o.unlockAt;
+    if ((disc === undefined) === (unlock === undefined)) errors.push(`${at}: either discovery or unlockAt expected`);
+    if (disc !== undefined) {
+      if (!Number.isInteger(disc) || (disc as number) < 1) errors.push(`${at}.discovery: 1, 2, 3… expected`);
+      else steps.push(disc as number);
+    }
+    if (unlock !== undefined && (!Number.isInteger(unlock) || (unlock as number) < 0)) errors.push(`${at}.unlockAt: whole number ≥ 0 expected`);
+    if (o.opensHeat !== undefined && typeof o.opensHeat !== 'boolean') errors.push(`${at}.opensHeat: true or false expected`);
+    const eff = o.effects ?? [];
+    if (!Array.isArray(eff)) errors.push(`${at}.effects: list expected`);
+    else eff.forEach((e, k) => errors.push(...effectErrors(e, `${at}.effects[${k}]`)));
+    out.push({ ...(o as unknown as ShopItem), effects: (Array.isArray(eff) ? eff : []) as TownEffect[] });
   });
+  const sorted = [...steps].sort((a, b) => a - b);
+  if (sorted.some((s, i) => s !== i + 1)) errors.push('discovery: steps must be 1, 2, 3… without gap nor repeat');
   if (errors.length) throw new Error(`${where}: ${errors.join('; ')}`);
-  return items as ShopItem[];
+  return out;
 }
 
 /** Happiness of the town (0–100) from what was bought. */
 export function townHappiness(shop: readonly ShopItem[], owned: readonly string[]): number {
   return Math.min(100, BASE_HAPPINESS + shop.filter((i) => owned.includes(i.id)).reduce((a, i) => a + i.joy, 0));
+}
+
+/** Discovery buildings in order. */
+const discoveryOf = (shop: readonly ShopItem[]): ShopItem[] => shop.filter((i) => i.discovery !== undefined).sort((a, b) => a.discovery! - b.discovery!);
+
+/** The next building of the discovery phase, or null once they are all bought (free phase). */
+export function nextDiscovery(shop: readonly ShopItem[], owned: readonly string[]): ShopItem | null {
+  return discoveryOf(shop).find((i) => !owned.includes(i.id)) ?? null;
+}
+
+export type ShopStatus =
+  | { kind: 'owned' }
+  | { kind: 'open' }
+  /** Discovery phase: will come later, in this order. */
+  | { kind: 'later' }
+  /** Free phase: needs this many buildings. */
+  | { kind: 'locked'; needs: number };
+
+/** What the shop shows for one building. */
+export function shopStatus(shop: readonly ShopItem[], owned: readonly string[], item: ShopItem): ShopStatus {
+  if (owned.includes(item.id)) return { kind: 'owned' };
+  const next = nextDiscovery(shop, owned);
+  if (item.discovery !== undefined) return next?.id === item.id ? { kind: 'open' } : { kind: 'later' };
+  if (next) return { kind: 'later' };
+  const count = shop.filter((i) => owned.includes(i.id)).length;
+  return count >= (item.unlockAt ?? 0) ? { kind: 'open' } : { kind: 'locked', needs: item.unlockAt! };
+}
+
+/** True once a building that opens heat has been bought (D-19 E5). */
+export function heatOpen(shop: readonly ShopItem[], owned: readonly string[]): boolean {
+  return shop.some((i) => i.opensHeat && owned.includes(i.id));
+}
+
+/** Effects of the buildings bought that apply to this day (heat effects only on days with heat). */
+export function dayEffects(day: DayDef, shop: readonly ShopItem[], owned: readonly string[]): TownEffect[] {
+  const heating = isHeatingDay(day);
+  return shop
+    .filter((i) => owned.includes(i.id))
+    .flatMap((i) => i.effects)
+    .filter((e) => (!e.days || e.days.includes(day.id)) && (e.out === 'elec' || heating));
+}
+
+/** Euros the town's buildings pay at the end of a day (D-19 E1). */
+export function dayBonus(shop: readonly ShopItem[], owned: readonly string[]): number {
+  return shop.filter((i) => owned.includes(i.id)).reduce((a, i) => a + i.bonus, 0);
 }
 
 export type Mood = 'content' | 'noir' | 'froid' | 'calme';

@@ -8,7 +8,7 @@ versions (§4) est tenu à jour à chaque étiquette.*
 |---|---|---|
 | Code, contenu (journées, boutique, répliques), documentation | dépôt Git local, copie sur GitHub (dépôt **privé** `https://github.com/NukyBzh/NeutronCity.git`, branche `main`) | oui |
 | Images exportées de Figma | `assets/`, avec le lien Figma de chacune dans `assets/SOURCES.md` | oui |
-| Images Gemini et copie du Drive | `assets/gemini/`, `docs/gemini/`, `assets/Jeu centrale – assets/` (PC du porteur du projet) | **non** pour le moment (`docs/GEMINI.md` §2) ; à verser dans Git si un lot les intègre au jeu |
+| Images Gemini et copie du Drive | `assets/gemini/`, `docs/gemini/`, `assets/Jeu centrale – assets/` (PC du porteur du projet) | **non** (`docs/GEMINI.md` §2) ; seules les images utilisées par le jeu entrent dans Git, réduites en WebP dans `assets/objets/` (D-19 E8) |
 | Fichiers sources des dessins | dans Figma (fichier du projet, lien dans `assets/SOURCES.md`) | **non** (restent dans Figma) |
 | Livrables construits (installeur Windows, APK) | `apps/desktop/src-tauri/target/…`, `out/` | **non** : on les reconstruit depuis une étiquette (§5) |
 | Réglages locaux (`.env*`, `*.local`, `.claude/settings.local.json`) | PC du porteur du projet | **non** |
@@ -64,6 +64,7 @@ Avant tout retour en arrière : `git status` doit être propre (sinon `git stash
 | v0.4.1 | `a499231` | 2026-11-08 | L3.1 : corrections du test R1-01 à R1-07 ; chaîne APK (`npm.cmd run android`) |
 | v0.5.0 | `1843ba6` | 2026-11-08 | L3.2 : bande ±7 % et malus (D-15), journées plus contrastées (D-16), objet acheté montré dans la ville |
 | v0.6.0 | `ed5aeab` | 2026-11-08 | L4 : ciel heure par heure, ombres et lumière du soir, ville en couches pour la tablette (D-17) |
+| v0.8.0 | *(à poser après validation)* | 2026-11-09 | L6.1 : 18 bâtiments, phase découverte, bonus par journée, effets sur la demande, chaleur ouverte par le réseau de chaleur (D-19) |
 | v0.7.0 | *(à poser après validation)* | 2026-11-09 | L5 : tutoriel guidé de la première partie, musique CC0 en boucle, bruitages, bouton « Son » (D-18) |
 
 Un commit ne peut pas citer son propre identifiant : la colonne « Commit » de la dernière ligne se complète au commit

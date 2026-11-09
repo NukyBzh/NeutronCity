@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  clampSetpoints, gaugesOf, hourOf, isHeatingDay, isOver, isSurplus, moodOf, setSetpoints, type DayDef, type GameState, type Pose,
+  clampSetpoints, gaugesOf, hourOf, isHeatingDay, isOver, isSurplus, moodOf, setSetpoints, type DayDef, type GameState, type Pose, type TownEffect,
 } from '@neutron/engine';
 import { euros, t } from '../i18n';
 import { IsoCity } from '../play/IsoCity';
@@ -43,8 +43,10 @@ const REVIEW_STEP = Math.max(1, Number(PARAMS.get('etape')) || 1) - 1;
 export const SPEEDS = [1, 2, 4] as const;
 export type Speed = (typeof SPEEDS)[number];
 
-export function Play({ day, seed, upgrades, speed, onSpeed, onFinish, onRestart, onHome, tutorial = false, onTutorialDone }: {
+export function Play({ day, seed, upgrades, effects = [], speed, onSpeed, onFinish, onRestart, onHome, tutorial = false, onTutorialDone }: {
   day: DayDef;
+  /** Effects of the buildings bought on this day's demand (lot L6). */
+  effects?: readonly TownEffect[];
   seed: number;
   upgrades: readonly string[];
   speed: Speed;
@@ -55,7 +57,7 @@ export function Play({ day, seed, upgrades, speed, onSpeed, onFinish, onRestart,
   tutorial?: boolean;
   onTutorialDone?: () => void;
 }) {
-  const [run, setRun] = useState(() => (REVIEW_START > START_HOUR ? playUntil(day, seed, REVIEW_START, REVIEW_FOLLOW) : startOf(day, seed)));
+  const [run, setRun] = useState(() => (REVIEW_START > START_HOUR ? playUntil(day, seed, REVIEW_START, REVIEW_FOLLOW, effects) : startOf(day, seed, effects)));
   const [timeline] = useState(() => timelineOf(day, run.game));
   const [paused, setPaused] = useState(false);
   const [tuto, setTuto] = useState<number | null>(tutorial ? Math.min(REVIEW_STEP, TUTO.length - 1) : null);
@@ -263,7 +265,7 @@ export function Play({ day, seed, upgrades, speed, onSpeed, onFinish, onRestart,
           <span className="legend"><i className="legend-band" />{t('curves.band')}</span>
         </div>
         <div className="curves-body">
-          <Curves day={day} surprises={g.surprises} hour={hour} history={run.history} current={{ h: hour, elec: g.plant.elec, heat: g.plant.heat }} heatOn={heatDay} />
+          <Curves day={day} surprises={g.surprises} effects={g.effects} hour={hour} history={run.history} current={{ h: hour, elec: g.plant.elec, heat: g.plant.heat }} heatOn={heatDay} />
           <div className="curves-gauges">
             <Gauge state={view.elec} />
             {view.heat ? <Gauge state={view.heat} /> : <span />}

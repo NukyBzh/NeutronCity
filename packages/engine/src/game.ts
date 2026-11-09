@@ -5,6 +5,7 @@
  */
 import { DAY_MINUTES, START_HOUR, curveAt, isHeatingDay, type DayDef } from './day';
 import { clampSetpoints, stepPlant, type Output, type PlantState } from './plant';
+import { effectsAt, type TownEffect } from './effects';
 import { SURPRISE_SPEC, drawSurprises, surpriseWeight, type Surprise } from './surprises';
 
 export type Gauge = 'bien' | 'presque' | 'loin';
@@ -25,15 +26,28 @@ export const isSurplus = (production: number, demand: number): boolean => produc
 
 export interface Demand { elec: number; heat: number }
 
-/** Town demand at a game hour: the day's curve plus the surprises, never below 0. */
-export function demandAt(day: DayDef, surprises: readonly Surprise[], hour: number): Demand {
+/**
+ * Town demand at a game hour: the day's curve, plus the surprises, plus the effects of the buildings bought (lot L6),
+ * never below 0. If the buildings would push electricity + heat above 100 % (D-01), their additions shrink just enough.
+ */
+export function demandAt(day: DayDef, surprises: readonly Surprise[], hour: number, effects: readonly TownEffect[] = []): Demand {
   let { elec, heat } = curveAt(day, hour);
   for (const s of surprises) {
     const w = surpriseWeight(s, hour);
     elec += w * SURPRISE_SPEC[s.kind].elec;
     heat += w * SURPRISE_SPEC[s.kind].heat;
   }
-  return { elec: Math.max(0, elec), heat: Math.max(0, heat) };
+  elec = Math.max(0, elec);
+  heat = Math.max(0, heat);
+  if (effects.length === 0) return { elec, heat };
+  let add = effectsAt(effects, hour);
+  const pos = Math.max(0, add.elec) + Math.max(0, add.heat);
+  const excess = elec + heat + add.elec + add.heat - 100;
+  if (excess > 0 && pos > 0) {
+    const k = Math.max(0, 1 - excess / pos);
+    add = { elec: add.elec > 0 ? add.elec * k : add.elec, heat: add.heat > 0 ? add.heat * k : add.heat };
+  }
+  return { elec: Math.max(0, elec + add.elec), heat: Math.max(0, heat + add.heat) };
 }
 
 export interface GameStats {
@@ -51,6 +65,8 @@ export interface GameStats {
 export interface GameState {
   seed: number;
   surprises: Surprise[];
+  /** Effects of the buildings bought that apply to this day (lot L6), fixed for the whole day. */
+  effects: TownEffect[];
   /** Game minutes since 6 h (integer: a day is exactly DAY_MINUTES steps). */
   minute: number;
   plant: PlantState;
@@ -64,13 +80,13 @@ export const hourOf = (s: GameState): number => START_HOUR + s.minute / 60;
 export const isOver = (s: GameState): boolean => s.minute >= DAY_MINUTES;
 
 /** Start of a day: the plant already produces what the town asks at 6 h (rounded to the sliders' 5 % steps). */
-export function newGame(day: DayDef, seed: number): GameState {
+export function newGame(day: DayDef, seed: number, effects: readonly TownEffect[] = []): GameState {
   const surprises = drawSurprises(day, seed);
-  const d = demandAt(day, surprises, START_HOUR);
+  const d = demandAt(day, surprises, START_HOUR, effects);
   const e = Math.round(d.elec / 5) * 5;
   const h = Math.round(d.heat / 5) * 5;
   return {
-    seed, surprises, minute: 0,
+    seed, surprises, effects: [...effects], minute: 0,
     plant: { setElec: e, setHeat: h, elec: e, heat: h },
     euros: 0, paidMinutes: 0,
     stats: { redElec: 0, redHeat: 0, redEvening: 0, heatMinutes: 0, surplusElec: 0 },
@@ -85,7 +101,7 @@ export function setSetpoints(s: GameState, elecPct: number, heatPct: number, mov
 
 /** What the screen shows at the current minute: demand, and a gauge per output asked for (heat: null when none). */
 export function gaugesOf(day: DayDef, s: GameState): { demand: Demand; elec: Gauge; heat: Gauge | null } {
-  const demand = demandAt(day, s.surprises, hourOf(s));
+  const demand = demandAt(day, s.surprises, hourOf(s), s.effects);
   return { demand, elec: gaugeOf(s.plant.elec - demand.elec), heat: demand.heat > 0 ? gaugeOf(s.plant.heat - demand.heat) : null };
 }
 
@@ -118,9 +134,9 @@ export function stepMinute(day: DayDef, s: GameState): GameState {
 }
 
 /** Most a day can pay: 2 € a minute for each output the town asks for at that minute. */
-export function maxEuros(day: DayDef, surprises: readonly Surprise[]): number {
+export function maxEuros(day: DayDef, surprises: readonly Surprise[], effects: readonly TownEffect[] = []): number {
   let total = 0;
-  for (let m = 1; m <= DAY_MINUTES; m++) total += demandAt(day, surprises, START_HOUR + m / 60).heat > 0 ? 4 : 2;
+  for (let m = 1; m <= DAY_MINUTES; m++) total += demandAt(day, surprises, START_HOUR + m / 60, effects).heat > 0 ? 4 : 2;
   return total;
 }
 
@@ -136,7 +152,7 @@ export interface DayResult { euros: number; max: number; stars: 1 | 2 | 3; advic
 
 /** End of the day: euros, stars, and the one piece of advice Cassandra gives (the biggest weakness). */
 export function dayResult(day: DayDef, s: GameState): DayResult {
-  const max = maxEuros(day, s.surprises);
+  const max = maxEuros(day, s.surprises, s.effects);
   const stars = starsOf(s.euros, max);
   const st = s.stats;
   let advice: Advice = 'anticiper';
@@ -151,8 +167,10 @@ export function dayResult(day: DayDef, s: GameState): DayResult {
  * Plays a whole day without a screen (tests, tuning): `player` sees the state each minute and may return new
  * setpoints. Same day, seed and player ⇒ same result.
  */
-export function simulate(day: DayDef, seed: number, player: (s: GameState) => { elec: number; heat: number } | null): GameState {
-  let s = newGame(day, seed);
+export function simulate(
+  day: DayDef, seed: number, player: (s: GameState) => { elec: number; heat: number } | null, effects: readonly TownEffect[] = [],
+): GameState {
+  let s = newGame(day, seed, effects);
   while (!isOver(s)) {
     const move = player(s);
     if (move) s = setSetpoints(s, move.elec, move.heat, move.elec !== s.plant.setElec ? 'elec' : 'heat');

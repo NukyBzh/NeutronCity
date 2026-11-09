@@ -3,7 +3,7 @@
  * history drawn on the curves. Real-time pacing also lives here: a day (6 h → midnight) lasts about 5 minutes.
  */
 import {
-  ANNOUNCE_HOURS, START_HOUR, demandAt, hourOf, isOver, newGame, setSetpoints, stepMinute, type DayDef, type GameState, type Pose,
+  ANNOUNCE_HOURS, START_HOUR, demandAt, hourOf, isOver, newGame, setSetpoints, stepMinute, type DayDef, type GameState, type Pose, type TownEffect,
 } from '@neutron/engine';
 
 export const REAL_SECONDS_PER_GAME_MINUTE = 300 / (18 * 60);
@@ -31,12 +31,12 @@ export function advance(day: DayDef, g: GameState, history: Sample[]): { game: G
  * Review of the mock-up only (`?heure=`): the game played up to `hour` by a player who follows demand a quarter of an
  * hour ahead (`follow`) or never touches anything.
  */
-export function playUntil(day: DayDef, seed: number, hour: number, follow: boolean): { game: GameState; history: Sample[] } {
-  let game = newGame(day, seed);
+export function playUntil(day: DayDef, seed: number, hour: number, follow: boolean, effects: readonly TownEffect[] = []): { game: GameState; history: Sample[] } {
+  let game = newGame(day, seed, effects);
   let history = [sampleOf(game)];
   while (!isOver(game) && hourOf(game) < hour) {
     if (follow) {
-      const d = demandAt(day, game.surprises, hourOf(game) + 0.25);
+      const d = demandAt(day, game.surprises, hourOf(game) + 0.25, game.effects);
       game = setSetpoints(game, Math.round(d.elec / 5) * 5, Math.round(d.heat / 5) * 5, 'elec');
     }
     ({ game, history } = advance(day, game, history));
@@ -44,8 +44,8 @@ export function playUntil(day: DayDef, seed: number, hour: number, follow: boole
   return { game, history };
 }
 
-export const startOf = (day: DayDef, seed: number): { game: GameState; history: Sample[] } => {
-  const game = newGame(day, seed);
+export const startOf = (day: DayDef, seed: number, effects: readonly TownEffect[] = []): { game: GameState; history: Sample[] } => {
+  const game = newGame(day, seed, effects);
   return { game, history: [sampleOf(game)] };
 };
 

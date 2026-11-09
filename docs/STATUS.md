@@ -14,7 +14,8 @@ avant tout commit, installation, envoi sur GitHub ou action irréversible).*
 | v0.5.0 | L3.2 Règles et boutique (R1) | **Fait** le 2026-11-08, validé, commit `1843ba6`, étiquette v0.5.0 : bande ±7 % et malus de surproduction (D-15, choix confirmés), journées plus contrastées et rampe 15 %/h (D-16), objet acheté montré dans la ville (R1-08) ; APK `livrables/Neutron-City-0.5.0.apk`. L4 à L9 décalés d’une version mineure |
 | v0.6.0 | L4 Ville animée et ciel | **Fait** le 2026-11-08, validé le 2026-11-08, commit `ed5aeab`, étiquette v0.6.0 : ciel heure par heure, soleil, lune, étoiles, nuages (R1-11, R1-12) ; ombres, arbres, lumière du soir (R1-14 en partie) ; ville en couches pour la tablette (D-17) ; APK `livrables/Neutron-City-0.6.0.apk` |
 | v0.7.0 | L5 Cassandra et son | **Fait** le 2026-11-09, en attente de validation : tutoriel guidé de la première partie (« Revoir l'aide » sur l'accueil), musique « Happy Clappy Loop » (CC0) plus douce la nuit, bruitages, bouton « Son » (D-18, R1-13) ; APK `livrables/Neutron-City-0.7.0.apk` |
-| v0.8.0 | L6 Boutique | À faire |
+| v0.8.0 | L6.1 Boutique et objets | **Fait** le 2026-11-09, en attente de validation : 18 bâtiments, phase découverte de 8 puis déblocage par taille de ville, bonus par journée, effets sur la demande, printemps et hiver ouverts par le réseau de chaleur, images Gemini en WebP dans les cartes (D-19) ; APK `livrables/Neutron-City-0.8.0.apk` |
+| v0.8.1 | L6.2 Images dans la ville | À faire : bâtiments achetés dessinés dans la ville isométrique (images Gemini), passe dessins (D-09) |
 | v0.9.0 | L7 Journées | À faire |
 | v0.10.0 | L8 Tablette | À faire |
 | v1.0.0 | L9 Essai enfants | À faire |

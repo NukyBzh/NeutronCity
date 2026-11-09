@@ -1,9 +1,29 @@
-# Améliorations de la ville (format : packages/engine/src/town.ts, validateShop).
-# price : euros du jeu ; joy : points de bonheur gagnés pour toujours (bonheur de départ 40, maximum 100).
-# Textes : shop.<id> dans content/i18n/fr.yaml ; dessin : assets/shop/<id>.svg ; place dans la ville : apps/game/src/play/City.tsx.
+# Bâtiments et améliorations de la ville (lot L6, D-19). Format : packages/engine/src/town.ts (validateShop).
+# price : euros du jeu ; joy : points de bonheur gagnés pour toujours (bonheur de départ 40, maximum 100) ;
+# bonus : euros versés à la fin de chaque journée (prix ≈ 1,5 journée de bonus en découverte, 2 journées ensuite) ;
+# discovery : ordre de la phase découverte (un seul objet proposé à la fois) ; unlockAt : nombre de bâtiments achetés
+# pour l'ouvrir ensuite ; opensHeat : ouvre les journées avec chaleur.
+# effects : ajout à la demande, en % du cœur, à un moment de la journée (jour 9–17 h, soir 19–21 h, nuit 23–5 h,
+# toujours), avec rampes de 2 h ; days : journées concernées (toutes si absent). Le moteur garde élec + chaleur ≤ 100 %.
+# Textes : shop.<id> (nom) et shop.where.<id> (effet) dans content/i18n/fr.yaml ; shop.discover.<id> dans les répliques.
 items:
-  - { id: fontaine, price: 1000, joy: 8 }
-  - { id: parc, price: 1500, joy: 10 }
-  - { id: piste, price: 2500, joy: 12 }
-  - { id: eclairage, price: 3000, joy: 12 }
-  - { id: ecole, price: 5000, joy: 18 }
+  # Phase découverte (D-19 E4), dans l'ordre.
+  - { id: ferme, price: 900, joy: 3, bonus: 600, discovery: 1, effects: [{ out: elec, add: 2, when: jour }] }
+  - { id: reseau-chaleur, price: 1500, joy: 3, bonus: 1000, discovery: 2, opensHeat: true, effects: [{ out: heat, add: 1, when: toujours }] }
+  - { id: maison-lilas, price: 800, joy: 3, bonus: 550, discovery: 3, effects: [{ out: elec, add: 1, when: soir }, { out: heat, add: 1, when: toujours }] }
+  - { id: maison-ve, price: 1000, joy: 3, bonus: 650, discovery: 4, effects: [{ out: elec, add: 2, when: nuit }] }
+  - { id: epicerie, price: 1000, joy: 3, bonus: 650, discovery: 5, effects: [{ out: elec, add: 1, when: toujours }] }
+  - { id: ecole, price: 1500, joy: 5, bonus: 1000, discovery: 6, effects: [{ out: elec, add: 2, when: jour, days: [printemps, hiver] }] }
+  - { id: usine-cereales, price: 2000, joy: 3, bonus: 1300, discovery: 7, effects: [{ out: heat, add: 2, when: toujours }] }
+  - { id: maison-medicale, price: 1500, joy: 4, bonus: 1000, discovery: 8, effects: [{ out: elec, add: 1, when: jour }] }
+  # Phase libre : s'ouvre avec la taille de la ville.
+  - { id: batterie, price: 3000, joy: 3, bonus: 1500, unlockAt: 8, effects: [{ out: elec, add: -2, when: soir }, { out: elec, add: 2, when: nuit }] }
+  - { id: parc, price: 1600, joy: 5, bonus: 800, unlockAt: 8, effects: [{ out: elec, add: -1, when: jour, days: [ete] }] }
+  - { id: fontaine, price: 1000, joy: 4, bonus: 500, unlockAt: 8 }
+  - { id: piste, price: 2000, joy: 4, bonus: 1000, unlockAt: 10 }
+  - { id: piscine, price: 2400, joy: 5, bonus: 1200, unlockAt: 10, effects: [{ out: heat, add: 2, when: toujours }] }
+  - { id: eclairage, price: 2400, joy: 3, bonus: 1200, unlockAt: 10, effects: [{ out: elec, add: 1, when: soir }] }
+  - { id: isolation, price: 3000, joy: 3, bonus: 1500, unlockAt: 12, effects: [{ out: heat, add: -2, when: toujours, days: [hiver] }, { out: heat, add: -1, when: toujours, days: [printemps] }] }
+  - { id: solaire, price: 3600, joy: 3, bonus: 1800, unlockAt: 12, effects: [{ out: elec, add: -3, when: jour, days: [ete] }, { out: elec, add: -1, when: jour, days: [printemps, hiver] }] }
+  - { id: hopital, price: 4000, joy: 4, bonus: 2000, unlockAt: 14, effects: [{ out: elec, add: 2, when: toujours }] }
+  - { id: cuve, price: 4000, joy: 3, bonus: 2000, unlockAt: 16, effects: [{ out: heat, add: -2, when: soir }, { out: heat, add: 2, when: nuit }] }

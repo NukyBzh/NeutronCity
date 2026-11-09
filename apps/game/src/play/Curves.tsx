@@ -1,6 +1,6 @@
 import { iconUrl } from '../assets';
 import { t } from '../i18n';
-import { ANNOUNCE_HOURS, BAND_PCT, END_HOUR, SURPRISE_SPEC, START_HOUR, demandAt, type DayDef, type Surprise } from '@neutron/engine';
+import { ANNOUNCE_HOURS, BAND_PCT, END_HOUR, SURPRISE_SPEC, START_HOUR, demandAt, type DayDef, type Surprise, type TownEffect } from '@neutron/engine';
 import { LOOK_AHEAD_HOURS, type Sample } from './session';
 
 /**
@@ -27,9 +27,11 @@ const y = (lane: Lane, v: number): number => {
 };
 const path = (pts: [number, number][]): string => pts.map(([a, b], i) => `${i ? 'L' : 'M'}${a.toFixed(1)} ${b.toFixed(1)}`).join(' ');
 
-export function Curves({ day, surprises, hour, history, current, heatOn }: {
+export function Curves({ day, surprises, effects = [], hour, history, current, heatOn }: {
   day: DayDef;
   surprises: readonly Surprise[];
+  /** Effects of the buildings bought (lot L6): the demand drawn is the one the player must follow. */
+  effects?: readonly TownEffect[];
   hour: number;
   history: readonly Sample[];
   current: Sample;
@@ -38,15 +40,15 @@ export function Curves({ day, surprises, hour, history, current, heatOn }: {
   const until = Math.min(END_HOUR, hour + LOOK_AHEAD_HOURS);
   const demandPts = (lane: Lane): [number, number][] => {
     const out: [number, number][] = [];
-    for (let h = START_HOUR; h <= until + 1e-9; h += 0.25) out.push([x(h), y(lane, demandAt(day, surprises, h)[lane])]);
-    out.push([x(until), y(lane, demandAt(day, surprises, until)[lane])]);
+    for (let h = START_HOUR; h <= until + 1e-9; h += 0.25) out.push([x(h), y(lane, demandAt(day, surprises, h, effects)[lane])]);
+    out.push([x(until), y(lane, demandAt(day, surprises, until, effects)[lane])]);
     return out;
   };
   // The band where the player earns euros: demand ± BAND_PCT, drawn as far as the demand is shown.
   const bandPts = (lane: Lane): [number, number][] => {
     const up: [number, number][] = []; const down: [number, number][] = [];
     for (let h = START_HOUR; h <= until + 1e-9; h += 0.25) {
-      const v = demandAt(day, surprises, h)[lane];
+      const v = demandAt(day, surprises, h, effects)[lane];
       up.push([x(h), y(lane, v + BAND_PCT)]); down.unshift([x(h), y(lane, Math.max(0, v - BAND_PCT))]);
     }
     return [...up, ...down];
