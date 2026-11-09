@@ -34,14 +34,19 @@ Dessins vectoriels écrits à la main en SVG (aucune image externe, aucune IA), 
   (D-09) le 2026-11-08 : centrale, bâtiments, rue, habitants, véhicules. Dessins de la boutique refaits le même jour. Saisons (neige, fleurs, climatiseurs, arbres nus) ajoutées le 2026-11-08 (passe L2).
   À reprendre dans Figma quand la limite le permettra.
 
+## La ville (`ville/`) — 2026-11-09 (lot L6.3)
+46 images WebP (320 px au plus pour les bâtiments, 256 px pour les tuiles, 160 px pour les véhicules ; 669 Ko en tout), réduites par Claude à partir
+des PNG Gemini de `gemini/` (images IA, même point ouvert que Cassandra) : tuiles 23 à 27, immeuble 11 et 12 (jour, nuit,
+neige, coupure), maisons 16, usines 13 (2 et 3), gare 15, centrale 01 à 10, arbre 19, lampadaire 20, panneau d'alerte 21,
+enfants 42, balançoire 43, oiseaux 44 ; série 3 : voitures 48 à 51, bus 52, habitants 53 à 55, bâtiments 58 à 63 (noms courts : `immeuble-nuit` ← `asset_11_immeuble_nuit_allume`, etc.).
+
 ## Bâtiments de la boutique (`objets/`) — 2026-11-09 (lot L6.1)
 15 images WebP (384 px au plus depuis le lot L6.2, 351 Ko en tout), réduites par Claude à partir des PNG Gemini de `gemini/` (images IA,
 même point ouvert que Cassandra avant diffusion) : ferme ← `asset_25_ferme_moderne`, reseau-chaleur ← `asset_39_tuyau_chaleur`,
 maison-lilas ← `asset_26`, maison-ve ← `asset_27`, epicerie ← `asset_28`, ecole ← `asset_29`, usine-cereales ← `asset_13_usine_1`,
 maison-medicale ← `asset_30`, batterie ← `asset_31`, parc ← `asset_32_parc_arbore`, piscine ← `asset_33`,
 isolation ← `asset_46_bonnet_laine_cheminee`, solaire ← `asset_35`, hopital ← `asset_14_hopital`, cuve ← `asset_34`.
-Fontaine, piste cyclable et lampadaires gardent leur dessin SVG (`shop/`).
-`tuile-herbe.webp` ← `asset_23_tuile_herbe` (lot L6.2) : tuile des terrains pas encore achetés.
+Depuis le lot L6.3 : fontaine ← `asset_56_fontaine`, piste ← `asset_57_tuile_piste_cyclable`, eclairage ← `asset_20_lampadaire` (les SVG de `shop/` ne servent plus).
 
 ## Musique (`audio/`) — 2026-11-09
 - `musique-happy-clappy-loop.wav` : « Happy Clappy Loop » de **OwlishMedia**, licence **CC0** (domaine public, aucune

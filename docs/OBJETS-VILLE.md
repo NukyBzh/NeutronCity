@@ -55,7 +55,8 @@ visibles de la bande du jeu (i + j de 5 à 8) et dans la ville entière. Avant l
 `asset_23_tuile_herbe`, enneigée en hiver), choix de Yann ; le reste de la ville garde ses immeubles dessinés. Après : la même image que la carte de la boutique, un peu plus
 grande dans la ville entière ; arrivée animée et flèche jaune pour l'achat qui vient d'être fait. Le bonnet de
 l'isolation se pose sur la cheminée de la maison des Lilas (achetée pendant la découverte, donc toujours là). Fontaine,
-piste et lampadaires gardent leur dessin. L'ancienne école dessinée et les bancs du parc dessiné sont retirés : leurs
+piste et lampadaires gardent leur dessin (*remplacé par D-20, lot L6.3 : lampadaires en image Gemini, fontaine et piste en
+attente de leurs images*). L'ancienne école dessinée et les bancs du parc dessiné sont retirés : leurs
 images les remplacent.
 
 ## 4. Les 15 objets (valeurs du JSON)

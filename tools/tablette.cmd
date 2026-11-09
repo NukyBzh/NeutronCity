@@ -21,8 +21,9 @@ echo Demarrage de la tablette virtuelle, 1 a 2 minutes...
 start "" "%SDK%\emulator\emulator.exe" -avd Tablette_Neutron -no-snapshot-save -gpu auto
 "%ADB%" wait-for-device
 :boot
-for /f %%b in ('"%ADB%" shell getprop sys.boot_completed 2^>nul') do if "%%b"=="1" goto ready
-timeout /t 3 /nobreak >nul
+rem Android answers "1" followed by a carriage return: findstr ignores it.
+"%ADB%" shell getprop sys.boot_completed 2>nul | findstr /b "1" >nul && goto ready
+ping -n 4 127.0.0.1 >nul
 goto boot
 :ready
 "%ADB%" install -r "%APK%"

@@ -281,12 +281,23 @@ svg .pop, svg .float { transform-box: fill-box; transform-origin: center; }
 @keyframes mark-bounce { from { transform: translateY(-14px); } to { transform: translateY(6px); } }
 .mark-ring { transform-box: fill-box; transform-origin: center; animation: mark-ring 1.2s ease-in-out infinite alternate; }
 @keyframes mark-ring { from { transform: scale(0.85); opacity: 0.6; } to { transform: scale(1.1); opacity: 1; } }
+/* Town in pictures (lot L6.3): vehicles and inhabitants cross a whole street (--tx, --ty: the way, in the drawing's
+   units), fading in and out; birds cross the sky. */
+.iso-move { animation: iso-move var(--dur, 16s) linear infinite; }
+@keyframes iso-move {
+  0% { transform: translate(0, 0); opacity: 0; }
+  4% { opacity: 1; }
+  95% { opacity: 1; }
+  100% { transform: translate(var(--tx), var(--ty)); opacity: 0; }
+}
+.birds { animation: drift 45s linear infinite; }
+.city .iso-move, .city .birds,
 .city .iso-car, .city .walker-iso, .city .flake, .city .steam, .city .plume, .city .flow, .city .float {
   animation-delay: calc(var(--d, 0s) - var(--phase, 0s));
 }
 .walker-iso { animation: iso-walk 9s ease-in-out infinite alternate; }
 @keyframes iso-walk { from { transform: translate(0, 0); } to { transform: translate(52px, 30px); } }
-@media (prefers-reduced-motion: reduce) { .iso-car, .walker-iso { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .iso-car, .walker-iso, .iso-move, .birds { animation: none; } }
 
 /* Whole town (isometric) in the summary and the shop. */
 .town-panel { border: 0.15rem solid var(--encre); border-radius: 1.2rem; overflow: hidden; background: var(--ciel); }

@@ -1,15 +1,23 @@
 /**
- * The town in isometric view, style B "isometric for children" (D-13): volumes in three tones, bright colours, dark
- * outlines like Cassandra, cars on real wheels. Built as an SVG string from a small world grid, so the same town is
- * shown as a band in the play screen and whole in the shop and the summary (owner's choice, 2026-11-08).
+ * The town in isometric view, made only of Gemini pictures (lot L6.3, owner's choice: one design for the whole town, no
+ * drawn building, vehicle or object). A checkerboard of ground tiles (grass, roads, crossroads, river, concrete) with
+ * buildings, trees and plant parts set on them; cars, a bus and inhabitants go along the streets (series 3). The sky, the falling snow and the energy flowing in the power line stay
+ * drawn (owner's choice). The same town is shown as a band in the play screen and whole in the shop and the summary.
  *
- * World: blocks of 8 × 8 units separated by 3-unit roads (cell = 11). Cell (i, j) covers x ∈ [11i, 11i + 8],
- * y ∈ [11j, 11j + 8]. Screen: x grows to the right-down, y to the left-down, z up. Painter order: rows j, then i.
+ * World: tiles of 8 × 8 units. Tile (c, r) covers x ∈ [8c, 8c + 8], y ∈ [8r, 8r + 8]; x grows to the right-down of the
+ * screen, y to the left-down. Column -1 is the river, columns 0–1 the plant, then blocks of 2 × 2 lots between roads.
+ * Painter order: row by row (r), then c; the traffic of each road row is drawn between the rows behind it and the
+ * rows in front of it, so buildings in front still hide it.
+ *
+ * Every picture is defined once per layer (<defs>) and placed with <use>: the still layers stay small enough to be
+ * painted quickly on the tablet.
  */
 import type { Mood } from '@neutron/engine';
 
 export type Season = 'ete' | 'printemps' | 'hiver';
 export const seasonOf = (dayId: string): Season => (dayId === 'hiver' ? 'hiver' : dayId === 'printemps' ? 'printemps' : 'ete');
+
+export interface TownImage { href: string; w: number; h: number }
 
 export interface TownOptions {
   hour: number;
@@ -20,68 +28,142 @@ export interface TownOptions {
   upgrades: readonly string[];
   /** Upgrade just bought: only it plays the "appear" animation (otherwise it would replay at every redraw). */
   fresh?: string | null;
-  /** URLs of the icons used inside the drawing (heart, snowflake, bolt, cross). */
-  icons: { coeur: string; froid: string; electricite: string; loin: string };
   /**
-   * Pictures of the shop buildings (lot L6.2), as data: URLs so they can be painted into the still pictures. A building
-   * bought whose picture is not loaded yet keeps its empty plot until it is.
+   * Pictures as data: URLs (they are painted into still pictures, which cannot load outside files): the town's
+   * pictures (TOWN_IMAGES) and those of the shop buildings. What is not loaded yet is simply not drawn.
    */
   images?: Readonly<Record<string, TownImage>>;
 }
 
-export interface TownImage { href: string; w: number; h: number }
-
-/**
- * Plot of each shop building in the town (lot L6.2): cell (i, j) and width of the picture as a share of the cell.
- * Empty plot with a sign before it is bought, then the same picture as in the shop. All plots stand in the rows built in
- * the band of the play screen (i + j from 5 to 8) and in the whole town. Isolation is the woolly hat on the chimney of
- * the Lilas house; fountain, cycle track and street lights keep their drawing (D-19 E8).
- */
-export const PLOTS: Readonly<Record<string, { i: number; j: number; size: number }>> = {
-  ferme: { i: 2, j: 4, size: 0.95 },
-  'reseau-chaleur': { i: 1, j: 5, size: 0.9 },
-  'maison-lilas': { i: 3, j: 5, size: 0.8 },
-  'maison-ve': { i: 4, j: 4, size: 0.9 },
-  epicerie: { i: 3, j: 2, size: 0.85 },
-  ecole: { i: 3, j: 4, size: 1 },
-  'usine-cereales': { i: 5, j: 3, size: 1 },
-  'maison-medicale': { i: 4, j: 2, size: 0.72 },
-  batterie: { i: 2, j: 6, size: 0.8 },
-  parc: { i: 2, j: 3, size: 1 },
-  piscine: { i: 5, j: 2, size: 1 },
-  solaire: { i: 6, j: 2, size: 0.95 },
-  hopital: { i: 4, j: 3, size: 1.05 },
-  cuve: { i: 1, j: 4, size: 0.6 },
-};
-/**
- * The woolly hat on its chimney (isolation) covers the chimney of the Lilas house picture: centre, bottom and width as
- * shares of that picture.
- */
-export const HAT = { on: 'maison-lilas', x: 0.69, bottom: 0.3, size: 0.3 } as const;
-/** Grass tile of the empty plots (lot L6.2) and the share of its height taken by its top face. */
-export const TILE = 'tuile-herbe';
-const TILE_FACE = 600 / 675;
-const plotAt = (i: number, j: number): string | undefined => Object.keys(PLOTS).find((id) => PLOTS[id]!.i === i && PLOTS[id]!.j === j);
-
+// ---------- the map ----------
+const T = 8;
 const S = 12;
 const OX = 640;
 const OY = 0;
-const INK = '#1C2A4A';
 const P = (x: number, y: number, z = 0): [number, number] => [OX + (x - y) * 0.866 * S, OY + (x + y) * 0.5 * S - z * S];
 const f1 = (v: number): string => v.toFixed(1);
-const pts = (arr: [number, number][]): string => arr.map(([a, b]) => `${f1(a)},${f1(b)}`).join(' ');
+/** Width of a tile on the screen. */
+const TILE_W = 2 * T * 0.866 * S;
 
-/** Band shown in the play screen (rows of cells 5 to 8) and the whole town. */
-const rowY = (k: number): number => OY + (11 * k + 8) * 0.5 * S;
-/** Band: from the river and the plant (left) to the last streets (right), rows 4–9 around the main street. */
-export const BAND_VIEWBOX = `-170 ${f1(rowY(8) + 60 - 432)} 1620 432`;
-export const FULL_VIEWBOX = '-300 -120 1820 1260';
+export const COLS = [-2, 10] as const;
+export const ROWS = [0, 10] as const;
+const PLANT_COLS = [0, 1];
+const isRoadCol = (c: number): boolean => c >= 2 && (c - 2) % 3 === 0;
+const isRoadRow = (r: number): boolean => r >= 2 && (r - 2) % 3 === 0;
+/** Lots of the town: not river, not plant, not road. */
+export const isLot = (c: number, r: number): boolean => c >= 3 && !isRoadCol(c) && !isRoadRow(r);
 
-// ---------- colours ----------
+/** Band of the play screen: from the river and the plant (left) to the streets (right). */
+export const BAND_VIEWBOX = '-170 204 1620 432';
+export const FULL_VIEWBOX = '-360 -170 1960 1300';
+
+/**
+ * Plot of each shop building (lot L6.2): tile (c, r) and width of the picture as a share of a tile. A grass tile until
+ * it is bought, then the same picture as in the shop. All plots stand in the lots seen in the band of the play screen.
+ * Isolation is the woolly hat on the chimney of the Lilas house; the cycle track turns the roads into cycle-track
+ * tiles; street lights are the Gemini lamp-post at the crossroads.
+ */
+export const PLOTS: Readonly<Record<string, { c: number; r: number; size: number }>> = {
+  ferme: { c: 3, r: 3, size: 0.95 },
+  'reseau-chaleur': { c: 3, r: 4, size: 0.9 },
+  'maison-lilas': { c: 4, r: 4, size: 0.8 },
+  'maison-ve': { c: 4, r: 3, size: 0.9 },
+  epicerie: { c: 6, r: 3, size: 0.85 },
+  ecole: { c: 6, r: 4, size: 1 },
+  'usine-cereales': { c: 7, r: 0, size: 1 },
+  'maison-medicale': { c: 7, r: 3, size: 0.72 },
+  batterie: { c: 3, r: 6, size: 0.8 },
+  parc: { c: 4, r: 6, size: 1 },
+  piscine: { c: 6, r: 1, size: 1 },
+  solaire: { c: 7, r: 1, size: 0.95 },
+  hopital: { c: 7, r: 4, size: 1.05 },
+  cuve: { c: 3, r: 7, size: 0.6 },
+  fontaine: { c: 4, r: 7, size: 0.62 },
+};
+/** The woolly hat on its chimney (isolation) covers the chimney of the Lilas house: centre, bottom, width (shares). */
+export const HAT = { on: 'maison-lilas', x: 0.69, bottom: 0.3, size: 0.3 } as const;
+/** Grass tile, also the tile of the plots not bought yet. */
+export const TILE = 'herbe';
+const plotAt = (c: number, r: number): string | undefined => Object.keys(PLOTS).find((id) => PLOTS[id]!.c === c && PLOTS[id]!.r === r);
+
+/** Share of each ground tile's height taken by its top face (measured on the pictures). */
+const FACE: Record<string, number> = { herbe: 0.872, route: 0.876, piste: 0.86, carrefour: 0.817, riviere: 0.817, beton: 0.817 };
+
+type Thing = 'immeuble' | 'maisons' | 'arbres' | 'jeux' | 'usine-2' | 'usine-3' | 'gare'
+  | 'immeuble-moderne' | 'immeuble-brique' | 'tour-bureaux' | 'boulangerie' | 'maison-jardin' | 'immeuble-rose'
+  | 'reacteur' | 'salle-machines' | 'tour' | 'poste' | 'pompage' | 'salle-commande' | 'combustible' | 'diesel';
+/** What stands on the lots and on the plant's tiles; other lots get a mix of flats, houses and trees. */
+const PLACES: Record<string, Thing> = {
+  '0,5': 'pompage', '0,6': 'reacteur', '1,6': 'salle-machines', '0,7': 'tour', '1,7': 'poste', '0,8': 'salle-commande',
+  '1,8': 'combustible', '0,9': 'diesel',
+  '6,0': 'immeuble-rose', '9,0': 'usine-2', '10,0': 'usine-3', '9,1': 'immeuble', '10,1': 'maisons',
+  '6,6': 'jeux', '9,4': 'gare', '3,9': 'immeuble', '9,3': 'maisons', '6,7': 'immeuble', '7,6': 'arbres',
+};
+const FILL: Thing[] = [
+  'immeuble', 'maisons', 'immeuble-moderne', 'arbres', 'immeuble-brique', 'maison-jardin', 'tour-bureaux', 'immeuble',
+  'immeuble-rose', 'boulangerie', 'arbres', 'maisons',
+];
+const hash = (a: number, b: number): number => (((a + 7) * 73856093) ^ ((b + 3) * 19349663)) >>> 0;
+const thingAt = (c: number, r: number): Thing | null => {
+  const k = PLACES[`${c},${r}`];
+  if (k) return k;
+  if (PLANT_COLS.includes(c)) return (r === 4 || r === 10) ? 'arbres' : null;
+  if (c < 0 || !isLot(c, r)) return null;
+  return FILL[hash(c, r) % FILL.length]!;
+};
+/** Size of each thing as a share of a tile. */
+const SIZE: Record<Thing, number> = {
+  immeuble: 0.95, maisons: 0.95, arbres: 0, jeux: 0, 'usine-2': 1, 'usine-3': 1, gare: 1, reacteur: 0.95, 'salle-machines': 1,
+  tour: 0.95, poste: 1, pompage: 1, 'salle-commande': 0.9, combustible: 0.9, diesel: 0.8,
+  'immeuble-moderne': 0.8, 'immeuble-brique': 0.8, 'tour-bureaux': 0.62, boulangerie: 0.72, 'maison-jardin': 0.95, 'immeuble-rose': 0.9,
+};
+
+/** Pictures of the town (assets/ville), loaded by the screen with the shop buildings' pictures. */
+export const TOWN_IMAGES = [
+  'herbe', 'route', 'carrefour', 'riviere', 'beton',
+  'immeuble-jour', 'immeuble-jour-neige', 'immeuble-nuit', 'immeuble-nuit-neige', 'immeuble-coupure', 'immeuble-coupure-neige',
+  'maisons', 'usine-2', 'usine-3', 'gare', 'reacteur', 'salle-machines', 'tour-on', 'tour-off', 'poste', 'pylone', 'pompage',
+  'salle-commande', 'combustible', 'diesel', 'arbre', 'lampadaire', 'panneau-alerte', 'balancoire', 'enfants', 'oiseaux',
+  'immeuble-moderne', 'immeuble-brique', 'tour-bureaux', 'boulangerie', 'maison-jardin', 'immeuble-rose', 'piste',
+  'voiture-rouge-avant', 'voiture-rouge-arriere', 'voiture-bleue-avant', 'voiture-bleue-arriere', 'bus',
+  'habitant-adulte', 'habitant-enfant', 'famille-1', 'famille-2',
+] as const;
+
+/**
+ * Traffic of each road row: vehicles (front picture going right-down, back picture going left-up, both mirrored) and
+ * inhabitants on the pavements (the pictures walk to the left: mirrored to walk right-down). Seconds per crossing and
+ * offset, so they never start together. Walkers' size is their height on the screen.
+ */
+interface Mover { id: string; dir: 1 | -1; lane: number; size: number; dur: number; d: number; walker?: boolean }
+const TRAFFIC: Record<number, Mover[]> = {
+  2: [
+    { id: 'voiture-bleue-avant', dir: 1, lane: 5, size: 0.3, dur: 18, d: -4 },
+    { id: 'voiture-rouge-arriere', dir: -1, lane: 3, size: 0.28, dur: 21, d: -12 },
+    { id: 'habitant-adulte', dir: 1, lane: 7.3, size: 34, dur: 60, d: -20, walker: true },
+  ],
+  5: [
+    { id: 'voiture-rouge-avant', dir: 1, lane: 5, size: 0.3, dur: 16, d: 0 },
+    { id: 'voiture-bleue-arriere', dir: -1, lane: 3, size: 0.28, dur: 19, d: -7 },
+    { id: 'bus', dir: 1, lane: 5, size: 0.42, dur: 24, d: -13 },
+    { id: 'famille-1', dir: 1, lane: 7.3, size: 34, dur: 70, d: -30, walker: true },
+    { id: 'habitant-adulte', dir: -1, lane: 0.8, size: 32, dur: 64, d: -9, walker: true },
+  ],
+  8: [
+    { id: 'voiture-rouge-avant', dir: 1, lane: 5, size: 0.3, dur: 17, d: -9 },
+    { id: 'voiture-bleue-arriere', dir: -1, lane: 3, size: 0.28, dur: 20, d: -2 },
+    { id: 'habitant-enfant', dir: 1, lane: 7.3, size: 26, dur: 58, d: -15, walker: true },
+    { id: 'famille-2', dir: -1, lane: 0.8, size: 32, dur: 72, d: -40, walker: true },
+  ],
+};
+/** Streets run from the road after the plant (never on the river) to the end of the town (world x). */
+const STREET_X = [T * 2, T * (COLS[1] + 1)] as const;
+
+/** Pylons of the power line, on the road in front of row 5, from the plant to the town (world x). */
+const PYLONS = [14, 23, 47, 71];
+const WIRE_Y = 5 * T + 1;
+
+// ---------- light ----------
 const hex = (h: string): number[] => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
-const toHex = (c: number[]): string => `#${c.map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('')}`;
-const mixHex = (a: string, b: string, k: number): string => { const A = hex(a); const B = hex(b); return toHex(A.map((v, i) => v + (B[i]! - v) * k)); };
-const shade = (h: string, k: number): string => toHex(hex(h).map((v) => (k >= 1 ? v + (255 - v) * (k - 1) : v * k)));
 
 /** 0 in full daylight, 1 in the middle of the night (dusk 17.5–21 h, dawn 5–7.5 h). */
 export function nightAt(h: number): number {
@@ -103,441 +185,273 @@ export const lightKey = (h: number): string => `${nightStep(h)}|${warmStep(h)}`;
 
 /**
  * The town comes as layers, back to front. `still` layers never move: the screen paints them once into a picture.
- * `moving` layers hold what is animated (cars and walkers between the rows of buildings, so the rows in front still
- * hide them; smoke, flows, snow and markers on top). Painting a few small moving layers each frame instead of the whole
- * town is what makes the animation smooth on the tablet.
+ * `moving` layers hold what is animated (the building just bought, the arrow, flows, snow, birds).
  */
 export interface TownLayer { kind: 'still' | 'moving'; svg: string }
 
-type Kind = 'reactor' | 'cooling' | 'yard' | 'trees' | 'park' | 'houses' | 'flats' | 'brick' | 'tower' | 'shop' | 'pink';
-/** What stands on each cell of the band (rows 5–8) and around it; other cells get a mix of houses, flats and trees. */
-const CELLS: Record<string, Kind> = {
-  '0,5': 'reactor', '0,6': 'cooling', '0,7': 'yard', '0,4': 'yard', '1,7': 'trees', '0,8': 'trees',
-  '1,6': 'park', '1,5': 'houses', '1,4': 'flats', '2,5': 'brick', '2,4': 'shop', '2,6': 'houses', '2,3': 'tower',
-  '3,4': 'houses', '3,3': 'pink', '3,5': 'shop', '3,2': 'houses', '4,3': 'tower', '4,2': 'houses', '4,4': 'flats', '4,1': 'brick',
-  '5,2': 'houses', '5,1': 'shop', '5,3': 'pink', '5,0': 'tower', '6,1': 'flats', '6,0': 'houses', '6,2': 'brick', '7,0': 'trees', '7,1': 'houses',
-  '2,7': 'trees', '3,6': 'houses', '4,5': 'brick', '5,4': 'houses', '6,3': 'shop', '7,2': 'flats', '1,3': 'houses', '2,2': 'flats', '3,1': 'tower', '4,0': 'pink',
-};
-/** River banks (world x) and where cars start: on the road after the plant, never on the river (R1-01). */
-export const RIVER_X = [-11.6, -0.4] as const;
-export const CAR_START_X = 0.5;
-const FILL: Kind[] = ['houses', 'flats', 'trees', 'pink', 'houses', 'brick', 'trees', 'shop'];
-const kindOf = (i: number, j: number): Kind => CELLS[`${i},${j}`] ?? FILL[(i * 7 + j * 3) % FILL.length]!;
-const hash = (a: number, b: number, c = 0): number => ((a * 73856093) ^ (b * 19349663) ^ (c * 83492791)) >>> 0;
+interface Box { x: number; y: number; w: number; h: number }
+/** One picture to place, with the filters it goes through (light, winter). */
+interface Item { id: string; box: Box; mirror?: boolean; filters: string[]; /** Attributes of a <g> around it (animation). */ wrap?: string }
 
 /** The whole town as one SVG string (tests, tools). */
 export function drawTown(o: TownOptions, view: 'band' | 'full'): string {
-  const { defs, layers } = build(o, view);
-  return defs + layers.map((l) => l.svg).join('');
+  return drawTownLayers(o, view).map((l) => l.svg).join('');
 }
 
-/** The town as layers; every still layer carries the gradients it may use. */
 export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer[] {
-  const { defs, layers } = build(o, view);
-  return layers.map((l) => (l.kind === 'still' ? { kind: 'still', svg: defs + l.svg } : l));
-}
-
-function build(o: TownOptions, view: 'band' | 'full'): { defs: string; layers: TownLayer[] } {
+  const img = o.images ?? {};
   const night = nightStep(o.hour);
   const warm = warmStep(o.hour);
   const winter = o.season === 'hiver';
-  const NIGHT = '#0B1440';
-  const SUNSET = '#FF9E6B';
-  // Colours of the town in the current light: warmer at sunset, darker and bluer at night.
-  const tone = (c: string): string => {
-    const w = warm > 0 ? mixHex(c, SUNSET, 0.2 * warm) : c;
-    return night > 0 ? mixHex(w, NIGHT, 0.5 * night) : w;
+  const darkNight = night >= 0.5;
+
+  // The pictures take the light of the hour: warmer at sunset, darker and bluer at night (a colour matrix). Night
+  // pictures of the flats (lit windows) only take the sunset tint. Winter pales the grass and the trees.
+  const matrix = (kw: number, kn: number): string | null => {
+    if (kw === 0 && kn === 0) return null;
+    const s = (1 - kn) * (1 - kw);
+    const sun = hex('#FF9E6B');
+    const dark = hex('#0B1440');
+    const off = [0, 1, 2].map((c) => (((1 - kn) * kw * sun[c]!) + kn * dark[c]!) / 255);
+    const k = s.toFixed(3);
+    return `${k} 0 0 0 ${off[0]!.toFixed(3)} 0 ${k} 0 0 ${off[1]!.toFixed(3)} 0 0 ${k} 0 ${off[2]!.toFixed(3)} 0 0 0 1 0`;
   };
-  // Shadows cast on the ground by the buildings (to the right-down of the screen), longer and softer at sunset, gone
-  // at night.
-  const shadowOpacity = 0.2 * (1 - night);
-  const shadowLength = (h: number): number => Math.min(3.2, h * (0.32 + 0.25 * warm));
-  const line = ` stroke="${tone(INK)}" stroke-width="1.3" stroke-linejoin="round"`;
-  const poly = (arr: [number, number][], fill: string, extra = ''): string => `<polygon points="${pts(arr)}" fill="${tone(fill)}"${line}${extra}/>`;
-  const flatPoly = (arr: [number, number][], fill: string): string => `<polygon points="${pts(arr)}" fill="${tone(fill)}"/>`;
-  const darkQuarter = o.mood === 'noir';
-  const cold = o.mood === 'froid';
-  const happy = o.mood === 'content';
-  const lit = night > 0.3;
-  /** The "appear" animation, only for the upgrade just bought. */
-  const pop = (id: string): string => (o.fresh === id ? ' class="pop"' : '');
-  const layers: TownLayer[] = [];
-  const add = (kind: TownLayer['kind'], svg: string): void => {
-    if (!svg) return;
-    const last = layers[layers.length - 1];
-    if (last && last.kind === kind) last.svg += svg;
-    else layers.push({ kind, svg });
+  const light = matrix(0.2 * warm, 0.5 * night);
+  const lightNight = matrix(0.2 * warm, 0);
+  const FILTERS: Record<string, string | null> = {
+    light,
+    'light-n': lightNight,
+    winter: winter ? '0.35 0 0 0 0.62 0 0.35 0 0 0.64 0 0 0.35 0 0.68 0 0 0 1 0' : null,
   };
-  /** Animated things drawn above the whole town (smoke, plume, flows, snow, signs, markers). */
-  const top: string[] = [];
+  const filterDefs = (used: Set<string>): string => [...used]
+    .filter((f) => FILTERS[f])
+    .map((f) => `<filter id="f-${f}" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="${FILTERS[f]}"/></filter>`).join('');
+  const L = (extra: string[] = []): string[] => [...extra, 'light'];
 
-  const grass = winter ? '#EEF3FA' : o.season === 'printemps' ? '#8FD082' : '#9CC965';
-  const leaf = o.season === 'printemps' ? '#5DBB5A' : '#3E9E48';
-  const roofTint = (c: string): string => (winter ? mixHex(c, '#FFFFFF', 0.7) : c);
-
-  // ---------- primitives ----------
-  function box(x: number, y: number, z: number, w: number, d: number, h: number, color: string, top?: string): string {
-    let shadow = '';
-    if (z === 0 && h >= 2.5 && shadowOpacity > 0.01) {
-      const s = shadowLength(h);
-      shadow = `<polygon points="${pts([P(x + w, y), P(x + w + s, y + s * 0.35), P(x + w + s, y + d + s * 0.35), P(x + s, y + d + s * 0.35), P(x, y + d)])}" fill="#0B1440" opacity="${f1(shadowOpacity)}"/>`;
-    }
-    return shadow + poly([P(x, y + d, z), P(x + w, y + d, z), P(x + w, y + d, z + h), P(x, y + d, z + h)], color)
-      + poly([P(x + w, y, z), P(x + w, y + d, z), P(x + w, y + d, z + h), P(x + w, y, z + h)], shade(color, 0.78))
-      + poly([P(x, y, z + h), P(x + w, y, z + h), P(x + w, y + d, z + h), P(x, y + d, z + h)], top ?? (winter ? '#F7FAFE' : shade(color, 1.18)));
-  }
-  /** Windows on both visible faces; at night most of them light up (not in a dark quarter). */
-  function windows(x: number, y: number, w: number, d: number, h: number, floors: number, dark: boolean, seed: number): string {
-    let g = '';
-    const fh = h / floors;
-    const cx = Math.max(2, Math.round(w / 1.8));
-    const cy = Math.max(2, Math.round(d / 1.8));
-    for (let f = 1; f < floors; f++) {
-      const v0 = f * fh + fh * 0.18;
-      const v1 = v0 + fh * 0.62;
-      for (let side = 0; side < 2; side++) {
-        const n = side === 0 ? cx : cy;
-        const len = side === 0 ? w : d;
-        for (let c = 0; c < n; c++) {
-          const cw = len / n;
-          const u0 = (side === 0 ? x : y) + c * cw + cw * 0.22;
-          const u1 = u0 + cw * 0.56;
-          const q: [number, number][] = side === 0
-            ? [P(u0, y + d, v0), P(u1, y + d, v0), P(u1, y + d, v1), P(u0, y + d, v1)]
-            : [P(x + w, u0, v0), P(x + w, u1, v0), P(x + w, u1, v1), P(x + w, u0, v1)];
-          const on = lit && !dark && hash(seed, f, c * 2 + side) % 5 !== 0;
-          if (on) g += `<polygon points="${pts(q)}" fill="#FFE08A" stroke="#FFC94D" stroke-width="2.5" stroke-opacity="${0.6 * night}"/>`;
-          else g += `<polygon points="${pts(q)}" fill="${tone(side === 0 ? '#BFE3FF' : '#A6CBEA')}" stroke="${tone('#FFFFFF')}" stroke-width="0.8"/>`;
-        }
-      }
-    }
-    return g;
-  }
-  function door(x: number, y: number, w: number, d: number, color = '#1D47B8'): string {
-    const u = x + w / 2;
-    return poly([P(u - 0.55, y + d, 0), P(u + 0.55, y + d, 0), P(u + 0.55, y + d, 1.7), P(u - 0.55, y + d, 1.7)], color);
-  }
-  function hipRoof(x: number, y: number, z: number, w: number, d: number, r: number, color: string): string {
-    const c = roofTint(color);
-    const ry = y + d / 2;
-    const t0 = P(x + Math.min(1, w / 4), ry, z + r);
-    const t1 = P(x + w - Math.min(1, w / 4), ry, z + r);
-    return poly([P(x, y, z), P(x + w, y, z), t1, t0], shade(c, 0.85))
-      + poly([P(x, y + d, z), P(x + w, y + d, z), t1, t0], c)
-      + poly([P(x + w, y, z), P(x + w, y + d, z), t1], shade(c, 0.72));
-  }
-  function chimneySmoke(x: number, y: number, z: number): string {
-    const [cx, cy] = P(x, y, z);
-    const op = cold ? 0.3 : 0.85;
-    top.push(`<g class="steam slow" opacity="${op}"><circle cx="${f1(cx)}" cy="${f1(cy - 6)}" r="4" fill="${tone('#EEF1F7')}"/><circle cx="${f1(cx + 4)}" cy="${f1(cy - 14)}" r="5.5" fill="${tone('#EEF1F7')}"/><circle cx="${f1(cx + 1)}" cy="${f1(cy - 24)}" r="6.5" fill="${tone('#EEF1F7')}" opacity="0.7"/></g>`);
-    return '';
-  }
-  function tree(x: number, y: number, size = 1, cone = false): string {
-    const [bx, by] = P(x, y, 0);
-    let g = `<ellipse cx="${f1(bx)}" cy="${f1(by + 1)}" rx="${f1(7 * size)}" ry="${f1(3.5 * size)}" fill="#000" opacity="0.15"/>`;
-    g += `<rect x="${f1(bx - 1.5 * size)}" y="${f1(by - 12 * size)}" width="${f1(3 * size)}" height="${f1(12 * size)}" fill="${tone('#8A5A3B')}"${line}/>`;
-    if (winter) {
-      g += `<path d="M${f1(bx)} ${f1(by - 10 * size)} l ${f1(-7 * size)} ${f1(-9 * size)} M${f1(bx)} ${f1(by - 13 * size)} l ${f1(6 * size)} ${f1(-10 * size)} M${f1(bx)} ${f1(by - 12 * size)} v ${f1(-12 * size)}" stroke="${tone('#6B4A33')}" stroke-width="${f1(2 * size)}" stroke-linecap="round"/>`;
-      return g;
-    }
-    if (cone) {
-      g += `<polygon points="${f1(bx)},${f1(by - 40 * size)} ${f1(bx - 9 * size)},${f1(by - 9 * size)} ${f1(bx + 9 * size)},${f1(by - 9 * size)}" fill="${tone(leaf)}"${line}/>`;
-    } else {
-      // Round crown with volume: dark side to the right-down, light side to the top-left.
-      g += `<circle cx="${f1(bx)}" cy="${f1(by - 19 * size)}" r="${f1(9.5 * size)}" fill="${tone(shade(leaf, 0.78))}"${line}/>`
-        + `<circle cx="${f1(bx - 1.3 * size)}" cy="${f1(by - 20.5 * size)}" r="${f1(7.6 * size)}" fill="${tone(leaf)}"/>`
-        + `<circle cx="${f1(bx - 3 * size)}" cy="${f1(by - 23 * size)}" r="${f1(3.8 * size)}" fill="${tone(shade(leaf, 1.3))}"/>`;
-      if (o.season === 'printemps') g += [[-4, -16], [3, -24], [5, -15], [-1, -20]].map(([dx, dy], k) => `<circle cx="${f1(bx + dx! * size)}" cy="${f1(by + dy! * size)}" r="${f1(1.8 * size)}" fill="${k % 2 ? '#FFFFFF' : '#FF9FC0'}"/>`).join('');
-    }
-    return g;
-  }
-  function wheel(x: number, y: number, z: number, side: 'x' | 'y'): string {
-    const [cx, cy] = P(x, y, z);
-    const rot = side === 'y' ? -30 : 30;
-    return `<g transform="rotate(${rot} ${f1(cx)} ${f1(cy)})"><ellipse cx="${f1(cx)}" cy="${f1(cy)}" rx="${f1(0.36 * S)}" ry="${f1(0.42 * S)}" fill="#22283A" stroke="${INK}" stroke-width="1"/><ellipse cx="${f1(cx)}" cy="${f1(cy)}" rx="${f1(0.2 * S)}" ry="${f1(0.24 * S)}" fill="#D5DCEB"/><ellipse cx="${f1(cx)}" cy="${f1(cy)}" rx="${f1(0.07 * S)}" ry="${f1(0.08 * S)}" fill="#6B7896"/></g>`;
-  }
-  /** A car driving along x (to the right-down of the screen), on real wheels; headlights at night. */
-  function car(x: number, y: number, color: string): string {
-    const w = 2.6; const d = 1.3; const z = 0.32;
-    let g = wheel(x + 0.6, y, z, 'y') + wheel(x + w - 0.6, y, z, 'y');
-    g += box(x, y, z, w, d, 0.55, color, shade(color, 1.15));
-    g += box(x + 0.55, y + 0.15, z + 0.55, 1.4, 1.0, 0.48, '#BFE3FF', '#BFE3FF');
-    g += box(x + 0.55, y + 0.15, z + 1.03, 1.4, 1.0, 0.07, color, winter ? '#FFFFFF' : shade(color, 1.15));
-    g += wheel(x + 0.6, y + d, z, 'y') + wheel(x + w - 0.6, y + d, z, 'y');
-    if (night > 0.4) { const [hx, hy] = P(x + w, y + d / 2, z + 0.3); g += `<ellipse cx="${f1(hx + 18)}" cy="${f1(hy + 10)}" rx="22" ry="8" fill="#FFE9A8" opacity="0.4" transform="rotate(30 ${f1(hx + 18)} ${f1(hy + 10)})"/>`; }
-    return g;
-  }
-  function person(x: number, y: number, shirt: string, k: number): string {
-    const [bx, by] = P(x, y, 0);
-    let g = `<g class="walker-iso" style="--d:${-k * 3}s">`;
-    g += `<rect x="${f1(bx - 2.6)}" y="${f1(by - 11)}" width="5.2" height="8" rx="2.5" fill="${tone(shirt)}" stroke="${tone(INK)}" stroke-width="1"/>`;
-    g += `<rect x="${f1(bx - 2.2)}" y="${f1(by - 3.5)}" width="1.7" height="4" fill="${tone('#3B4A6B')}"/><rect x="${f1(bx + 0.5)}" y="${f1(by - 3.5)}" width="1.7" height="4" fill="${tone('#3B4A6B')}"/>`;
-    g += `<circle cx="${f1(bx)}" cy="${f1(by - 14)}" r="3.2" fill="${tone('#E8B48A')}" stroke="${tone(INK)}" stroke-width="1"/>`;
-    if (winter || cold) g += `<path d="M${f1(bx - 3.2)} ${f1(by - 15)} q 3.2 -5 6.4 0 z" fill="${tone('#1D47B8')}"/><rect x="${f1(bx - 3)}" y="${f1(by - 11.5)}" width="6" height="2" fill="${tone('#E0443E')}"/>`;
-    if (cold) g += `<image href="${o.icons.froid}" x="${f1(bx - 7)}" y="${f1(by - 34)}" width="14" height="14"/>`;
-    else if (happy) g += `<image href="${o.icons.coeur}" x="${f1(bx - 6)}" y="${f1(by - 32)}" width="12" height="12" class="float"/>`;
-    return `${g}</g>`;
-  }
-
-  // ---------- buildings by kind ----------
-  function building(kind: Kind, X: number, Y: number, i: number, j: number): string {
-    const dark = darkQuarter && i - j >= 0;
-    const seed = hash(i, j);
-    const ac = o.season === 'ete';
-    switch (kind) {
-      case 'houses': {
-        let g = '';
-        for (const [dx, dy, col, roof] of [[0.6, 0.8, '#FFF1D0', '#E0443E'], [4.4, 2.6, '#BFE3FF', '#4E66A0']] as const) {
-          const x = X + dx; const y = Y + dy; const w = 3.2; const d = 4.6; const h = 3.6;
-          g += box(x, y, 0, w, d, h, col) + windows(x, y, w, d, h, 2, dark, seed + dx) + door(x, y, w, d, '#8A4F2D');
-          g += box(x + w - 1.1, y + 0.6, h, 0.7, 0.7, 2.6, '#B95E46');
-          g += hipRoof(x - 0.25, y - 0.25, h, w + 0.5, d + 0.5, 2.0, roof);
-          if (o.heatOn) g += chimneySmoke(x + w - 0.75, y + 0.95, h + 2.6);
-          if (o.season === 'printemps') g += flatPoly([P(x + 0.2, y + d + 0.2), P(x + w - 0.2, y + d + 0.2), P(x + w - 0.2, y + d + 0.8), P(x + 0.2, y + d + 0.8)], '#FF6F91');
-        }
-        return g;
-      }
-      case 'flats': case 'brick': case 'pink': {
-        const col = kind === 'brick' ? '#D9734A' : kind === 'pink' ? '#FF9AA2' : '#FFD166';
-        const h = 7 + (seed % 3);
-        const x = X + 0.6; const y = Y + 1; const w = 6.8; const d = 6;
-        let g = box(x, y, 0, w, d, h, col);
-        if (kind === 'brick') for (let k = 1; k < h * 2; k++) g += `<polyline points="${pts([P(x, y + d, k / 2), P(x + w, y + d, k / 2), P(x + w, y, k / 2)])}" stroke="${tone(shade(col, 0.86))}" stroke-width="0.6" fill="none"/>`;
-        g += windows(x, y, w, d, h, Math.round(h / 2.2), dark, seed) + door(x, y, w, d);
-        if (ac) for (let k = 1; k < 3; k++) { const [ax, ay] = P(x + w * 0.35 * k, y + d, h * 0.45 + k); g += `<rect x="${f1(ax - 5)}" y="${f1(ay - 3)}" width="10" height="6" rx="1" fill="${tone('#E4E7EF')}" stroke="${tone(INK)}" stroke-width="0.8"/>`; }
-        if (kind === 'pink') g += hipRoof(x - 0.3, y - 0.3, h, w + 0.6, d + 0.6, 2.6, '#C8553D');
-        else if (kind === 'brick') g += box(x + 0.4, y + 0.4, h, w - 0.8, d - 0.8, 2.2, '#4E66A0', winter ? '#F7FAFE' : '#7C8FC0') + box(x + 1.5, y + 1.5, h + 2.2, 0.8, 0.8, 1.1, '#3E5288');
-        else g += box(x + 1, y + 1, h, 1.6, 1.2, 0.9, '#8796AE') + box(x + w - 2.6, y + d - 2.4, h, 1.6, 1.4, 0.7, '#8796AE');
-        return g;
-      }
-      case 'tower': {
-        const x = X + 1; const y = Y + 1; const w = 6; const d = 6; const h = 11 + (seed % 3);
-        let g = box(x, y, 0, w, d, h, '#A9C4E8') + windows(x, y, w, d, h, Math.round(h / 1.9), dark, seed) + door(x, y, w, d);
-        g += box(x + 1.5, y + 1.5, h, 2, 2, 1.2, '#8796AE');
-        const [ax, ay] = P(x + w - 1, y + 1, h);
-        g += `<line x1="${f1(ax)}" y1="${f1(ay)}" x2="${f1(ax)}" y2="${f1(ay - 22)}" stroke="${tone(INK)}" stroke-width="1.5"/><circle cx="${f1(ax)}" cy="${f1(ay - 23)}" r="2.2" fill="#E0443E"/>`;
-        return g;
-      }
-      case 'shop': {
-        const x = X + 0.6; const y = Y + 1.2; const w = 6.8; const d = 5.6; const h = 6;
-        let g = box(x, y, 0, w, d, h, '#FFE29A') + windows(x, y, w, d, h, 3, dark, seed);
-        g += flatPoly([P(x + 0.4, y + d, 0.2), P(x + w - 0.4, y + d, 0.2), P(x + w - 0.4, y + d, 1.7), P(x + 0.4, y + d, 1.7)], lit && !dark ? '#FFE08A' : '#BFE3FF');
-        const n = 9;
-        for (let k = 0; k < n; k++) g += poly([P(x + (k * w) / n, y + d, 2.4), P(x + ((k + 1) * w) / n, y + d, 2.4), P(x + ((k + 1) * w) / n, y + d + 1, 1.8), P(x + (k * w) / n, y + d + 1, 1.8)], k % 2 ? '#FFFFFF' : seed % 2 ? '#E0443E' : '#1D47B8');
-        g += box(x + 1, y + 1, h, 1.4, 1.2, 0.8, '#8796AE');
-        return g;
-      }
-      case 'park': {
-        let g = flatPoly([P(X, Y), P(X + 8, Y), P(X + 8, Y + 8), P(X, Y + 8)], shade(grass, 1.08));
-        g += flatPoly([P(X + 3, Y), P(X + 5, Y), P(X + 5, Y + 8), P(X + 3, Y + 8)], winter ? '#E4E7EF' : '#F3E6C4');
-        if (o.upgrades.includes('fontaine')) {
-          g += `<g${pop('fontaine')}>${box(X + 3.1, Y + 3.1, 0, 1.8, 1.8, 0.5, '#D5DCEB')}${flatPoly([P(X + 3.4, Y + 3.4, 0.52), P(X + 4.6, Y + 3.4, 0.52), P(X + 4.6, Y + 4.6, 0.52), P(X + 3.4, Y + 4.6, 0.52)], winter ? '#DDEBFA' : '#5EC4F0')}${box(X + 3.8, Y + 3.8, 0.5, 0.4, 0.4, 1.3, '#D5DCEB')}</g>`;
-        }
-        for (const [tx, ty, c] of [[1.2, 1.5, false], [6.8, 6.6, true]] as const) g += tree(X + tx, Y + ty, 0.9, c);
-        return g;
-      }
-      case 'trees': {
-        let g = flatPoly([P(X, Y), P(X + 8, Y), P(X + 8, Y + 8), P(X, Y + 8)], shade(grass, 1.04));
-        for (let k = 0; k < 4; k++) g += tree(X + 1.5 + (k % 2) * 4.5 + (seed % 2), Y + 1.6 + Math.floor(k / 2) * 4.5, 0.95, (seed + k) % 3 === 0);
-        return g;
-      }
-      case 'yard': {
-        let g = flatPoly([P(X, Y), P(X + 8, Y), P(X + 8, Y + 8), P(X, Y + 8)], '#E3ECFF');
-        for (const [cx, cy] of [[2, 2.5], [5.5, 2.5]] as const) {
-          const [tx, ty] = P(X + cx, Y + cy, 0);
-          const [, tt] = P(X + cx, Y + cy, 4);
-          g += `<path d="M${f1(tx - 13)} ${f1(ty)} V ${f1(tt)} A 13 6.5 0 0 1 ${f1(tx + 13)} ${f1(tt)} V ${f1(ty)} A 13 6.5 0 0 1 ${f1(tx - 13)} ${f1(ty)} Z" fill="${tone('#F4F6FA')}"${line}/><ellipse cx="${f1(tx)}" cy="${f1(tt)}" rx="13" ry="6.5" fill="${tone(winter ? '#FFFFFF' : '#D5DCEB')}"${line}/>`;
-        }
-        g += box(X + 1, Y + 5.2, 0, 6, 2, 2.4, '#8EA7D8');
-        return g;
-      }
-      case 'reactor': {
-        // Turbine hall (behind) and round reactor building with its dome.
-        let g = box(X + 3.8, Y + 0.6, 0, 3.8, 6.8, 4.4, '#8EA7D8') + windows(X + 3.8, Y + 0.6, 3.8, 6.8, 4.4, 2, false, seed);
-        const [cx, cy] = P(X + 2.2, Y + 4.2, 0);
-        const [, ct] = P(X + 2.2, Y + 4.2, 6);
-        const rx = 2.4 * S * 0.95; const ry = rx * 0.5;
-        g += `<path d="M${f1(cx - rx)} ${f1(cy)} V ${f1(ct)} A ${f1(rx)} ${f1(ry)} 0 0 1 ${f1(cx + rx)} ${f1(ct)} V ${f1(cy)} A ${f1(rx)} ${f1(ry)} 0 0 1 ${f1(cx - rx)} ${f1(cy)} Z" fill="url(#iso-reactor)"${line}/>`;
-        g += `<path d="M${f1(cx - rx)} ${f1(ct)} A ${f1(rx)} ${f1(rx * 0.9)} 0 0 1 ${f1(cx + rx)} ${f1(ct)} A ${f1(rx)} ${f1(ry)} 0 0 1 ${f1(cx - rx)} ${f1(ct)} Z" fill="${winter ? '#FFFFFF' : 'url(#iso-reactor)'}"${line}/>`;
-        g += `<rect x="${f1(cx - 5)}" y="${f1(cy - 16)}" width="10" height="14" fill="${tone('#1D47B8')}"${line}/><circle cx="${f1(cx)}" cy="${f1(ct - rx * 0.42)}" r="4.5" fill="#FFC83D"${line}/>`;
-        return g;
-      }
-      case 'cooling': {
-        const [x0, y0] = P(X + 4, Y + 4, 0);
-        const [, yt] = P(X + 4, Y + 4, 14);
-        const rx = 3.6 * S * 0.95; const ry = rx * 0.5;
-        let g = `<path d="M${f1(x0 - rx)} ${f1(y0)} C ${f1(x0 - rx * 0.55)} ${f1(y0 - (y0 - yt) * 0.45)} ${f1(x0 - rx * 0.55)} ${f1(y0 - (y0 - yt) * 0.75)} ${f1(x0 - rx * 0.68)} ${f1(yt)} L ${f1(x0 + rx * 0.68)} ${f1(yt)} C ${f1(x0 + rx * 0.55)} ${f1(y0 - (y0 - yt) * 0.75)} ${f1(x0 + rx * 0.55)} ${f1(y0 - (y0 - yt) * 0.45)} ${f1(x0 + rx)} ${f1(y0)} A ${f1(rx)} ${f1(ry)} 0 0 1 ${f1(x0 - rx)} ${f1(y0)} Z" fill="url(#iso-concrete)"${line}/>`;
-        g += `<ellipse cx="${f1(x0)}" cy="${f1(yt)}" rx="${f1(rx * 0.68)}" ry="${f1(ry * 0.68)}" fill="${tone(winter ? '#FFFFFF' : '#8796AE')}"${line}/>`;
-        top.push(`<g class="plume">${[[0, -10, 14], [8, -26, 19], [22, -44, 24], [40, -62, 26]].map(([dx, dy, r], k) => `<ellipse cx="${f1(x0 + dx!)}" cy="${f1(yt + dy!)}" rx="${r}" ry="${f1(r! * 0.6)}" fill="#FFFFFF" opacity="${f1((0.95 - k * 0.18) * (1 - 0.4 * night))}"/>`).join('')}</g>`);
-        return g;
-      }
-    }
-  }
-
-  // ---------- shop buildings on their plots (lot L6.2) ----------
-  // The pictures take the light of the hour like the drawn town: same colour change as tone(), as a colour matrix.
-  const kw = 0.2 * warm;
-  const kn = 0.5 * night;
-  const sunsetRgb = hex(SUNSET);
-  const nightRgb = hex(NIGHT);
-  const lightMatrix = night > 0 || warm > 0
-    ? (() => {
-      const s = (1 - kn) * (1 - kw);
-      const off = [0, 1, 2].map((c) => (((1 - kn) * kw * sunsetRgb[c]!) + kn * nightRgb[c]!) / 255);
-      const k = s.toFixed(3);
-      return `${k} 0 0 0 ${off[0]!.toFixed(3)} 0 ${k} 0 0 ${off[1]!.toFixed(3)} 0 0 ${k} 0 ${off[2]!.toFixed(3)} 0 0 0 1 0`;
-    })()
-    : null;
-  const lightFilter = (id: string): string => (lightMatrix ? `<filter id="${id}" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="${lightMatrix}"/></filter>` : '');
-  /** Where the picture of a building stands: its base centred on the cell, width a share of the cell. */
-  function pictureBox(id: string): { x: number; y: number; w: number; h: number } | null {
-    const pl = PLOTS[id];
-    const im = o.images?.[id];
-    if (!pl || !im) return null;
-    const [cx, cy] = P(11 * pl.i + 4, 11 * pl.j + 4);
-    // A little bigger in the whole town, drawn small in the shop, so a new building stands out among the flats.
-    const w = 16 * 0.866 * S * pl.size * (view === 'full' ? 1.2 : 1);
+  /** Where a picture stands: its base centred on world point (x, y), `size` of a tile wide. */
+  function boxAt(id: string, x: number, y: number, size: number): Box | null {
+    const im = img[id];
+    if (!im) return null;
+    const [cx, cy] = P(x, y);
+    const w = TILE_W * size;
     const h = (w * im.h) / im.w;
     return { x: cx - w / 2, y: cy + w * 0.289 - h, w, h };
   }
-  /** The woolly hat on the Lilas chimney (isolation). */
-  function hatBox(): { x: number; y: number; w: number; h: number } | null {
+  /** A ground tile on (c, r): its top face fitted on the tile. */
+  function tileBox(id: string, c: number, r: number): Box | null {
+    if (!img[id]) return null;
+    const [, ty] = P(T * c, T * r);
+    const [lx] = P(T * c, T * r + T);
+    const [rx] = P(T * c + T, T * r);
+    const [, by] = P(T * c + T, T * r + T);
+    return { x: lx, y: ty, w: rx - lx, h: (by - ty) / (FACE[id] ?? 0.85) };
+  }
+
+  /** Renders items: each picture defined once, placed with <use>, consecutive items sharing filters grouped. */
+  function render(items: Item[]): string {
+    const used = new Set<string>();
+    const filtersUsed = new Set<string>();
+    let body = '';
+    let open: string | null = null;
+    for (const it of items) {
+      used.add(it.id);
+      const fs = it.filters.filter((f) => FILTERS[f]);
+      fs.forEach((f) => filtersUsed.add(f));
+      const key = fs.join(',');
+      if (key !== open) {
+        if (open !== null) body += '</g>'.repeat(open ? open.split(',').length : 0);
+        body += fs.map((f) => `<g filter="url(#f-${f})">`).join('');
+        open = key;
+      }
+      const im = img[it.id]!;
+      const kx = it.box.w / im.w;
+      const ky = it.box.h / im.h;
+      const t = it.mirror
+        ? `translate(${f1(it.box.x + it.box.w)} ${f1(it.box.y)}) scale(${(-kx).toFixed(4)} ${ky.toFixed(4)})`
+        : `translate(${f1(it.box.x)} ${f1(it.box.y)}) scale(${kx.toFixed(4)} ${ky.toFixed(4)})`;
+      const use = `<use href="#p-${it.id}" transform="${t}"/>`;
+      body += it.wrap ? `<g ${it.wrap}>${use}</g>` : use;
+    }
+    if (open) body += '</g>'.repeat(open.split(',').length);
+    const defs = [...used].map((id) => `<image id="p-${id}" href="${img[id]!.href}" width="${img[id]!.w}" height="${img[id]!.h}" preserveAspectRatio="none"/>`).join('');
+    return `<defs>${filterDefs(filtersUsed)}${defs}</defs>${body}`;
+  }
+
+  const layers: TownLayer[] = [];
+
+  // ---------- ground ----------
+  const ground: Item[] = [];
+  const tileOf = (c: number, r: number): { id: string; mirror?: boolean; winter?: boolean } => {
+    if (c === -1) return { id: 'riviere' };
+    if (c < 0) return { id: 'herbe', winter: true };
+    if (PLANT_COLS.includes(c)) return r >= 5 && r <= 9 ? { id: 'beton' } : { id: 'herbe', winter: true };
+    if (isRoadCol(c) && isRoadRow(r)) return { id: 'carrefour' };
+    if (isRoadCol(c)) return { id: 'route', mirror: true };
+    if (isRoadRow(r)) return o.upgrades.includes('piste') && img.piste ? { id: 'piste' } : { id: 'route' };
+    const thing = thingAt(c, r);
+    return thing === 'arbres' || thing === 'jeux' || plotAt(c, r) ? { id: 'herbe', winter: true } : { id: 'beton' };
+  };
+  for (let s = COLS[0] + ROWS[0]; s <= COLS[1] + ROWS[1]; s++) {
+    for (let c: number = COLS[0]; c <= COLS[1]; c++) {
+      const r = s - c;
+      if (r < ROWS[0] || r > ROWS[1]) continue;
+      const t = tileOf(c, r);
+      const box = tileBox(t.id, c, r);
+      if (box) ground.push({ id: t.id, box, mirror: t.mirror, filters: L(t.winter ? ['winter'] : []) });
+    }
+  }
+  // Until the tiles are loaded: a plain green ground, so the town is never an empty hole.
+  if (ground.length === 0) {
+    const pts = [P(T * COLS[0], 0), P(T * (COLS[1] + 1), 0), P(T * (COLS[1] + 1), T * (ROWS[1] + 1)), P(T * COLS[0], T * (ROWS[1] + 1))];
+    layers.push({ kind: 'still', svg: `<polygon points="${pts.map(([a, b]) => `${f1(a)},${f1(b)}`).join(' ')}" fill="${winter ? '#E9EEF6' : '#9CC965'}"/>` });
+  } else layers.push({ kind: 'still', svg: render(ground) });
+
+  // ---------- buildings, trees, plant ----------
+  const things: Item[] = [];
+  const top: string[] = [];
+  const darkQuarter = (c: number, r: number): boolean => o.mood === 'noir' && c >= 3 && c - r >= 2;
+  const flats = (c: number, r: number): { id: string; filters: string[] } => {
+    const snow = winter ? '-neige' : '';
+    if (darkQuarter(c, r)) return { id: `immeuble-coupure${snow}`, filters: ['light-n'] };
+    if (darkNight) return { id: `immeuble-nuit${snow}`, filters: ['light-n'] };
+    return { id: `immeuble-jour${snow}`, filters: L() };
+  };
+  const push = (id: string, x: number, y: number, size: number, filters: string[]): void => {
+    const box = boxAt(id, x, y, size);
+    if (box) things.push({ id, box, filters });
+  };
+  const trees = (c: number, r: number, spots: [number, number][]): void => {
+    for (const [dx, dy] of spots) push('arbre', T * c + 4 + dx, T * r + 4 + dy, 0.24 + ((hash(c + dx, r + dy) % 3) * 0.03), L(['winter']));
+  };
+  /** The picture of a shop building on its plot. */
+  function pictureBox(id: string): Box | null {
+    const pl = PLOTS[id];
+    if (!pl) return null;
+    return boxAt(id, T * pl.c + 4, T * pl.r + 4, pl.size * (view === 'full' ? 1.15 : 1));
+  }
+  function hatBox(): Box | null {
     const b = pictureBox(HAT.on);
-    const im = o.images?.isolation;
+    const im = img.isolation;
     if (!b || !im) return null;
     const w = b.w * HAT.size;
     const h = (w * im.h) / im.w;
     return { x: b.x + b.w * HAT.x - w / 2, y: b.y + b.h * HAT.bottom - h, w, h };
   }
-  const image = (href: string, b: { x: number; y: number; w: number; h: number }, filter: string): string =>
-    `<image href="${href}" x="${f1(b.x)}" y="${f1(b.y)}" width="${f1(b.w)}" height="${f1(b.h)}"${lightMatrix ? ` filter="url(#${filter})"` : ''}/>`;
-  function picture(id: string, filter: string, withHat: boolean): string {
-    const b = pictureBox(id);
-    if (!b) return '';
-    let g = shadowOpacity > 0.01 ? `<ellipse cx="${f1(b.x + b.w * 0.56)}" cy="${f1(b.y + b.h - b.w * 0.27)}" rx="${f1(b.w * 0.44)}" ry="${f1(b.w * 0.22)}" fill="#0B1440" opacity="${f1(shadowOpacity * 0.7)}"/>` : '';
-    g += image(o.images![id]!.href, b, filter);
-    const hat = withHat && id === HAT.on && o.upgrades.includes('isolation') ? hatBox() : null;
-    if (hat) g += image(o.images!.isolation!.href, hat, filter);
-    return g;
-  }
-  /**
-   * Empty plot waiting for its building: a grass tile (Gemini picture, owner's choice), its top face fitted on the cell;
-   * snow on it in winter. Until the tile is loaded: plain grass with a dashed edge.
-   */
-  function lot(X: number, Y: number): string {
-    const tile = o.images?.[TILE];
-    if (!tile) {
-      return flatPoly([P(X + 0.3, Y + 0.3), P(X + 7.7, Y + 0.3), P(X + 7.7, Y + 7.7), P(X + 0.3, Y + 7.7)], shade(grass, 0.95))
-        + `<polygon points="${pts([P(X + 1, Y + 1), P(X + 7, Y + 1), P(X + 7, Y + 7), P(X + 1, Y + 7)])}" fill="none" stroke="${tone('#FFFFFF')}" stroke-width="1.8" stroke-dasharray="6 5" stroke-linecap="round"/>`;
+  const fresh: Item[] = [];
+  /** Traffic of a road row: what moves along it, drawn between the rows behind and the rows in front. */
+  const traffic = (r: number): string => {
+    const items: Item[] = [];
+    for (const m of TRAFFIC[r] ?? []) {
+      const im = img[m.id];
+      if (!im) continue;
+      const y = T * r + m.lane;
+      const x0 = m.dir === 1 ? STREET_X[0] : STREET_X[1];
+      let box: Box | null;
+      if (m.walker) {
+        const [cx, cy] = P(x0, y);
+        const w = (m.size * im.w) / im.h;
+        box = { x: cx - w / 2, y: cy - m.size, w, h: m.size };
+      } else box = boxAt(m.id, x0, y, m.size);
+      if (!box) continue;
+      const len = (STREET_X[1] - STREET_X[0]) * m.dir;
+      const wrap = `class="iso-move" style="--tx:${f1(len * 0.866 * S)}px;--ty:${f1(len * 0.5 * S)}px;--dur:${m.dur}s;--d:${m.d}s"`;
+      items.push({ id: m.id, box, mirror: m.walker ? m.dir === 1 : true, filters: L(), wrap });
     }
-    const [, ty] = P(X, Y);
-    const [lx] = P(X, Y + 8);
-    const [rx] = P(X + 8, Y);
-    const [, by] = P(X + 8, Y + 8);
-    // The top face (rim included) takes TILE_FACE of the picture's height.
-    const h = (by - ty) / TILE_FACE;
-    let g = `<image href="${tile.href}" x="${f1(lx)}" y="${f1(ty)}" width="${f1(rx - lx)}" height="${f1(h)}" preserveAspectRatio="none"${lightMatrix ? ' filter="url(#iso-light)"' : ''}/>`;
-    if (winter) g += `<polygon points="${pts([P(X + 0.6, Y + 0.6), P(X + 7.4, Y + 0.6), P(X + 7.4, Y + 7.4), P(X + 0.6, Y + 7.4)])}" fill="#F7FAFE" opacity="0.8"/>`;
-    return g;
-  }
-
-  // ---------- ground ----------
-  const ground: string[] = [];  // still
-  const range = view === 'band' ? { i0: -2, i1: 9, j0: 2, j1: 11 } : { i0: -2, i1: 7, j0: 0, j1: 8 };
-  const span = (a: number, b: number): [number, number] => [11 * a - 3, 11 * b + 8];
-  const [gx0, gx1] = span(range.i0, range.i1);
-  const [gy0, gy1] = span(range.j0, range.j1);
-  ground.push(flatPoly([P(gx0, gy0), P(gx1, gy0), P(gx1, gy1), P(gx0, gy1)], grass));
-  // River along y, left of the plant (cells i = -1).
-  ground.push(flatPoly([P(-10.5, gy0), P(-1.5, gy0), P(-1.5, gy1), P(-10.5, gy1)], winter ? '#9FD3EE' : '#5EC4F0'));
-  ground.push(flatPoly([P(-1.5, gy0), P(-0.4, gy0), P(-0.4, gy1), P(-1.5, gy1)], winter ? '#FFFFFF' : '#F3E6C4'));
-  ground.push(flatPoly([P(-11.6, gy0), P(-10.5, gy0), P(-10.5, gy1), P(-11.6, gy1)], winter ? '#FFFFFF' : '#F3E6C4'));
-  for (let k = gy0; k < gy1; k += 6) ground.push(`<polyline points="${pts([P(-6, k), P(-6, k + 2.4)])}" stroke="${tone('#BFE9FA')}" stroke-width="2.5" stroke-linecap="round"/>`);
-  const road = winter ? '#8E99B2' : '#7B88A4';
-  for (let j = range.j0 - 1; j <= range.j1; j++) ground.push(flatPoly([P(0, 11 * j + 8), P(gx1, 11 * j + 8), P(gx1, 11 * j + 11), P(0, 11 * j + 11)], road));
-  for (let i = 0; i <= range.i1; i++) ground.push(flatPoly([P(11 * i + 8, gy0), P(11 * i + 11, gy0), P(11 * i + 11, gy1), P(11 * i + 8, gy1)], road));
-  for (let j = range.j0 - 1; j <= range.j1; j++) for (let x = 1; x < gx1; x += 3.6) ground.push(`<polyline points="${pts([P(x, 11 * j + 9.5), P(x + 1.4, 11 * j + 9.5)])}" stroke="${tone('#FFFFFF')}" stroke-width="1.6" stroke-linecap="round"/>`);
-  if (o.upgrades.includes('piste')) for (let j = range.j0 - 1; j <= range.j1; j++) ground.push(`<g${pop('piste')}>${flatPoly([P(0, 11 * j + 10.2), P(gx1, 11 * j + 10.2), P(gx1, 11 * j + 10.9), P(0, 11 * j + 10.9)], '#2E9E5B')}</g>`);
-
-  add('still', ground.join(''));
-
-  // ---------- cells, row by row (painter order), with what moves on the road in front of each row ----------
-  const out = { push: (svg: string) => add('still', svg) };
-  const moving = { push: (svg: string) => add('moving', svg) };
-  for (let j = range.j0; j <= range.j1; j++) {
-    for (let i = 0; i <= range.i1; i++) {
-      const X = 11 * i; const Y = 11 * j;
-      out.push(flatPoly([P(X - 0.6, Y - 0.6), P(X + 8.6, Y - 0.6), P(X + 8.6, Y + 8.6), P(X - 0.6, Y + 8.6)], winter ? '#F7FAFE' : '#E4E7EF'));
-      // In the band, only the rows around the main street are built (the others stay green), so the view stays clear.
-      const plot = plotAt(i, j);
+    return items.length ? render(items) : '';
+  };
+  let rowItems: Item[] = [];
+  const flush = (): void => {
+    if (rowItems.length) layers.push({ kind: 'still', svg: render(rowItems) });
+    rowItems = [];
+  };
+  for (let r: number = ROWS[0]; r <= ROWS[1]; r++) {
+    things.length = 0;
+    for (let c: number = COLS[0]; c <= COLS[1]; c++) {
+      const x = T * c + 4;
+      const y = T * r + 4;
+      const plot = plotAt(c, r);
       if (plot) {
-        // Shop building: empty plot until bought (and its picture loaded); the one just bought arrives in the moving
-        // layer of its row, so its "appear" animation plays (still layers are pictures and cannot move).
-        const shown = o.upgrades.includes(plot) && pictureBox(plot) !== null;
-        if (!shown) out.push(lot(X, Y));
-        else if (o.fresh === plot) moving.push(`<g class="pop">${lightFilter('iso-light-fresh')}${picture(plot, 'iso-light-fresh', true)}</g>`);
-        else if (o.fresh === 'isolation' && plot === HAT.on) {
-          out.push(picture(plot, 'iso-light', false));
-          const hat = hatBox();
-          if (hat) moving.push(`<g class="pop">${lightFilter('iso-light-fresh')}${image(o.images!.isolation!.href, hat, 'iso-light-fresh')}</g>`);
-        } else out.push(picture(plot, 'iso-light', true));
-      } else if (view === 'full' || (i + j >= 4 && i + j <= 9)) out.push(building(kindOf(i, j), X, Y, i, j));
-      else out.push(building('trees', X, Y, i, j));
-      if (o.upgrades.includes('eclairage') && kindOf(i, j) !== 'cooling') {
-        const [lx, ly] = P(X + 8.3, Y + 8.3, 0);
-        out.push(`<g${pop('eclairage')}><line x1="${f1(lx)}" y1="${f1(ly)}" x2="${f1(lx)}" y2="${f1(ly - 26)}" stroke="${tone('#3B4A6B')}" stroke-width="2"/><circle cx="${f1(lx)}" cy="${f1(ly - 27)}" r="3" fill="${lit ? '#FFE27A' : tone('#D5DCEB')}" stroke="${tone(INK)}" stroke-width="1"/>${lit ? `<ellipse cx="${f1(lx)}" cy="${f1(ly)}" rx="16" ry="8" fill="#FFE9A8" opacity="${f1(0.5 * night)}"/>` : ''}</g>`);
+        const box = o.upgrades.includes(plot) && img[plot] ? pictureBox(plot) : null;
+        if (box) {
+          const item = { id: plot, box, filters: L() };
+          const hat = plot === HAT.on && o.upgrades.includes('isolation') ? hatBox() : null;
+          const hatItem = hat ? { id: 'isolation', box: hat, filters: L() } : null;
+          if (o.fresh === plot) { fresh.push(item); if (hatItem) fresh.push(hatItem); }
+          else {
+            things.push(item);
+            if (hatItem) (o.fresh === 'isolation' ? fresh : things).push(hatItem);
+          }
+        }
+        continue;
       }
+      const thing = thingAt(c, r);
+      switch (thing) {
+        case null: break;
+        case 'immeuble': { const f = flats(c, r); push(f.id, x, y, SIZE.immeuble, f.filters); break; }
+        case 'arbres': trees(c, r, [[-2, -2], [2, -1.5], [-1.5, 2], [2.2, 2.2]]); break;
+        case 'jeux':
+          trees(c, r, [[-2.5, -2.5]]);
+          push('balancoire', x + 1.5, y - 1.5, 0.45, L());
+          push('enfants', x - 1, y + 1.5, 0.42, L());
+          break;
+        case 'tour': push(o.elecOn || o.heatOn ? 'tour-on' : 'tour-off', x, y, SIZE.tour, L()); break;
+        default: push(thing, x, y, SIZE[thing], L());
+      }
+      // Street lights (Gemini lamp-post) at each crossroads once bought.
+      if (o.upgrades.includes('eclairage') && isRoadCol(c) && isRoadRow(r)) push('lampadaire', T * c + 1, T * r + 1, 0.14, L());
+      // Pylons of the power line along the road in front of row 5.
+      if (r === 5) for (const px of PYLONS) if (Math.floor(px / T) === c) push('pylone', px, WIRE_Y, 0.36, L());
     }
-    // People on the pavement in front of the row, cars on the road in front of it.
-    if (j === 5 || j === 6) {
-      moving.push(person(11 * 1 + 2, 11 * j + 8.3, '#7B5CD6', j) + person(11 * 2 + 5, 11 * j + 8.3, '#2E9E5B', j + 1) + person(11 * 4 + 3, 11 * j + 8.3, '#FF8A3D', j + 2));
+    rowItems.push(...things);
+    const moving = isRoadRow(r) ? traffic(r) : '';
+    if (moving) {
+      flush();
+      layers.push({ kind: 'moving', svg: moving });
     }
-    if (j === 4) moving.push(`<g class="iso-car">${car(CAR_START_X, 11 * j + 9.9, '#E0443E')}</g>`);
-    if (j === 6) moving.push(`<g class="iso-car slow">${car(CAR_START_X, 11 * j + 8.4, '#1D47B8')}</g>`);
-    if (j === 5) moving.push(`<g class="iso-car late">${car(CAR_START_X, 11 * j + 9.9, '#F2A51F')}</g>`);
   }
+  things.length = 0;
+  flush();
 
-  // Links from the plant: heating pipe and power line along the road in front of row 5.
-  const pipeY = 11 * 5 + 8.25;
-  out.push(`<polyline points="${pts([P(4, pipeY, 0.3), P(80, pipeY, 0.3)])}" stroke="${tone(INK)}" stroke-width="6" stroke-linecap="round"/><polyline points="${pts([P(4, pipeY, 0.3), P(80, pipeY, 0.3)])}" stroke="${tone('#FF8A3D')}" stroke-width="3.5" stroke-linecap="round"/>`);
-  if (o.heatOn) top.push(`<polyline class="flow" points="${pts([P(4, pipeY, 0.3), P(80, pipeY, 0.3)])}" stroke="#FFE7CC" stroke-width="1.6" stroke-dasharray="4 12" stroke-linecap="round"/>`);
-  const poles = [2, 13, 24, 35, 46, 57, 68];
-  const wireY = 11 * 4 + 8.2;
-  for (const x of poles) { const [a, b] = P(x, wireY, 0); const [, c] = P(x, wireY, 5); out.push(`<line x1="${f1(a)}" y1="${f1(b)}" x2="${f1(a)}" y2="${f1(c)}" stroke="${tone('#4A5878')}" stroke-width="2"/><line x1="${f1(a - 4)}" y1="${f1(c)}" x2="${f1(a + 4)}" y2="${f1(c)}" stroke="${tone('#4A5878')}" stroke-width="2"/>`); }
-  out.push(`<polyline points="${pts(poles.map((x) => P(x, wireY, 5)))}" stroke="${tone(INK)}" stroke-width="1" fill="none"/>`);
-  if (o.elecOn) top.push(`<polyline class="flow" points="${pts(poles.map((x) => P(x, wireY, 5)))}" stroke="#FFC83D" stroke-width="2.2" stroke-dasharray="3 12" fill="none" stroke-linecap="round"/>`);
-
-  // Reaction of the dark quarter: a bolt with a cross above it.
-  if (darkQuarter) {
-    const [qx, qy] = P(40, 40, 12);
-    top.push(`<g><circle cx="${f1(qx)}" cy="${f1(qy)}" r="40" fill="#FFFFFF" opacity="0.85" stroke="${INK}" stroke-width="2"/><image href="${o.icons.electricite}" x="${f1(qx - 32)}" y="${f1(qy - 32)}" width="64" height="64"/><image href="${o.icons.loin}" x="${f1(qx + 8)}" y="${f1(qy + 6)}" width="34" height="34"/></g>`);
+  // ---------- moving: the building just bought, flows, marks, snow, birds ----------
+  if (fresh.length) top.push(`<g class="pop">${render(fresh)}</g>`);
+  // Power line: thin wires between the pylons' tops; electricity flows along them while the plant produces.
+  const tops = PYLONS.map((px) => { const b = boxAt('pylone', px, WIRE_Y, 0.36); return b ? [b.x + b.w / 2, b.y + b.h * 0.08] : null; }).filter((p): p is number[] => p !== null);
+  if (tops.length > 1) {
+    const pts = tops.map(([a, b]) => `${f1(a!)},${f1(b!)}`).join(' ');
+    top.push(`<polyline points="${pts}" stroke="#4A5878" stroke-width="1.2" fill="none"/>`);
+    if (o.elecOn) top.push(`<polyline class="flow" points="${pts}" stroke="#FFC83D" stroke-width="2.4" stroke-dasharray="3 12" fill="none" stroke-linecap="round"/>`);
   }
-
-  // Upgrade just bought: a bouncing yellow arrow and a glowing ring show where it is in the town (R1-08).
+  // A quarter without electricity: the Gemini warning sign above it.
+  if (o.mood === 'noir') {
+    const b = boxAt('panneau-alerte', T * 8 + 4, T * 2 + 4, 0.5);
+    if (b) top.push(`<g class="float">${render([{ id: 'panneau-alerte', box: { ...b, y: b.y - 90 }, filters: [] }])}</g>`);
+  }
+  // Building just bought: a bouncing yellow arrow and a glowing ring show where it is (R1-08).
   if (o.fresh) {
-    const SPOT: Record<string, [number, number, number]> = {
-      fontaine: [11 + 4, 66 + 4, 1.5],
-      piste: [11 * 3 + 4, 11 * 5 + 10.5, 0], eclairage: [11 * 2 + 8.3, 11 * 5 + 8.3, 2.3],
-    };
-    // Shop buildings: ring around the foot of the picture, arrow just above it (the hat: above the chimney).
-    const b = o.fresh === 'isolation' ? hatBox() : pictureBox(o.fresh);
-    const spot = SPOT[o.fresh];
-    const at: [number, number, number] | null = b
-      ? [b.x + b.w / 2, b.y + b.h - b.w * (o.fresh === 'isolation' ? 0.5 : 0.29), b.y + 18]
-      : spot ? [P(spot[0], spot[1], 0)[0], P(spot[0], spot[1], 0)[1], P(spot[0], spot[1], spot[2])[1]] : null;
-    if (at) {
-      const [sx, sy, ty] = at;
-      // Bigger in the whole-town view (shop), where the town is drawn small.
+    // Cycle track and street lights: the arrow points at a road and at a crossroads of the main street.
+    const spot = o.fresh === 'piste' ? tileCentre(6, 5) : o.fresh === 'eclairage' ? tileCentre(5, 5) : null;
+    const b = o.fresh === 'isolation' ? hatBox() : spot ? { x: spot[0] - 50, y: spot[1] - 40, w: 100, h: 69 } : pictureBox(o.fresh);
+    if (b) {
+      const sx = b.x + b.w / 2;
+      const sy = b.y + b.h - b.w * (o.fresh === 'isolation' ? 0.5 : 0.29);
+      const ty = b.y + 18;
       const k = view === 'full' ? 2.6 : 1;
       const a = (v: number): string => f1(v * k);
       top.push(`<g class="pop"><ellipse class="mark-ring" cx="${f1(sx)}" cy="${f1(sy)}" rx="${a(58)}" ry="${a(30)}" fill="#FFE27A" fill-opacity="0.35" stroke="#FFC83D" stroke-width="${a(5)}"/>`
-        + `<g class="mark-arrow"><path transform="translate(${f1(sx)} ${f1(ty)})" d="M${a(-18)} ${a(-92)} H${a(18)} V${a(-52)} H${a(34)} L0 ${a(-14)} L${a(-34)} ${a(-52)} H${a(-18)} Z" fill="#FFC83D" stroke="${INK}" stroke-width="${a(5)}" stroke-linejoin="round"/></g></g>`);
+        + `<g class="mark-arrow"><path transform="translate(${f1(sx)} ${f1(ty)})" d="M${a(-18)} ${a(-92)} H${a(18)} V${a(-52)} H${a(34)} L0 ${a(-14)} L${a(-34)} ${a(-52)} H${a(-18)} Z" fill="#FFC83D" stroke="#1C2A4A" stroke-width="${a(5)}" stroke-linejoin="round"/></g></g>`);
     }
   }
-
-  const snow = winter ? Array.from({ length: view === 'band' ? 32 : 50 }, (_, k) => `<circle class="flake" cx="${f1(-400 + ((k * 197) % 2000))}" cy="${f1((view === 'band' ? rowY(8) - 330 : -230) + ((k * 53) % 240))}" r="${f1(1.6 + (k % 3))}" fill="#FFFFFF" opacity="0.9" style="--d:${-((k * 13) % 11)}s;animation-duration:${8 + (k % 5)}s"/>`).join('') : '';
-  const defs = `<defs>${lightFilter('iso-light')}<linearGradient id="iso-concrete" x1="0" x2="1"><stop offset="0" stop-color="${tone('#FFFFFF')}"/><stop offset="0.6" stop-color="${tone('#E4E8F0')}"/><stop offset="1" stop-color="${tone('#A9B4C8')}"/></linearGradient><linearGradient id="iso-reactor" x1="0" x2="1"><stop offset="0" stop-color="${tone('#FFFFFF')}"/><stop offset="0.55" stop-color="${tone('#EEF2F8')}"/><stop offset="1" stop-color="${tone('#AEB9CD')}"/></linearGradient></defs>`;
-  top.push(snow);
-  add('moving', top.join(''));
-  return { defs, layers };
+  // Birds crossing the sky by day (Gemini picture).
+  if (night < 0.5 && img.oiseaux) {
+    const y0 = view === 'band' ? 230 : -60;
+    top.push(`<g class="birds">${render([{ id: 'oiseaux', box: { x: -300, y: y0, w: 90, h: 72 }, filters: [] }])}</g>`);
+  }
+  if (winter) {
+    top.push(Array.from({ length: view === 'band' ? 32 : 50 }, (_, k) => `<circle class="flake" cx="${f1(-400 + ((k * 197) % 2000))}" cy="${f1((view === 'band' ? 220 : -150) + ((k * 53) % 240))}" r="${f1(1.6 + (k % 3))}" fill="#FFFFFF" opacity="0.9" style="--d:${-((k * 13) % 11)}s;animation-duration:${8 + (k % 5)}s"/>`).join(''));
+  }
+  if (top.length) layers.push({ kind: 'moving', svg: top.join('') });
+  return layers;
 }
+
+/** Where a tile's centre is on the screen (tests: what the band shows). */
+export const tileCentre = (c: number, r: number): [number, number] => P(T * c + 4, T * r + 4);

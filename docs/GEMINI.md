@@ -1,7 +1,7 @@
 # Images générées avec Gemini — synthèse (2026-11-08)
 
-*Travail fait dans une conversation Claude (chat), hors lots. Rien n'est encore branché dans le code : la ville reste
-dessinée dans `apps/game/src/play/City.tsx` (D-13). Intégrer ces images serait un nouveau lot à proposer et valider.*
+*Travail commencé dans une conversation Claude (chat), hors lots. Depuis le lot L6.3 (D-20), toute la ville du jeu est
+faite de ces images (`assets/ville/`, `assets/objets/`) ; les images manquantes sont au § 5.*
 
 ## 1. Ce qui a été fait
 1. **Prompts Gemini** écrits pour 27 images (22 objets + 5 tuiles de sol), dans le style de l'image de référence
@@ -244,3 +244,114 @@ Utilisation : `python detoure.py <dossier_jpg> <dossier_png> [fichiers.jpg …]`
   crue, personnages (opérateur, technicien), écran titre.
 - **Outil de travail** : poursuivre le développement dans Claude Code (sessions cloud ou Projets Claude Code, utilisables
   depuis le téléphone quand le PC est éteint), avec le dépôt GitHub `NukyBzh/NeutronCity` ; garder le chat pour les prompts.
+
+## 5. Série 3 : images manquantes de la ville (lot L6.3, 2026-11-09)
+**Livrée par Yann le 2026-11-09 au soir** (17 JPG dans `assets/Jeu centrale – assets/`, dont deux familles), détourée
+(fond vert, la tuile sur magenta) dans `assets/gemini/`, contrôle `docs/gemini/planche-assets-gemini-3.png`, intégrée au
+jeu. Le fichier `image-1794257061550.jpg` du même dossier est l'image de référence de style (pas utilisée).
+*Demande de Yann : toute la ville en images Gemini, aucun bâtiment, véhicule ou objet dessiné en SVG. La ville du lot L6.3
+n'utilise que les images existantes ; ces 16 images apportent les voitures, les habitants, la fontaine, la piste cyclable
+et plus de variété de bâtiments. Les livrer comme les séries 1 et 2 (même Drive) : Claude les détoure
+(`tools/detourage/detoure.py`) et les intègre.*
+
+Conseils : joindre `docs/gemini/reference-style-ville.jpg` à chaque prompt ; pour une voiture, générer d'abord la vue avant
+puis demander « la même voiture vue de trois quarts arrière » dans la même conversation, pour garder la même voiture.
+Les bâtiments n'ont pas besoin d'une version de nuit : le jeu les assombrit ; une version de nuit fenêtres allumées
+(comme l'immeuble 11) peut être ajoutée plus tard.
+
+**asset_48_voiture_rouge_avant.png**
+
+```
+Dans exactement le même style que l'image jointe (illustration vectorielle isométrique 2:1, aplats propres, ombrage doux, lumière haut-gauche, palette pastel), dessine un seul objet : une petite voiture citadine rouge vue de trois quarts avant, roulant vers le bas à droite de l'image, vitres turquoise, phares visibles. Sans sol ni socle sous l'objet. Métaux en gris neutre. Fond uni vert #00FF00. Format PNG carré 1024x1024, fichier .png obligatoire (pas de JPG), objet centré sur 60 % de la largeur. Aucun texte, aucune lettre, aucun chiffre.
+```
+
+**asset_49_voiture_rouge_arriere.png**
+
+```
+Dans exactement le même style que l'image jointe (illustration vectorielle isométrique 2:1, aplats propres, ombrage doux, lumière haut-gauche, palette pastel), dessine un seul objet : la même petite voiture citadine rouge vue de trois quarts arrière, s'éloignant vers le haut à gauche de l'image, feux arrière visibles. Sans sol ni socle sous l'objet. Métaux en gris neutre. Fond uni vert #00FF00. Format PNG carré 1024x1024, fichier .png obligatoire (pas de JPG), objet centré sur 60 % de la largeur. Aucun texte, aucune lettre, aucun chiffre.
+```
+
+**asset_50_voiture_bleue_avant.png**
+
+```
+Dans exactement le même style que l'image jointe (illustration vectorielle isométrique 2:1, aplats propres, ombrage doux, lumière haut-gauche, palette pastel), dessine un seul objet : une petite voiture familiale bleue vue de trois quarts avant, roulant vers le bas à droite de l'image, vitres turquoise, phares visibles. Sans sol ni socle sous l'objet. Métaux en gris neutre. Fond uni vert #00FF00. Format PNG carré 1024x1024, fichier .png obligatoire (pas de JPG), objet centré sur 60 % de la largeur. Aucun texte, aucune lettre, aucun chiffre.
+```
+
+**asset_51_voiture_bleue_arriere.png**
+
+```
+Dans exactement le même style que l'image jointe (illustration vectorielle isométrique 2:1, aplats propres, ombrage doux, lumière haut-gauche, palette pastel), dessine un seul objet : la même petite voiture familiale bleue vue de trois quarts arrière, s'éloignant vers le haut à gauche de l'image, feux arrière visibles. Sans sol ni socle sous l'objet. Métaux en gris neutre. Fond uni vert #00FF00. Format PNG carré 1024x1024, fichier .png obligatoire (pas de JPG), objet centré sur 60 % de la largeur. Aucun texte, aucune lettre, aucun chiffre.
+```
+
+**asset_52_bus_avant.png**
+
+```
+Dans exactement le même style que l'image jointe (illustration vectorielle isométrique 2:1, aplats propres, ombrage doux, lumière haut-gauche, palette pastel), dessine un seul objet : un petit bus de ville jaune et blanc vu de trois quarts avant, roulant vers le bas à droite de l'image, vitres turquoise. Sans sol ni socle sous l'objet. Métaux en gris neutre. Fond uni vert #00FF00. Format PNG carré 1024x1024, fichier .png obligatoire (pas de JPG), objet centré sur 75 % de la largeur. Aucun texte, aucune lettre, aucun chiffre.
+```
+
+**asset_53_habitant_adulte.png**
+
+```
+Dans exactement le même style que l'image jointe (illustration vectorielle isométrique 2:1, aplats propres, ombrage doux, lumière haut-gauche, palette pastel), dessine un seul objet : un adulte qui marche, vu de trois quarts, pull vert, pantalon gris, petit sac, silhouette simple et souriante. Sans sol ni socle sous l'objet. Métaux en gris neutre. Fond uni vert #00FF00. Format PNG carré 1024x1024, fichier .png obligatoire (pas de JPG), objet centré sur 70 % de la hauteur. Aucun texte, aucune lettre, aucun chiffre.
+```
+
+**asset_54_habitant_enfant.png**
+
+```
+Dans exactement le même style que l'image jointe (illustration vectorielle isométrique 2:1, aplats propres, ombrage doux, lumière haut-gauche, palette pastel), dessine un seul objet : un enfant qui marche, vu de trois quarts, t-shirt orange, short bleu, casquette, silhouette simple et souriante. Sans sol ni socle sous l'objet. Métaux en gris neutre. Fond uni vert #00FF00. Format PNG carré 1024x1024, fichier .png obligatoire (pas de JPG), objet centré sur 60 % de la hauteur. Aucun texte, aucune lettre, aucun chiffre.
+```
+
+**asset_55_habitants_famille.png**
+
+```
+Dans exactement le même style que l'image jointe (illustration vectorielle isométrique 2:1, aplats propres, ombrage doux, lumière haut-gauche, palette pastel), dessine un seul objet : deux adultes et un enfant qui marchent ensemble, vus de trois quarts, vêtements de couleurs vives différentes. Sans sol ni socle sous l'objet. Métaux en gris neutre. Fond uni vert #00FF00. Format PNG carré 1024x1024, fichier .png obligatoire (pas de JPG), objet centré sur 75 % de la largeur. Aucun texte, aucune lettre, aucun chiffre.
+```
+
+**asset_56_fontaine.png**
+
+```
+Dans exactement le même style que l'image jointe (illustration vectorielle isométrique 2:1, aplats propres, ombrage doux, lumière haut-gauche, palette pastel), dessine un seul objet : une fontaine de place publique ronde en pierre claire, vasque à deux étages, jets d'eau turquoise, posée sur un petit socle pavé. Sans sol ni socle sous l'objet. Métaux en gris neutre. Fond uni vert #00FF00. Format PNG carré 1024x1024, fichier .png obligatoire (pas de JPG), objet centré sur 75 % de la largeur. Aucun texte, aucune lettre, aucun chiffre.
+```
+
+**asset_57_tuile_piste_cyclable.png**
+
+```
+Dans exactement le même style que l'image jointe (illustration vectorielle isométrique 2:1, aplats propres, ombrage doux, lumière haut-gauche, palette pastel), dessine une seule tuile de sol carrée vue en isométrique, avec la même épaisseur de socle que les autres tuiles : une route droite identique à la tuile route droite (chaussée beige, trottoirs gris clair), avec une piste cyclable verte le long d'un trottoir et un petit vélo blanc peint au sol. Fond uni magenta #FF00FF. Format PNG carré 1024x1024, fichier .png obligatoire (pas de JPG), tuile centrée sur 90 % de la largeur. Aucun texte, aucune lettre, aucun chiffre.
+```
+
+**asset_58_immeuble_moderne.png**
+
+```
+Dans exactement le même style que l'image jointe (illustration vectorielle isométrique 2:1, aplats propres, ombrage doux, lumière haut-gauche, palette pastel), dessine un seul objet : un immeuble moderne de 7 étages, façade blanche et grandes baies vitrées turquoise, balcons, toit plat avec petits équipements, sur un socle trottoir gris très clair. Sans sol ni socle sous l'objet. Métaux en gris neutre. Fond uni vert #00FF00. Format PNG carré 1024x1024, fichier .png obligatoire (pas de JPG), objet centré sur 80 % de la hauteur. Aucun texte, aucune lettre, aucun chiffre.
+```
+
+**asset_59_immeuble_brique.png**
+
+```
+Dans exactement le même style que l'image jointe (illustration vectorielle isométrique 2:1, aplats propres, ombrage doux, lumière haut-gauche, palette pastel), dessine un seul objet : un immeuble de 5 étages en brique orangée, fenêtres blanches, toit plat avec cheminées, rez-de-chaussée avec vitrine, sur un socle trottoir gris très clair. Sans sol ni socle sous l'objet. Métaux en gris neutre. Fond uni vert #00FF00. Format PNG carré 1024x1024, fichier .png obligatoire (pas de JPG), objet centré sur 80 % de la hauteur. Aucun texte, aucune lettre, aucun chiffre.
+```
+
+**asset_60_tour_bureaux.png**
+
+```
+Dans exactement le même style que l'image jointe (illustration vectorielle isométrique 2:1, aplats propres, ombrage doux, lumière haut-gauche, palette pastel), dessine un seul objet : une tour de bureaux de 12 étages en verre bleu clair et cadres gris, sur un socle trottoir gris très clair. Sans sol ni socle sous l'objet. Métaux en gris neutre. Fond uni vert #00FF00. Format PNG carré 1024x1024, fichier .png obligatoire (pas de JPG), objet centré sur 85 % de la hauteur. Aucun texte, aucune lettre, aucun chiffre.
+```
+
+**asset_61_boulangerie.png**
+
+```
+Dans exactement le même style que l'image jointe (illustration vectorielle isométrique 2:1, aplats propres, ombrage doux, lumière haut-gauche, palette pastel), dessine un seul objet : un petit immeuble de 3 étages crème avec une boulangerie au rez-de-chaussée, auvent jaune, vitrine avec pains, sur un socle trottoir gris très clair. Sans sol ni socle sous l'objet. Métaux en gris neutre. Fond uni vert #00FF00. Format PNG carré 1024x1024, fichier .png obligatoire (pas de JPG), objet centré sur 80 % de la largeur. Aucun texte, aucune lettre, aucun chiffre.
+```
+
+**asset_62_maison_jardin.png**
+
+```
+Dans exactement le même style que l'image jointe (illustration vectorielle isométrique 2:1, aplats propres, ombrage doux, lumière haut-gauche, palette pastel), dessine un seul objet : une maison individuelle blanche à toit rouge avec un petit jardin vert, une haie et un arbre, sur un socle trottoir gris très clair. Sans sol ni socle sous l'objet. Métaux en gris neutre. Fond uni vert #00FF00. Format PNG carré 1024x1024, fichier .png obligatoire (pas de JPG), objet centré sur 80 % de la largeur. Aucun texte, aucune lettre, aucun chiffre.
+```
+
+**asset_63_immeuble_rose.png**
+
+```
+Dans exactement le même style que l'image jointe (illustration vectorielle isométrique 2:1, aplats propres, ombrage doux, lumière haut-gauche, palette pastel), dessine un seul objet : un immeuble de 4 étages rose pâle, toit en ardoise gris foncé avec lucarnes, balcons blancs, sur un socle trottoir gris très clair. Sans sol ni socle sous l'objet. Métaux en gris neutre. Fond uni vert #00FF00. Format PNG carré 1024x1024, fichier .png obligatoire (pas de JPG), objet centré sur 80 % de la hauteur. Aucun texte, aucune lettre, aucun chiffre.
+```
+

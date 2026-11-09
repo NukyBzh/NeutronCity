@@ -3,6 +3,8 @@ const icons = import.meta.glob<string>('../../../assets/icons/*.svg', { eager: t
 const shop = import.meta.glob<string>('../../../assets/shop/*.svg', { eager: true, query: '?url', import: 'default' });
 /** Buildings of the shop (lot L6): Gemini images reduced to WebP (assets/SOURCES.md); the older ones keep their SVG. */
 const objets = import.meta.glob<string>('../../../assets/objets/*.webp', { eager: true, query: '?url', import: 'default' });
+/** The town (lot L6.3): Gemini pictures reduced to WebP (assets/SOURCES.md). */
+const ville = import.meta.glob<string>('../../../assets/ville/*.webp', { eager: true, query: '?url', import: 'default' });
 const poses = import.meta.glob<string>('../../../assets/cassandra/cassandra-*.png', { eager: true, query: '?url', import: 'default' });
 
 const byName = (files: Record<string, string>, prefix = ''): Record<string, string> =>
@@ -11,10 +13,13 @@ const byName = (files: Record<string, string>, prefix = ''): Record<string, stri
 const ICONS = byName(icons);
 const SHOP = byName(shop);
 const OBJETS = byName(objets);
+const VILLE = byName(ville);
 const POSES = byName(poses, 'cassandra-');
 
 export type Pose = 'accueil' | 'explique' | 'attention' | 'bravo' | 'reflechit';
 
 export const iconUrl = (name: string): string => ICONS[name] ?? '';
 export const shopUrl = (name: string): string => OBJETS[name] ?? SHOP[name] ?? '';
+/** A picture of the town or of a shop building. */
+export const townUrl = (name: string): string => VILLE[name] ?? OBJETS[name] ?? '';
 export const poseUrl = (pose: Pose): string => POSES[pose] ?? '';

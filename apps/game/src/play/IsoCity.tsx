@@ -1,7 +1,7 @@
 import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import type { Mood } from '@neutron/engine';
-import { iconUrl, shopUrl } from '../assets';
-import { BAND_VIEWBOX, FULL_VIEWBOX, PLOTS, TILE, drawTownLayers, lightKey, seasonOf, type TownImage, type TownLayer } from './iso/town';
+import { townUrl } from '../assets';
+import { BAND_VIEWBOX, FULL_VIEWBOX, PLOTS, TOWN_IMAGES, drawTownLayers, lightKey, seasonOf, type TownImage, type TownLayer } from './iso/town';
 import { Sky } from './iso/Sky';
 
 /**
@@ -25,18 +25,17 @@ export interface IsoCityProps {
   fresh?: string | null;
 }
 
-const ICONS = { coeur: iconUrl('coeur'), froid: iconUrl('froid'), electricite: iconUrl('electricite'), loin: iconUrl('loin') };
 
 /**
  * Pictures of the shop buildings (lot L6.2), read once as data: URLs: a still layer is an SVG painted as a picture, which
- * cannot load outside files. About 350 KB in all.
+ * cannot load outside files. About 850 KB in all (town and shop).
  */
 type Images = Readonly<Record<string, TownImage>>;
 let loaded: Images | null = null;
 let loading: Promise<Images> | null = null;
 async function readImage(id: string): Promise<[string, TownImage] | null> {
   try {
-    const blob = await (await fetch(shopUrl(id))).blob();
+    const blob = await (await fetch(townUrl(id))).blob();
     const href = await new Promise<string>((ok, ko) => {
       const r = new FileReader();
       r.onload = () => ok(r.result as string);
@@ -50,7 +49,7 @@ async function readImage(id: string): Promise<[string, TownImage] | null> {
   }
 }
 function loadImages(): Promise<Images> {
-  loading ??= Promise.all([...Object.keys(PLOTS), 'isolation', TILE].map(readImage)).then((all) => {
+  loading ??= Promise.all([...TOWN_IMAGES, ...Object.keys(PLOTS), 'isolation'].map(readImage)).then((all) => {
     loaded = Object.fromEntries(all.filter((x): x is [string, TownImage] => x !== null));
     return loaded;
   });
@@ -104,7 +103,7 @@ export const IsoCity = memo(function IsoCity(p: IsoCityProps) {
   const upgradesKey = p.upgrades.join(',');
   const light = lightKey(p.hour);
   const layers = useMemo(
-    () => drawTownLayers({ hour: p.hour, season: seasonOf(p.season), mood: p.mood, elecOn: p.elecOn, heatOn: p.heatOn, upgrades: upgradesKey ? upgradesKey.split(',') : [], fresh: p.fresh ?? null, icons: ICONS, images: images ?? undefined }, p.view),
+    () => drawTownLayers({ hour: p.hour, season: seasonOf(p.season), mood: p.mood, elecOn: p.elecOn, heatOn: p.heatOn, upgrades: upgradesKey ? upgradesKey.split(',') : [], fresh: p.fresh ?? null, images: images ?? undefined }, p.view),
     // The hour only matters through the light (night and sunset levels).
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [light, p.season, p.mood, p.elecOn, p.heatOn, upgradesKey, p.fresh, p.view, images],

@@ -66,6 +66,7 @@ Avant tout retour en arrière : `git status` doit être propre (sinon `git stash
 | v0.6.0 | `ed5aeab` | 2026-11-08 | L4 : ciel heure par heure, ombres et lumière du soir, ville en couches pour la tablette (D-17) |
 | v0.8.0 | *(à poser après validation)* | 2026-11-09 | L6.1 : 18 bâtiments, phase découverte, bonus par journée, effets sur la demande, chaleur ouverte par le réseau de chaleur (D-19) |
 | v0.8.1 | *(à poser après validation)* | 2026-11-09 | L6.2 : bâtiments achetés dessinés dans la ville sur leur terrain, terrains vides avant l'achat |
+| v0.8.2 | *(à poser après validation)* | 2026-11-09 | L6.3 : toute la ville en images Gemini, damier de tuiles (D-20) |
 | v0.7.0 | *(à poser après validation)* | 2026-11-09 | L5 : tutoriel guidé de la première partie, musique CC0 en boucle, bruitages, bouton « Son » (D-18) |
 
 Un commit ne peut pas citer son propre identifiant : la colonne « Commit » de la dernière ligne se complète au commit

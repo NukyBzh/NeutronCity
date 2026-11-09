@@ -2,6 +2,13 @@
 
 *Ce qui change pour le joueur, en mots simples. Une section par version (voir `docs/CONFIGURATION.md` §4).*
 
+## v0.8.2 — 2026-11-09 (lot L6.3 : la ville en images, à valider)
+- Toute la ville est faite avec les mêmes images que la boutique : un damier de tuiles (herbe, routes, carrefours, rivière, béton) avec la centrale, des immeubles de toutes sortes (haussmannien, moderne, brique, rose, tour de bureaux, boulangerie), des maisons, les usines, la gare, les arbres et une aire de jeux.
+- Des voitures, un bus et des habitants circulent dans les rues.
+- La nuit, les fenêtres des immeubles s'allument ; en hiver, ils sont enneigés ; dans un quartier sans électricité, ils s'éteignent et un panneau d'alerte apparaît.
+- Les lampadaires achetés sont posés aux carrefours ; des oiseaux traversent le ciel le jour.
+- La fontaine a sa place dans la ville ; la piste cyclable verte longe les grandes rues ; les cartes de la boutique montrent les nouvelles images (fontaine, piste, lampadaire).
+
 ## v0.8.1 — 2026-11-09 (lot L6.2 : les bâtiments dans la ville, à valider)
 - Chaque bâtiment de la boutique a son terrain dans la ville : une tuile d'herbe tant qu'il n'est pas acheté (enneigée en hiver).
 - Quand tu l'achètes, le bâtiment arrive sur son terrain avec la même image que dans la boutique ; une flèche jaune le montre.
