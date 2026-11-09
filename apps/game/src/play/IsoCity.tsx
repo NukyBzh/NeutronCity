@@ -1,7 +1,7 @@
 import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import type { Mood } from '@neutron/engine';
-import { iconUrl } from '../assets';
-import { BAND_VIEWBOX, FULL_VIEWBOX, drawTownLayers, lightKey, seasonOf, type TownLayer } from './iso/town';
+import { iconUrl, shopUrl } from '../assets';
+import { BAND_VIEWBOX, FULL_VIEWBOX, PLOTS, drawTownLayers, lightKey, seasonOf, type TownImage, type TownLayer } from './iso/town';
 import { Sky } from './iso/Sky';
 
 /**
@@ -27,6 +27,49 @@ export interface IsoCityProps {
 
 const ICONS = { coeur: iconUrl('coeur'), froid: iconUrl('froid'), electricite: iconUrl('electricite'), loin: iconUrl('loin') };
 
+/**
+ * Pictures of the shop buildings (lot L6.2), read once as data: URLs: a still layer is an SVG painted as a picture, which
+ * cannot load outside files. About 350 KB in all.
+ */
+type Images = Readonly<Record<string, TownImage>>;
+let loaded: Images | null = null;
+let loading: Promise<Images> | null = null;
+async function readImage(id: string): Promise<[string, TownImage] | null> {
+  try {
+    const blob = await (await fetch(shopUrl(id))).blob();
+    const href = await new Promise<string>((ok, ko) => {
+      const r = new FileReader();
+      r.onload = () => ok(r.result as string);
+      r.onerror = () => ko(r.error);
+      r.readAsDataURL(blob);
+    });
+    const img = await loadPicture(href);
+    return [id, { href, w: img.naturalWidth, h: img.naturalHeight }];
+  } catch {
+    return null; // A picture that fails to load leaves its plot empty.
+  }
+}
+function loadImages(): Promise<Images> {
+  loading ??= Promise.all([...Object.keys(PLOTS), 'isolation'].map(readImage)).then((all) => {
+    loaded = Object.fromEntries(all.filter((x): x is [string, TownImage] => x !== null));
+    return loaded;
+  });
+  return loading;
+}
+
+/**
+ * Loads a picture and waits for it. `onload` rather than `decode()`: several decodes at once may never finish in a
+ * page that is not shown (seen while checking lot L6.2).
+ */
+function loadPicture(src: string): Promise<HTMLImageElement> {
+  return new Promise((ok, ko) => {
+    const img = new Image();
+    img.onload = () => ok(img);
+    img.onerror = () => ko(new Error(`picture not loaded: ${src.slice(0, 40)}`));
+    img.src = src;
+  });
+}
+
 /** Paints one still layer (an SVG string) into a canvas, at the screen's pixel density, with the view's framing. */
 async function paint(canvas: HTMLCanvasElement, svg: string, viewBox: string, aspect: string, w: number, h: number): Promise<void> {
   const dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -35,9 +78,7 @@ async function paint(canvas: HTMLCanvasElement, svg: string, viewBox: string, as
   const doc = `<svg xmlns="http://www.w3.org/2000/svg" width="${pw}" height="${ph}" viewBox="${viewBox}" preserveAspectRatio="${aspect}">${svg}</svg>`;
   const url = URL.createObjectURL(new Blob([doc], { type: 'image/svg+xml' }));
   try {
-    const img = new Image();
-    img.src = url;
-    await img.decode();
+    const img = await loadPicture(url);
     // Drawn off screen first, then copied at once: the old picture stays until the new one is ready (no flicker).
     const off = document.createElement('canvas');
     off.width = pw;
@@ -53,13 +94,20 @@ async function paint(canvas: HTMLCanvasElement, svg: string, viewBox: string, as
 }
 
 export const IsoCity = memo(function IsoCity(p: IsoCityProps) {
+  const [images, setImages] = useState<Images | null>(loaded);
+  useEffect(() => {
+    if (images) return undefined;
+    let live = true;
+    void loadImages().then((all) => { if (live) setImages(all); });
+    return () => { live = false; };
+  }, [images]);
   const upgradesKey = p.upgrades.join(',');
   const light = lightKey(p.hour);
   const layers = useMemo(
-    () => drawTownLayers({ hour: p.hour, season: seasonOf(p.season), mood: p.mood, elecOn: p.elecOn, heatOn: p.heatOn, upgrades: upgradesKey ? upgradesKey.split(',') : [], fresh: p.fresh ?? null, icons: ICONS }, p.view),
+    () => drawTownLayers({ hour: p.hour, season: seasonOf(p.season), mood: p.mood, elecOn: p.elecOn, heatOn: p.heatOn, upgrades: upgradesKey ? upgradesKey.split(',') : [], fresh: p.fresh ?? null, icons: ICONS, images: images ?? undefined }, p.view),
     // The hour only matters through the light (night and sunset levels).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [light, p.season, p.mood, p.elecOn, p.heatOn, upgradesKey, p.fresh, p.view],
+    [light, p.season, p.mood, p.elecOn, p.heatOn, upgradesKey, p.fresh, p.view, images],
   );
   // Each moving layer has its own phase, changed only when that layer's drawing changes (React then creates new
   // elements, whose animations must go on where the old ones were, R1-02). A layer whose drawing is the same keeps its

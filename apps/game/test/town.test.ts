@@ -1,11 +1,19 @@
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { CAR_START_X, RIVER_X, drawTown, drawTownLayers, lightKey, type TownOptions } from '../src/play/iso/town';
+import { parse } from 'yaml';
+import { validateShop } from '@neutron/engine';
+import { CAR_START_X, HAT, PLOTS, RIVER_X, drawTown, drawTownLayers, lightKey, type TownImage, type TownOptions } from '../src/play/iso/town';
 import { skyColours } from '../src/play/iso/Sky';
 
 const ICONS = { coeur: 'c.svg', froid: 'f.svg', electricite: 'e.svg', loin: 'l.svg' };
-const ALL = ['fontaine', 'parc', 'piste', 'eclairage', 'ecole'];
+const SHOP = validateShop(parse(readFileSync(fileURLToPath(new URL('../../../content/shop/shop.yaml', import.meta.url)), 'utf8')));
+/** Buildings that keep their own drawing (D-19 E8). */
+const DRAWN = ['fontaine', 'piste', 'eclairage'];
+const ALL = SHOP.map((i) => i.id);
+const IMAGES: Record<string, TownImage> = Object.fromEntries(ALL.filter((id) => !DRAWN.includes(id)).map((id) => [id, { href: `data:image/webp;base64,${id}`, w: 100, h: 90 }]));
 const town = (o: Partial<TownOptions> = {}, view: 'band' | 'full' = 'band') =>
-  drawTown({ hour: 14, season: 'ete', mood: 'content', elecOn: true, heatOn: false, upgrades: ALL, icons: ICONS, ...o }, view);
+  drawTown({ hour: 14, season: 'ete', mood: 'content', elecOn: true, heatOn: false, upgrades: ALL, icons: ICONS, images: IMAGES, ...o }, view);
 
 describe('isometric town (test feedback R1)', () => {
   it('R1-01: cars start on the road after the river', () => {
@@ -35,7 +43,7 @@ describe('isometric town (test feedback R1)', () => {
 });
 
 describe('town layers for the tablet (lot L4)', () => {
-  const opts = (o: Partial<TownOptions> = {}): TownOptions => ({ hour: 14, season: 'hiver', mood: 'froid', elecOn: true, heatOn: true, upgrades: ALL, icons: ICONS, fresh: 'parc', ...o });
+  const opts = (o: Partial<TownOptions> = {}): TownOptions => ({ hour: 14, season: 'hiver', mood: 'froid', elecOn: true, heatOn: true, upgrades: ALL, icons: ICONS, images: IMAGES, fresh: 'parc', ...o });
 
   it('still layers hold nothing animated and no outside picture (they are painted once into canvases)', () => {
     for (const view of ['band', 'full'] as const) {
@@ -43,7 +51,7 @@ describe('town layers for the tablet (lot L4)', () => {
         const layers = drawTownLayers(opts({ hour, mood: hour > 21 ? 'noir' : 'froid' }), view);
         for (const l of layers.filter((x) => x.kind === 'still')) {
           expect(l.svg).not.toMatch(/class="(iso-car|walker-iso|flake|steam|plume|flow|float|mark-arrow|mark-ring)/);
-          expect(l.svg).not.toContain('<image');
+          expect(l.svg).not.toMatch(/<image href="(?!data:)/);
         }
       }
     }
@@ -73,5 +81,61 @@ describe('sky (R1-11, R1-12)', () => {
     expect(parseInt(dayTop.slice(5, 7), 16)).toBeGreaterThan(parseInt(dayTop.slice(1, 3), 16));
     expect(parseInt(sunsetLow.slice(1, 3), 16)).toBeGreaterThan(parseInt(sunsetLow.slice(5, 7), 16));
     expect(lum(nightTop)).toBeLessThan(lum(dayTop) / 3);
+  });
+});
+
+describe('shop buildings in the town (lot L6.2)', () => {
+  it('every building with a picture has its own plot, in the rows seen in the play screen and in the whole town', () => {
+    const withPicture = ALL.filter((id) => !DRAWN.includes(id) && id !== 'isolation');
+    expect(Object.keys(PLOTS).sort()).toEqual([...withPicture].sort());
+    const cells = Object.values(PLOTS).map((p) => `${p.i},${p.j}`);
+    expect(new Set(cells).size).toBe(cells.length);
+    for (const p of Object.values(PLOTS)) {
+      expect(p.i).toBeGreaterThanOrEqual(1); // column 0: the plant
+      expect(p.i + p.j).toBeGreaterThanOrEqual(5);
+      expect(p.i + p.j).toBeLessThanOrEqual(8);
+      expect(p.j).toBeLessThanOrEqual(8);
+      expect(`${p.i},${p.j}`).not.toBe('1,6'); // the park with the fountain
+    }
+    // The hat goes on the Lilas house, always bought before isolation opens.
+    const iso = SHOP.find((i) => i.id === 'isolation')!;
+    expect(SHOP.find((i) => i.id === HAT.on)!.discovery).toBeDefined();
+    expect(iso.unlockAt).toBeGreaterThanOrEqual(8);
+  });
+
+  it('an empty plot before the purchase, the same picture as in the shop after it', () => {
+    for (const view of ['band', 'full'] as const) {
+      const none = town({ upgrades: [] }, view);
+      for (const id of Object.keys(PLOTS)) expect(none).not.toContain(IMAGES[id]!.href);
+      expect(none.match(/stroke-dasharray="6 5"/g)?.length).toBe(Object.keys(PLOTS).length);
+      const all = town({}, view);
+      for (const id of [...Object.keys(PLOTS), 'isolation']) expect(all, id).toContain(`href="${IMAGES[id]!.href}"`);
+      expect(all).not.toContain('stroke-dasharray="6 5"');
+    }
+    expect(town({ upgrades: ['ferme'] })).toContain(IMAGES.ferme!.href);
+    expect(town({ upgrades: ['ferme'] })).not.toContain(IMAGES.ecole!.href);
+  });
+
+  it('a building bought whose picture is not loaded yet keeps its plot (no broken picture)', () => {
+    const s = town({ upgrades: ['ferme'], images: {} });
+    expect(s).not.toContain('<image href="data:');
+    expect(s.match(/stroke-dasharray="6 5"/g)?.length).toBe(Object.keys(PLOTS).length);
+  });
+
+  it('the building just bought arrives with its animation and the arrow, in a moving layer', () => {
+    for (const id of [...Object.keys(PLOTS), 'isolation']) {
+      const layers = drawTownLayers({ hour: 14, season: 'ete', mood: 'content', elecOn: true, heatOn: false, upgrades: ALL, icons: ICONS, images: IMAGES, fresh: id }, 'full');
+      const moving = layers.filter((l) => l.kind === 'moving').map((l) => l.svg).join('');
+      const still = layers.filter((l) => l.kind === 'still').map((l) => l.svg).join('');
+      expect(moving, id).toContain(`<g class="pop">`);
+      expect(moving, id).toContain(IMAGES[id]!.href);
+      expect(still, id).not.toContain(IMAGES[id]!.href);
+      expect(moving, id).toContain('mark-arrow');
+    }
+  });
+
+  it('pictures take the evening and night light like the drawn town', () => {
+    expect(town({ hour: 13 })).not.toContain('feColorMatrix');
+    expect(town({ hour: 23 })).toContain('filter="url(#iso-light)"');
   });
 });

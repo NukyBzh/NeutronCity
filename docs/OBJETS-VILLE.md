@@ -49,6 +49,15 @@ au lieu d'un vrai stock ; l'immunité de l'hôpital et l'effet de la maison méd
 événements (L7) ; **un seul exemplaire** de chaque bâtiment (pas de rachat à +15 %). Parc et école du jeu fusionnés avec
 `parc_arbore` et `ecole` ; l'isolation utilise l'image du bonnet sur la cheminée.
 
+### Intégration L6.2 (2026-11-09)
+Chaque bâtiment à image a **son terrain** dans la ville (`PLOTS` dans `apps/game/src/play/iso/town.ts`), dans les rangées
+visibles de la bande du jeu (i + j de 5 à 8) et dans la ville entière. Avant l'achat : **terrain vide** (sol nu, bord en
+pointillés, panneau avec une petite maison), choix de Yann. Après : la même image que la carte de la boutique, un peu plus
+grande dans la ville entière ; arrivée animée et flèche jaune pour l'achat qui vient d'être fait. Le bonnet de
+l'isolation se pose sur la cheminée de la maison des Lilas (achetée pendant la découverte, donc toujours là). Fontaine,
+piste et lampadaires gardent leur dessin. L'ancienne école dessinée et les bancs du parc dessiné sont retirés : leurs
+images les remplacent.
+
 ## 4. Les 15 objets (valeurs du JSON)
 Hypothèses du JSON : 1 unité servie en zone verte = 1 pièce/min ; ville de départ = 100 unités d'électricité ;
 « RSI » = minutes en zone verte pour rembourser l'objet.

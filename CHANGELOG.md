@@ -2,6 +2,14 @@
 
 *Ce qui change pour le joueur, en mots simples. Une section par version (voir `docs/CONFIGURATION.md` §4).*
 
+## v0.8.1 — 2026-11-09 (lot L6.2 : les bâtiments dans la ville, à valider)
+- Chaque bâtiment de la boutique a son terrain dans la ville : un terrain vide avec un petit panneau tant qu'il n'est pas acheté.
+- Quand tu l'achètes, le bâtiment arrive sur son terrain avec la même image que dans la boutique ; une flèche jaune le montre.
+- Les bâtiments se voient aussi pendant la journée, dans la bande de la ville ; le soir et la nuit, ils prennent la lumière comme le reste de la ville.
+- L'isolation pose un bonnet de laine sur la cheminée de la maison des Lilas.
+- Les images de la boutique sont plus nettes.
+- Correction : dans l'application Android, le décor de la ville (immeubles, routes) pouvait ne pas s'afficher depuis la v0.6.0 ; il s'affiche de nouveau.
+
 ## v0.8.0 — 2026-11-09 (lot L6.1 : la boutique de la ville, à valider)
 - La boutique propose 18 bâtiments : ferme, réseau de chaleur, maisons, épicerie, école, usine, maison médicale, puis batterie, parc, fontaine, piste cyclable, piscine, lampadaires, maisons isolées, panneaux solaires, hôpital, cuve de chaleur.
 - Au début, c'est la découverte : un seul bâtiment à la fois, que Cassandra présente. Après les 8 premiers, tu choisis ; les autres s'ouvrent quand la ville grandit (8, 10, 12, 14, 16 bâtiments).

@@ -22,7 +22,43 @@ export interface TownOptions {
   fresh?: string | null;
   /** URLs of the icons used inside the drawing (heart, snowflake, bolt, cross). */
   icons: { coeur: string; froid: string; electricite: string; loin: string };
+  /**
+   * Pictures of the shop buildings (lot L6.2), as data: URLs so they can be painted into the still pictures. A building
+   * bought whose picture is not loaded yet keeps its empty plot until it is.
+   */
+  images?: Readonly<Record<string, TownImage>>;
 }
+
+export interface TownImage { href: string; w: number; h: number }
+
+/**
+ * Plot of each shop building in the town (lot L6.2): cell (i, j) and width of the picture as a share of the cell.
+ * Empty plot with a sign before it is bought, then the same picture as in the shop. All plots stand in the rows built in
+ * the band of the play screen (i + j from 5 to 8) and in the whole town. Isolation is the woolly hat on the chimney of
+ * the Lilas house; fountain, cycle track and street lights keep their drawing (D-19 E8).
+ */
+export const PLOTS: Readonly<Record<string, { i: number; j: number; size: number }>> = {
+  ferme: { i: 2, j: 4, size: 0.95 },
+  'reseau-chaleur': { i: 1, j: 5, size: 0.9 },
+  'maison-lilas': { i: 3, j: 5, size: 0.8 },
+  'maison-ve': { i: 4, j: 4, size: 0.9 },
+  epicerie: { i: 3, j: 2, size: 0.85 },
+  ecole: { i: 3, j: 4, size: 1 },
+  'usine-cereales': { i: 5, j: 3, size: 1 },
+  'maison-medicale': { i: 4, j: 2, size: 0.72 },
+  batterie: { i: 2, j: 6, size: 0.8 },
+  parc: { i: 2, j: 3, size: 1 },
+  piscine: { i: 5, j: 2, size: 1 },
+  solaire: { i: 6, j: 2, size: 0.95 },
+  hopital: { i: 4, j: 3, size: 1.05 },
+  cuve: { i: 1, j: 4, size: 0.6 },
+};
+/**
+ * The woolly hat on its chimney (isolation) covers the chimney of the Lilas house picture: centre, bottom and width as
+ * shares of that picture.
+ */
+export const HAT = { on: 'maison-lilas', x: 0.69, bottom: 0.3, size: 0.3 } as const;
+const plotAt = (i: number, j: number): string | undefined => Object.keys(PLOTS).find((id) => PLOTS[id]!.i === i && PLOTS[id]!.j === j);
 
 const S = 12;
 const OX = 640;
@@ -70,12 +106,12 @@ export const lightKey = (h: number): string => `${nightStep(h)}|${warmStep(h)}`;
  */
 export interface TownLayer { kind: 'still' | 'moving'; svg: string }
 
-type Kind = 'reactor' | 'cooling' | 'yard' | 'trees' | 'park' | 'houses' | 'flats' | 'brick' | 'tower' | 'shop' | 'school' | 'pink';
+type Kind = 'reactor' | 'cooling' | 'yard' | 'trees' | 'park' | 'houses' | 'flats' | 'brick' | 'tower' | 'shop' | 'pink';
 /** What stands on each cell of the band (rows 5–8) and around it; other cells get a mix of houses, flats and trees. */
 const CELLS: Record<string, Kind> = {
   '0,5': 'reactor', '0,6': 'cooling', '0,7': 'yard', '0,4': 'yard', '1,7': 'trees', '0,8': 'trees',
   '1,6': 'park', '1,5': 'houses', '1,4': 'flats', '2,5': 'brick', '2,4': 'shop', '2,6': 'houses', '2,3': 'tower',
-  '3,4': 'school', '3,3': 'pink', '3,5': 'shop', '3,2': 'houses', '4,3': 'tower', '4,2': 'houses', '4,4': 'flats', '4,1': 'brick',
+  '3,4': 'houses', '3,3': 'pink', '3,5': 'shop', '3,2': 'houses', '4,3': 'tower', '4,2': 'houses', '4,4': 'flats', '4,1': 'brick',
   '5,2': 'houses', '5,1': 'shop', '5,3': 'pink', '5,0': 'tower', '6,1': 'flats', '6,0': 'houses', '6,2': 'brick', '7,0': 'trees', '7,1': 'houses',
   '2,7': 'trees', '3,6': 'houses', '4,5': 'brick', '5,4': 'houses', '6,3': 'shop', '7,2': 'flats', '1,3': 'houses', '2,2': 'flats', '3,1': 'tower', '4,0': 'pink',
 };
@@ -288,30 +324,13 @@ function build(o: TownOptions, view: 'band' | 'full'): { defs: string; layers: T
         g += box(x + 1, y + 1, h, 1.4, 1.2, 0.8, '#8796AE');
         return g;
       }
-      case 'school': {
-        let g = flatPoly([P(X, Y), P(X + 8, Y), P(X + 8, Y + 8), P(X, Y + 8)], shade(grass, 0.95));
-        if (!o.upgrades.includes('ecole')) {
-          g += tree(X + 2, Y + 6, 0.8) + tree(X + 6, Y + 2, 0.7, true);
-          return g;
-        }
-        const x = X + 0.8; const y = Y + 1.4; const w = 6.4; const d = 5; const h = 4.6;
-        g += box(x, y, 0, w, d, h, '#FFD166') + windows(x, y, w, d, h, 2, dark, seed) + door(x, y, w, d);
-        g += hipRoof(x - 0.3, y - 0.3, h, w + 0.6, d + 0.6, 2.4, '#E0443E');
-        const [fx, fy] = P(x + w / 2, y + d / 2, h + 2.4);
-        g += `<line x1="${f1(fx)}" y1="${f1(fy)}" x2="${f1(fx)}" y2="${f1(fy - 20)}" stroke="${tone(INK)}" stroke-width="1.5"/><polygon points="${f1(fx)},${f1(fy - 20)} ${f1(fx + 10)},${f1(fy - 16)} ${f1(fx)},${f1(fy - 12)}" fill="${tone('#2E9E5B')}"/>`;
-        return `<g${pop('ecole')}>${g}</g>`;
-      }
       case 'park': {
         let g = flatPoly([P(X, Y), P(X + 8, Y), P(X + 8, Y + 8), P(X, Y + 8)], shade(grass, 1.08));
         g += flatPoly([P(X + 3, Y), P(X + 5, Y), P(X + 5, Y + 8), P(X + 3, Y + 8)], winter ? '#E4E7EF' : '#F3E6C4');
         if (o.upgrades.includes('fontaine')) {
           g += `<g${pop('fontaine')}>${box(X + 3.1, Y + 3.1, 0, 1.8, 1.8, 0.5, '#D5DCEB')}${flatPoly([P(X + 3.4, Y + 3.4, 0.52), P(X + 4.6, Y + 3.4, 0.52), P(X + 4.6, Y + 4.6, 0.52), P(X + 3.4, Y + 4.6, 0.52)], winter ? '#DDEBFA' : '#5EC4F0')}${box(X + 3.8, Y + 3.8, 0.5, 0.4, 0.4, 1.3, '#D5DCEB')}</g>`;
         }
-        const trees: [number, number, boolean][] = o.upgrades.includes('parc')
-          ? [[1, 1, false], [1.4, 4.5, true], [1, 7, false], [6.8, 1.4, true], [6.6, 5, false], [7, 7.2, false]]
-          : [[1.2, 1.5, false], [6.8, 6.6, true]];
-        for (const [tx, ty, c] of trees) g += tree(X + tx, Y + ty, 0.9, c);
-        if (o.upgrades.includes('parc')) for (const by of [2.2, 5.6]) g += box(X + 5.4, Y + by, 0.4, 0.5, 1.6, 0.25, '#C27C4A') + box(X + 5.9, Y + by, 0.4, 0.15, 1.6, 0.7, '#C27C4A');
+        for (const [tx, ty, c] of [[1.2, 1.5, false], [6.8, 6.6, true]] as const) g += tree(X + tx, Y + ty, 0.9, c);
         return g;
       }
       case 'trees': {
@@ -352,6 +371,64 @@ function build(o: TownOptions, view: 'band' | 'full'): { defs: string; layers: T
     }
   }
 
+  // ---------- shop buildings on their plots (lot L6.2) ----------
+  // The pictures take the light of the hour like the drawn town: same colour change as tone(), as a colour matrix.
+  const kw = 0.2 * warm;
+  const kn = 0.5 * night;
+  const sunsetRgb = hex(SUNSET);
+  const nightRgb = hex(NIGHT);
+  const lightMatrix = night > 0 || warm > 0
+    ? (() => {
+      const s = (1 - kn) * (1 - kw);
+      const off = [0, 1, 2].map((c) => (((1 - kn) * kw * sunsetRgb[c]!) + kn * nightRgb[c]!) / 255);
+      const k = s.toFixed(3);
+      return `${k} 0 0 0 ${off[0]!.toFixed(3)} 0 ${k} 0 0 ${off[1]!.toFixed(3)} 0 0 ${k} 0 ${off[2]!.toFixed(3)} 0 0 0 1 0`;
+    })()
+    : null;
+  const lightFilter = (id: string): string => (lightMatrix ? `<filter id="${id}" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="${lightMatrix}"/></filter>` : '');
+  /** Where the picture of a building stands: its base centred on the cell, width a share of the cell. */
+  function pictureBox(id: string): { x: number; y: number; w: number; h: number } | null {
+    const pl = PLOTS[id];
+    const im = o.images?.[id];
+    if (!pl || !im) return null;
+    const [cx, cy] = P(11 * pl.i + 4, 11 * pl.j + 4);
+    // A little bigger in the whole town, drawn small in the shop, so a new building stands out among the flats.
+    const w = 16 * 0.866 * S * pl.size * (view === 'full' ? 1.2 : 1);
+    const h = (w * im.h) / im.w;
+    return { x: cx - w / 2, y: cy + w * 0.289 - h, w, h };
+  }
+  /** The woolly hat on the Lilas chimney (isolation). */
+  function hatBox(): { x: number; y: number; w: number; h: number } | null {
+    const b = pictureBox(HAT.on);
+    const im = o.images?.isolation;
+    if (!b || !im) return null;
+    const w = b.w * HAT.size;
+    const h = (w * im.h) / im.w;
+    return { x: b.x + b.w * HAT.x - w / 2, y: b.y + b.h * HAT.bottom - h, w, h };
+  }
+  const image = (href: string, b: { x: number; y: number; w: number; h: number }, filter: string): string =>
+    `<image href="${href}" x="${f1(b.x)}" y="${f1(b.y)}" width="${f1(b.w)}" height="${f1(b.h)}"${lightMatrix ? ` filter="url(#${filter})"` : ''}/>`;
+  function picture(id: string, filter: string, withHat: boolean): string {
+    const b = pictureBox(id);
+    if (!b) return '';
+    let g = shadowOpacity > 0.01 ? `<ellipse cx="${f1(b.x + b.w * 0.56)}" cy="${f1(b.y + b.h - b.w * 0.27)}" rx="${f1(b.w * 0.44)}" ry="${f1(b.w * 0.22)}" fill="#0B1440" opacity="${f1(shadowOpacity * 0.7)}"/>` : '';
+    g += image(o.images![id]!.href, b, filter);
+    const hat = withHat && id === HAT.on && o.upgrades.includes('isolation') ? hatBox() : null;
+    if (hat) g += image(o.images!.isolation!.href, hat, filter);
+    return g;
+  }
+  /** Empty plot waiting for its building: bare ground, dashed edge and a sign with a little house on it. */
+  function lot(X: number, Y: number): string {
+    let g = flatPoly([P(X + 0.3, Y + 0.3), P(X + 7.7, Y + 0.3), P(X + 7.7, Y + 7.7), P(X + 0.3, Y + 7.7)], winter ? '#E6ECF5' : '#DCC38E');
+    g += `<polygon points="${pts([P(X + 1, Y + 1), P(X + 7, Y + 1), P(X + 7, Y + 7), P(X + 1, Y + 7)])}" fill="none" stroke="${tone('#FFFFFF')}" stroke-width="1.8" stroke-dasharray="6 5" stroke-linecap="round"/>`;
+    for (const [dx, dy] of [[2.2, 5.4], [5, 2.4], [3.6, 3.2]] as const) { const [px, py] = P(X + dx, Y + dy); g += `<ellipse cx="${f1(px)}" cy="${f1(py)}" rx="3" ry="1.6" fill="${tone(winter ? '#C9D3E2' : '#B89C66')}"/>`; }
+    const [sx, sy] = P(X + 5.6, Y + 6.4);
+    g += `<rect x="${f1(sx - 1.6)}" y="${f1(sy - 30)}" width="3.2" height="30" fill="${tone('#8A5A3B')}"${line}/>`;
+    g += `<rect x="${f1(sx - 15)}" y="${f1(sy - 44)}" width="30" height="20" rx="3" fill="${tone('#FFD166')}"${line}/>`;
+    g += `<polygon points="${f1(sx - 7)},${f1(sy - 28)} ${f1(sx - 7)},${f1(sy - 35)} ${f1(sx)},${f1(sy - 40.5)} ${f1(sx + 7)},${f1(sy - 35)} ${f1(sx + 7)},${f1(sy - 28)}" fill="${tone('#1D47B8')}"/>`;
+    return g;
+  }
+
   // ---------- ground ----------
   const ground: string[] = [];  // still
   const range = view === 'band' ? { i0: -2, i1: 9, j0: 2, j1: 11 } : { i0: -2, i1: 7, j0: 0, j1: 8 };
@@ -380,7 +457,19 @@ function build(o: TownOptions, view: 'band' | 'full'): { defs: string; layers: T
       const X = 11 * i; const Y = 11 * j;
       out.push(flatPoly([P(X - 0.6, Y - 0.6), P(X + 8.6, Y - 0.6), P(X + 8.6, Y + 8.6), P(X - 0.6, Y + 8.6)], winter ? '#F7FAFE' : '#E4E7EF'));
       // In the band, only the rows around the main street are built (the others stay green), so the view stays clear.
-      if (view === 'full' || (i + j >= 4 && i + j <= 9)) out.push(building(kindOf(i, j), X, Y, i, j));
+      const plot = plotAt(i, j);
+      if (plot) {
+        // Shop building: empty plot until bought (and its picture loaded); the one just bought arrives in the moving
+        // layer of its row, so its "appear" animation plays (still layers are pictures and cannot move).
+        const shown = o.upgrades.includes(plot) && pictureBox(plot) !== null;
+        if (!shown) out.push(lot(X, Y));
+        else if (o.fresh === plot) moving.push(`<g class="pop">${lightFilter('iso-light-fresh')}${picture(plot, 'iso-light-fresh', true)}</g>`);
+        else if (o.fresh === 'isolation' && plot === HAT.on) {
+          out.push(picture(plot, 'iso-light', false));
+          const hat = hatBox();
+          if (hat) moving.push(`<g class="pop">${lightFilter('iso-light-fresh')}${image(o.images!.isolation!.href, hat, 'iso-light-fresh')}</g>`);
+        } else out.push(picture(plot, 'iso-light', true));
+      } else if (view === 'full' || (i + j >= 4 && i + j <= 9)) out.push(building(kindOf(i, j), X, Y, i, j));
       else out.push(building('trees', X, Y, i, j));
       if (o.upgrades.includes('eclairage') && kindOf(i, j) !== 'cooling') {
         const [lx, ly] = P(X + 8.3, Y + 8.3, 0);
@@ -415,13 +504,17 @@ function build(o: TownOptions, view: 'band' | 'full'): { defs: string; layers: T
   // Upgrade just bought: a bouncing yellow arrow and a glowing ring show where it is in the town (R1-08).
   if (o.fresh) {
     const SPOT: Record<string, [number, number, number]> = {
-      fontaine: [11 + 4, 66 + 4, 1.5], parc: [11 + 4, 66 + 4, 2], ecole: [33 + 4, 44 + 3.5, 5],
+      fontaine: [11 + 4, 66 + 4, 1.5],
       piste: [11 * 3 + 4, 11 * 5 + 10.5, 0], eclairage: [11 * 2 + 8.3, 11 * 5 + 8.3, 2.3],
     };
+    // Shop buildings: ring around the foot of the picture, arrow just above it (the hat: above the chimney).
+    const b = o.fresh === 'isolation' ? hatBox() : pictureBox(o.fresh);
     const spot = SPOT[o.fresh];
-    if (spot) {
-      const [sx, sy] = P(spot[0], spot[1], 0);
-      const [, ty] = P(spot[0], spot[1], spot[2]);
+    const at: [number, number, number] | null = b
+      ? [b.x + b.w / 2, b.y + b.h - b.w * (o.fresh === 'isolation' ? 0.5 : 0.29), b.y + 18]
+      : spot ? [P(spot[0], spot[1], 0)[0], P(spot[0], spot[1], 0)[1], P(spot[0], spot[1], spot[2])[1]] : null;
+    if (at) {
+      const [sx, sy, ty] = at;
       // Bigger in the whole-town view (shop), where the town is drawn small.
       const k = view === 'full' ? 2.6 : 1;
       const a = (v: number): string => f1(v * k);
@@ -431,7 +524,7 @@ function build(o: TownOptions, view: 'band' | 'full'): { defs: string; layers: T
   }
 
   const snow = winter ? Array.from({ length: view === 'band' ? 32 : 50 }, (_, k) => `<circle class="flake" cx="${f1(-400 + ((k * 197) % 2000))}" cy="${f1((view === 'band' ? rowY(8) - 330 : -230) + ((k * 53) % 240))}" r="${f1(1.6 + (k % 3))}" fill="#FFFFFF" opacity="0.9" style="--d:${-((k * 13) % 11)}s;animation-duration:${8 + (k % 5)}s"/>`).join('') : '';
-  const defs = `<defs><linearGradient id="iso-concrete" x1="0" x2="1"><stop offset="0" stop-color="${tone('#FFFFFF')}"/><stop offset="0.6" stop-color="${tone('#E4E8F0')}"/><stop offset="1" stop-color="${tone('#A9B4C8')}"/></linearGradient><linearGradient id="iso-reactor" x1="0" x2="1"><stop offset="0" stop-color="${tone('#FFFFFF')}"/><stop offset="0.55" stop-color="${tone('#EEF2F8')}"/><stop offset="1" stop-color="${tone('#AEB9CD')}"/></linearGradient></defs>`;
+  const defs = `<defs>${lightFilter('iso-light')}<linearGradient id="iso-concrete" x1="0" x2="1"><stop offset="0" stop-color="${tone('#FFFFFF')}"/><stop offset="0.6" stop-color="${tone('#E4E8F0')}"/><stop offset="1" stop-color="${tone('#A9B4C8')}"/></linearGradient><linearGradient id="iso-reactor" x1="0" x2="1"><stop offset="0" stop-color="${tone('#FFFFFF')}"/><stop offset="0.55" stop-color="${tone('#EEF2F8')}"/><stop offset="1" stop-color="${tone('#AEB9CD')}"/></linearGradient></defs>`;
   top.push(snow);
   add('moving', top.join(''));
   return { defs, layers };
