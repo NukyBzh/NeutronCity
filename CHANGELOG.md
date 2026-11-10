@@ -2,6 +2,13 @@
 
 *Ce qui change pour le joueur, en mots simples. Une section par version (voir `docs/CONFIGURATION.md` §4).*
 
+## v0.9.1 — 2026-11-10 (lot L7.2 : l'équilibrage, à valider)
+- Les événements arrivent plus ou moins souvent, comme prévu dans le fichier de Yann : la tempête, le match et l'écureuil souvent, la fête de la ville rarement. Une journée en a 2 ou 3.
+- Une panne coûte cher : tant que tu n'as pas envoyé le camion ou fait sortir l'écureuil, la ville gagne 3 fois moins. Si tu aides tout de suite, tu ne perds rien.
+- 3 étoiles dès 75 % du maximum, 2 étoiles dès 45 %.
+- Les bâtiments coûtent 3 fois plus cher et rapportent 3 fois moins chaque jour : il faut une vingtaine de journées pour construire toute la ville.
+- Le réseau de chaleur est maintenant une station de chaleur en briques, collée à la centrale, avec ses gros tuyaux orange qui partent vers la ville.
+
 ## v0.9.0 — 2026-11-09 (lot L7.1 : les événements, à valider)
 - Chaque journée a 2 ou 3 événements, un à la fois : match à la télé, canicule, vague de froid, redoux, tempête, écureuil dans le transformateur, fuite de chaleur, échangeur entartré, nouveaux habitants, visite de classe, fête de la ville.
 - Cassandra annonce certains événements une heure avant ; d'autres arrivent d'un coup. La première fois, elle explique ce qui se passe.

@@ -25,7 +25,7 @@ const START_FRESH = PARAMS.get('nouveau');
 const FIXED_SEED = PARAMS.has('graine') ? Number(PARAMS.get('graine')) >>> 0 : null;
 /** Reviewing a screen through the address never reads nor changes the player's saved progress. */
 const REVIEW = PARAMS.has('ecran') || PARAMS.has('achats');
-const SAVED = REVIEW ? { ...EMPTY, wallet: 2500, owned: START_OWNED, tuto: true } : loadProgress();
+const SAVED = REVIEW ? { ...EMPTY, wallet: 7500, owned: START_OWNED, tuto: true } : loadProgress();
 /** Review: `&tuto=oui` opens the game with the guided tutorial. */
 const FORCE_TUTO = PARAMS.get('tuto') === 'oui';
 

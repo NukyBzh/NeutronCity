@@ -31,7 +31,7 @@ export interface SurpriseSpec {
   /** The child's action that ends it, and game hours from that action to the start of the fall (the repair). */
   fix?: FixAction;
   repair?: number;
-  /** Euros of the day multiplied by this while it lasts (storm 0.6, town party 2). */
+  /** Euros of the day multiplied by this while it lasts (town party 2), or until the child acts (storm, squirrel 0.3). */
   gain?: number;
   /** Heatwave: the core may not go above this % at full strength (the river is too warm). */
   cap?: number;
@@ -41,21 +41,35 @@ export interface SurpriseSpec {
   reward?: number;
   /** Class visit: game minutes in a row with every output « bien » to earn the reward. */
   visit?: number;
+  /** How often it is drawn, relative to the others (owner's file, « poids »; lot L7.2, D-22). */
+  weight: number;
 }
 
 export const SURPRISE_SPEC: Record<SurpriseKind, SurpriseSpec> = {
   // TV match: everybody switches the TV on in the evening.
-  peak: { elec: 7, heat: 0, rise: 2, hold: 1, fall: 2, needsHeat: false, from: 18, to: 19, announce: true, negative: true },
-  coldWave: { elec: 2, heat: 7, rise: 2, hold: 2, fall: 2, needsHeat: true, from: 9, to: 17, announce: true, negative: true },
-  mildSpell: { elec: 0, heat: -6, rise: 2, hold: 2, fall: 2, needsHeat: true, from: 9, to: 17, announce: true, negative: false },
-  heatwave: { elec: 0, heat: 0, rise: 3, hold: 3, fall: 3, needsHeat: false, from: 10, to: 12, announce: true, negative: true, cap: 80 },
-  storm: { elec: -6, heat: 0, rise: 2, hold: 3, fall: 2, needsHeat: false, from: 9, to: 18, announce: true, negative: true, fix: 'tap', repair: 1, gain: 0.6, cut: true },
-  squirrel: { elec: -5, heat: 0, rise: 1.5, hold: 3, fall: 1.5, needsHeat: false, from: 8, to: 19, announce: false, negative: true, fix: 'tap', repair: 0.5, gain: 0.8, cut: true },
-  heatLeak: { elec: 0, heat: 6, rise: 2, hold: 3, fall: 2, needsHeat: true, from: 8, to: 18, announce: false, negative: true, fix: 'hold', repair: 1 },
-  scale: { elec: 0, heat: 5, rise: 1.5, hold: 3, fall: 1.5, needsHeat: true, from: 8, to: 18, announce: false, negative: true, fix: 'taps', repair: 0.5 },
-  newcomers: { elec: 0, heat: 0, rise: 0, hold: 2, fall: 0, needsHeat: false, from: 8, to: 16, announce: false, negative: false, fix: 'tap', repair: 0, reward: 150 },
-  classVisit: { elec: 0, heat: 0, rise: 0, hold: 3, fall: 0, needsHeat: false, from: 9, to: 13, announce: true, negative: false, reward: 100, visit: 60 },
-  party: { elec: 5, heat: 0, rise: 1.5, hold: 1.5, fall: 1.5, needsHeat: false, from: 19, to: 19.5, announce: true, negative: false, gain: 2 },
+  peak: { elec: 7, heat: 0, rise: 2, hold: 1, fall: 2, needsHeat: false, from: 18, to: 19, announce: true, negative: true, weight: 3 },
+  coldWave: { elec: 2, heat: 7, rise: 2, hold: 2, fall: 2, needsHeat: true, from: 9, to: 17, announce: true, negative: true, weight: 2 },
+  // Not in the owner's file: rare.
+  mildSpell: { elec: 0, heat: -6, rise: 2, hold: 2, fall: 2, needsHeat: true, from: 9, to: 17, announce: true, negative: false, weight: 1 },
+  heatwave: { elec: 0, heat: 0, rise: 3, hold: 3, fall: 3, needsHeat: false, from: 10, to: 12, announce: true, negative: true, cap: 80, weight: 2 },
+  // Until the child sends help, the town pays 3 times less (lot L7.2): leaving a quarter dark costs a star.
+  storm: {
+    elec: -6, heat: 0, rise: 2, hold: 4, fall: 2, needsHeat: false, from: 9, to: 18, announce: true, negative: true, fix: 'tap', repair: 1, gain: 0.3, cut: true,
+    weight: 3,
+  },
+  squirrel: {
+    elec: -5, heat: 0, rise: 1.5, hold: 4, fall: 1.5, needsHeat: false, from: 8, to: 19, announce: false, negative: true, fix: 'tap', repair: 0.5, gain: 0.3,
+    cut: true, weight: 3,
+  },
+  heatLeak: { elec: 0, heat: 6, rise: 2, hold: 3, fall: 2, needsHeat: true, from: 8, to: 18, announce: false, negative: true, fix: 'hold', repair: 1, weight: 2 },
+  scale: { elec: 0, heat: 5, rise: 1.5, hold: 3, fall: 1.5, needsHeat: true, from: 8, to: 18, announce: false, negative: true, fix: 'taps', repair: 0.5, weight: 2 },
+  newcomers: {
+    elec: 0, heat: 0, rise: 0, hold: 2, fall: 0, needsHeat: false, from: 8, to: 16, announce: false, negative: false, fix: 'tap', repair: 0, reward: 150, weight: 2,
+  },
+  classVisit: {
+    elec: 0, heat: 0, rise: 0, hold: 3, fall: 0, needsHeat: false, from: 9, to: 13, announce: true, negative: false, reward: 100, visit: 60, weight: 2,
+  },
+  party: { elec: 5, heat: 0, rise: 1.5, hold: 1.5, fall: 1.5, needsHeat: false, from: 19, to: 19.5, announce: true, negative: false, gain: 2, weight: 1 },
 };
 /** How long before it starts Cassandra announces an event (game hours). */
 export const ANNOUNCE_HOURS = 1;
@@ -102,17 +116,16 @@ const halfHourBetween = (r: () => number, from: number, to: number): number => f
 /**
  * Up to 3 events of different kinds, one at a time, the next starting at least an hour after the previous one ends,
  * each in its own hours and over before midnight. Built directly, so every seed gives a valid day: kinds are tried in a
- * seeded order and kept while they still fit together; then each one gets a random start that leaves room for the next.
+ * seeded order weighted by their « poids » and kept while they still fit together; then each one gets a random start that leaves room for the next.
  */
 export function drawSurprises(day: DayDef, seed: number, mods: EventMods = NO_MODS): Surprise[] {
   const r = rng(seed);
   const heating = isHeatingDay(day);
   const pool = day.surprises.filter((k) => heating || !SURPRISE_SPEC[k].needsHeat);
-  const order = [...pool];
-  for (let i = order.length - 1; i > 0; i--) {
-    const j = Math.floor(r() * (i + 1));
-    [order[i], order[j]] = [order[j]!, order[i]!];
-  }
+  // Seeded order weighted by the owner's « poids » (lot L7.2): each kind gets the key u^(1/weight), highest first, so a
+  // kind of weight 3 comes early three times as often as one of weight 1.
+  const keyed = pool.map((k) => ({ k, key: Math.pow(r(), 1 / SURPRISE_SPEC[k].weight) }));
+  const order = keyed.sort((a, b) => b.key - a.key).map((x) => x.k);
   const byHour = (ks: SurpriseKind[]): SurpriseKind[] => [...ks].sort((a, b) => SURPRISE_SPEC[a].from - SURPRISE_SPEC[b].from);
   const latestOf = (k: SurpriseKind): number => Math.min(SURPRISE_SPEC[k].to, END_HOUR - duration(k));
   /** Latest start of each kind so that the following ones still fit (null: they do not fit together). */
@@ -127,9 +140,11 @@ export function drawSurprises(day: DayDef, seed: number, mods: EventMods = NO_MO
     }
     return out;
   };
+  // 2 or 3 events a day (lot L7.2): with always 3, the short ones that fit anywhere came every day.
+  const wanted = r() < 0.5 ? MAX_SURPRISES - 1 : MAX_SURPRISES;
   let chosen: SurpriseKind[] = [];
   for (const k of order) {
-    if (chosen.length >= MAX_SURPRISES) break;
+    if (chosen.length >= wanted) break;
     const tryKinds = byHour([...chosen, k]);
     if (latest(tryKinds)) chosen = tryKinds;
   }
@@ -196,12 +211,13 @@ export function coreCap(surprises: readonly Surprise[], hour: number): number {
   return cap;
 }
 
-/** Euros of a minute are multiplied by this (storm, squirrel, town party). */
+/** Euros of a minute are multiplied by this: town party, or a dark quarter nobody has helped yet (storm, squirrel). */
 export function gainAt(surprises: readonly Surprise[], hour: number): number {
   let g = 1;
   for (const s of surprises) {
     const k = SURPRISE_SPEC[s.kind].gain;
-    if (k !== undefined && isActive(s, hour)) g *= k;
+    const helped = SURPRISE_SPEC[s.kind].fix !== undefined && s.fixedAt !== undefined && hour >= s.fixedAt;
+    if (k !== undefined && isActive(s, hour) && !helped) g *= k;
   }
   return g;
 }

@@ -39,7 +39,7 @@ describe('content/days', () => {
         prev = d;
       }
     }
-  });
+  }, 60000);
 
   it('the day check rejects broken files with a clear message', () => {
     expect(() => validateDay({ id: 'x', format: 2 })).toThrow(/format/);

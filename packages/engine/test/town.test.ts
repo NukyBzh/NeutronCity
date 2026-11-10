@@ -32,12 +32,12 @@ describe('content/shop (lot L6, D-19)', () => {
     expect(missing).toEqual([]);
   });
 
-  it('prices from 800 to 5 000 €; a building pays itself back in 1 to 2.5 days of bonus (E3, E6)', () => {
+  it('prices from 2 400 to 12 000 €; a building pays itself back in 12 to 20 days of bonus (E3, E6, tuned in L7.2, D-22)', () => {
     for (const i of SHOP) {
-      expect(i.price).toBeGreaterThanOrEqual(800);
-      expect(i.price).toBeLessThanOrEqual(5000);
-      expect(i.price / i.bonus).toBeGreaterThanOrEqual(1);
-      expect(i.price / i.bonus).toBeLessThanOrEqual(2.5);
+      expect(i.price).toBeGreaterThanOrEqual(2400);
+      expect(i.price).toBeLessThanOrEqual(12000);
+      expect(i.price / i.bonus).toBeGreaterThanOrEqual(12);
+      expect(i.price / i.bonus).toBeLessThanOrEqual(20);
     }
   });
 
@@ -75,7 +75,7 @@ describe('order of the shop (E4, E5)', () => {
 
   it('pays the bonus of the buildings bought', () => {
     expect(dayBonus(SHOP, [])).toBe(0);
-    expect(dayBonus(SHOP, ['ferme', 'reseau-chaleur'])).toBe(1600);
+    expect(dayBonus(SHOP, ['ferme', 'reseau-chaleur'])).toBe(550);
   });
 });
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   DAY_MINUTES, NO_MODS, START_HOUR, SURPRISE_SPEC, canFix, coreCap, dayResult, demandAt, drawSurprises, eventMods, fixSurprise, hourOf,
-  isActive, maxEuros, newGame, setSetpoints, simulate, starBonus, stepMinute, surpriseOver, type DayDef, type GameState, type Surprise,
+  gainAt, isActive, maxEuros, newGame, setSetpoints, simulate, starBonus, stepMinute, surpriseOver, type DayDef, type GameState, type Surprise,
   type SurpriseKind,
 } from '../src/index';
 import { DAYS, SHOP } from './content';
@@ -39,7 +39,7 @@ describe('events the child acts on (lot L7.1, D-21)', () => {
     expect(canFix(g.surprises[0]!, hourOf(g))).toBe(false);
     expect(surpriseOver(g.surprises[0]!)).toBe(11 + 1 + 2);
     // Without the truck it lasts its longest.
-    expect(surpriseOver({ kind: 'storm', start: 10, end: 17 })).toBe(10 + 2 + 3 + 2);
+    expect(surpriseOver({ kind: 'storm', start: 10, end: 18 })).toBe(10 + 2 + 4 + 2);
   });
 
   it('nothing to act on before an event starts or once it is over', () => {
@@ -49,12 +49,13 @@ describe('events the child acts on (lot L7.1, D-21)', () => {
     expect(fixSurprise(g, 5)).toBe(g);
   });
 
-  it('a dark quarter pays less, and leaving it dark costs stars: the maximum counts a repair at once', () => {
+  it('until help is sent the town pays 3 times less; the maximum counts help sent at once (lot L7.2, D-22)', () => {
     const d = day('ete');
-    const storm: Surprise[] = [{ kind: 'squirrel', start: 10, end: 16.5, quarter: 2 }];
-    const atOnce: Surprise[] = [{ ...storm[0]!, fixedAt: 10 }];
-    expect(maxEuros(d, storm)).toBe(maxEuros(d, atOnce));
-    expect(maxEuros(d, storm)).toBeLessThan(DAY_MINUTES * 2);
+    const squirrel: Surprise[] = [{ kind: 'squirrel', start: 10, end: 17, quarter: 2 }];
+    expect(gainAt(squirrel, 12)).toBeCloseTo(0.3);
+    expect(gainAt([{ ...squirrel[0]!, fixedAt: 11 }], 12)).toBe(1);
+    expect(gainAt([{ ...squirrel[0]!, fixedAt: 11 }], 10.5)).toBeCloseTo(0.3);
+    expect(maxEuros(d, squirrel)).toBe(DAY_MINUTES * 2);
   });
 
   it('new inhabitants: a tap welcomes them and gives 150 € once; the reward never makes the stars', () => {

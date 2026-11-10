@@ -196,10 +196,11 @@ export function maxEuros(day: DayDef, surprises: readonly Surprise[], effects: r
 export const BONUS_SHARE: Record<1 | 2 | 3, number> = { 1: 0, 2: 0.5, 3: 1 };
 export const starBonus = (bonus: number, stars: 1 | 2 | 3): number => Math.round(bonus * BONUS_SHARE[stars]);
 
-/** D-02 stars: 1 for a finished day, 2 from half the maximum, 3 from 80 %. */
+/** D-02 stars, thresholds tuned in lot L7.2 (D-22): 1 for a finished day, 2 from 45 % of the maximum, 3 from 75 %. */
+export const STAR_THRESHOLDS = { two: 0.45, three: 0.75 } as const;
 export function starsOf(euros: number, max: number): 1 | 2 | 3 {
   const r = max > 0 ? euros / max : 0;
-  return r >= 0.8 ? 3 : r >= 0.5 ? 2 : 1;
+  return r >= STAR_THRESHOLDS.three ? 3 : r >= STAR_THRESHOLDS.two ? 2 : 1;
 }
 
 export type Advice = 'bravo' | 'soir' | 'chaleur' | 'surplus' | 'anticiper';
@@ -226,12 +227,13 @@ export function dayResult(day: DayDef, s: GameState): DayResult {
  */
 export function simulate(
   day: DayDef, seed: number, player: (s: GameState) => { elec: number; heat: number } | null, effects: readonly TownEffect[] = [],
-  mods: EventMods = NO_MODS, fixes = false,
+  mods: EventMods = NO_MODS, fixes: boolean | number = false,
 ): GameState {
   let s = newGame(day, seed, effects, mods);
+  // With `fixes`, the player acts on every event as soon as it can (true) or this many game hours after it starts.
+  const delay = fixes === true ? 0 : fixes === false ? null : fixes;
   while (!isOver(s)) {
-    // With `fixes`, the player acts on every event as soon as it can.
-    if (fixes) s.surprises.forEach((e, i) => { if (canFix(e, hourOf(s))) s = fixSurprise(s, i); });
+    if (delay !== null) s.surprises.forEach((e, i) => { if (canFix(e, hourOf(s)) && hourOf(s) >= e.start + delay) s = fixSurprise(s, i); });
     const move = player(s);
     if (move) s = setSetpoints(s, move.elec, move.heat, move.elec !== s.plant.setElec ? 'elec' : 'heat');
     s = stepMinute(day, s);

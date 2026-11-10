@@ -9,3 +9,4 @@ export * from './surprises';
 export * from './game';
 export * from './town';
 export * from './effects';
+export * from './balance';

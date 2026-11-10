@@ -1,6 +1,6 @@
 {
   "name": "@neutron/engine",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "private": true,
   "description": "Neutron City game engine: plant, demand, money, happiness. Pure functions, no DOM, no clock, no Math.random.",
   "type": "module",
