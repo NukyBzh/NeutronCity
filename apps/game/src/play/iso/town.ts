@@ -80,13 +80,15 @@ export const FULL_VIEWBOX = '-360 -170 1960 1300';
 
 /**
  * Plot of each shop building (lot L6.2): tile (c, r) and width of the picture as a share of a tile. A grass tile until
- * it is bought, then the same picture as in the shop. All plots stand in the lots seen in the band of the play screen.
+ * it is bought, then the same picture as in the shop. All plots stand in the lots seen in the band of the play screen,
+ * except the heat station, on the plant's concrete.
  * Isolation is the woolly hat on the chimney of the Lilas house; the cycle track turns the roads into cycle-track
  * tiles; street lights are the Gemini lamp-post at the crossroads.
  */
 export const PLOTS: Readonly<Record<string, { c: number; r: number; size: number }>> = {
   ferme: { c: 3, r: 3, size: 0.95 },
-  'reseau-chaleur': { c: 3, r: 4, size: 0.9 },
+  // The heat station stands against the plant, by the fuel store, its pipes towards the town (Yann, 2026-11-10).
+  'reseau-chaleur': { c: 1, r: 9, size: 0.95 },
   'maison-lilas': { c: 4, r: 4, size: 0.8 },
   'maison-ve': { c: 4, r: 3, size: 0.9 },
   epicerie: { c: 6, r: 3, size: 0.85 },

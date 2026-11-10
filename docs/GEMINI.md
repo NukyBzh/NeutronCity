@@ -355,3 +355,15 @@ Dans exactement le même style que l'image jointe (illustration vectorielle isom
 Dans exactement le même style que l'image jointe (illustration vectorielle isométrique 2:1, aplats propres, ombrage doux, lumière haut-gauche, palette pastel), dessine un seul objet : un immeuble de 4 étages rose pâle, toit en ardoise gris foncé avec lucarnes, balcons blancs, sur un socle trottoir gris très clair. Sans sol ni socle sous l'objet. Métaux en gris neutre. Fond uni vert #00FF00. Format PNG carré 1024x1024, fichier .png obligatoire (pas de JPG), objet centré sur 80 % de la hauteur. Aucun texte, aucune lettre, aucun chiffre.
 ```
 
+## 6. Série 4 : bâtiment du réseau de chaleur (2026-11-10)
+*Demande de Yann : la tuile avec un tuyau pour dire qu'on a un réseau de chaleur est moche ; il faut plutôt un bâtiment
+collé à la centrale.* L'image remplacera `reseau-chaleur` dans la boutique et dans la ville ; Claude la place contre la
+centrale (côté ville) au lieu du terrain actuel.
+**Livrée par Yann le 2026-11-10** (fond magenta), détourée dans `assets/gemini/asset_64_reseau_chaleur.png`, intégrée :
+`assets/objets/reseau-chaleur.webp`, terrain sur le béton de la centrale à côté du stock de combustible (case 1,9).
+
+**asset_64_reseau_chaleur.png**
+
+```
+Dans exactement le même style que l'image jointe (illustration vectorielle isométrique 2:1, aplats propres, ombrage doux, lumière haut-gauche, palette pastel, vitres turquoise), dessine un seul objet : la station de chaleur d'une centrale, un bâtiment industriel bas et compact en briques rouge clair et bardage gris, toit plat avec une petite cheminée sans fumée, une grande porte de garage, et sur le côté droit trois gros tuyaux calorifugés orange qui sortent du mur, font un coude et partent vers le bas à droite de l'image, coupés net comme s'ils continuaient sous la ville. Un petit logo de flamme sans texte sur la façade. Posé sur un socle de béton gris clair en losange, sans herbe. Métaux en gris neutre. Fond uni magenta #FF00FF, sans décor ni ombre portée sur le fond. Format PNG carré 1024x1024, fichier .png obligatoire (pas de JPG), objet centré sur 75 % de la largeur. Aucun texte, aucune lettre, aucun chiffre.
+```

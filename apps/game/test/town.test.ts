@@ -119,7 +119,7 @@ describe('shop buildings in the town (lots L6.2, L6.3)', () => {
     expect(new Set(cells).size).toBe(cells.length);
     const [bx, by, bw, bh] = BAND_VIEWBOX.split(' ').map(Number) as [number, number, number, number];
     for (const [id, p] of Object.entries(PLOTS)) {
-      expect(isLot(p.c, p.r), id).toBe(true);
+      expect(isLot(p.c, p.r) || (id === 'reseau-chaleur' && p.c === 1), id).toBe(true);
       const [x, y] = tileCentre(p.c, p.r);
       expect(x, id).toBeGreaterThan(bx + 80);
       expect(x, id).toBeLessThan(bx + bw - 80);
