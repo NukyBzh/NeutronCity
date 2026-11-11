@@ -78,3 +78,17 @@ export function SoundButton() {
     </button>
   );
 }
+
+/**
+ * Portrait screen (lot L8.2, D-23): the game is played in landscape only. On a phone or a tablet held upright (web
+ * version; the Android app is locked in landscape), Cassandra asks to turn it. Hidden by the style sheet otherwise.
+ */
+export function RotateHint() {
+  return (
+    <div className="rotate" role="alert">
+      <span className="rotate-phone" aria-hidden />
+      <p>{t('rotate.text')}</p>
+      <img className="rotate-cassandra" src={poseUrl('explique')} alt={t('cassandra.alt')} />
+    </div>
+  );
+}

@@ -531,3 +531,22 @@ svg .pop, svg .float { transform-box: fill-box; transform-origin: center; }
   .shop-news { left: 0.4rem; right: 0.4rem; bottom: 0.4rem; font-size: 1rem; }
   .shop-news img { width: 2.4rem; height: 2.4rem; }
 }
+
+/* Lot L8.2 — held upright: the game asks to be turned (landscape only, D-23). */
+.rotate { display: none; }
+@media (orientation: portrait) {
+  /* The game stays where it is (nothing is lost) but is not drawn: it would be far too small upright. */
+  #root > .screen { display: none; }
+  .rotate {
+    position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 6vw; padding: 8vw; background: linear-gradient(var(--ciel), var(--creme)); text-align: center;
+  }
+  .rotate p { font-size: max(6vw, 20px); font-weight: 800; color: var(--bleu); line-height: 1.2; }
+  .rotate-cassandra { height: 45vh; max-height: 60vw; }
+  .rotate-phone {
+    width: 14vw; height: 24vw; border: 1.6vw solid var(--encre); border-radius: 3vw; background: var(--blanc);
+    animation: rotate-phone 2.4s ease-in-out infinite;
+  }
+  @keyframes rotate-phone { 0%, 25% { transform: rotate(0deg); } 60%, 100% { transform: rotate(-90deg); } }
+  @media (prefers-reduced-motion: reduce) { .rotate-phone { animation: none; transform: rotate(-90deg); } }
+}

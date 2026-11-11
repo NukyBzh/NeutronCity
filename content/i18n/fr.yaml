@@ -3,6 +3,7 @@
 app.title: Neutron City
 app.subtitle: Ta centrale, ta ville, ta journée.
 app.version: "Version {version}"
+rotate.text: Tourne ton téléphone pour jouer !
 cassandra.alt: Cassandra, ingénieure de la centrale.
 
 btn.play: Jouer

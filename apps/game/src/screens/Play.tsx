@@ -108,6 +108,14 @@ export function Play({
   const [run, setRun] = useState(() => (REVIEW_START > START_HOUR ? playUntil(day, seed, REVIEW_START, REVIEW_FOLLOW, effects, mods) : startOf(day, seed, effects, mods)));
   const [timeline] = useState(() => timelineOf(day, run.game, seen));
   const [paused, setPaused] = useState(false);
+  // Held upright (web version, lot L8.2): the game is hidden behind « Tourne ton téléphone », so time stops.
+  useEffect(() => {
+    const upright = window.matchMedia('(orientation: portrait)');
+    const check = () => { if (upright.matches) setPaused(true); };
+    check();
+    upright.addEventListener('change', check);
+    return () => upright.removeEventListener('change', check);
+  }, []);
   const [tuto, setTuto] = useState<number | null>(tutorial ? Math.min(REVIEW_STEP, TUTO.length - 1) : null);
   const tutoStart = useRef(run.game.plant.setElec);
   const [line, setLine] = useState<Line | null>(null);

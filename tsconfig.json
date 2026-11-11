@@ -15,5 +15,5 @@
     "noEmit": true,
     "types": ["node", "vite/client"]
   },
-  "include": ["packages/*/src", "packages/*/test", "apps/game/src", "apps/game/test", "apps/game/vite.config.ts", "vitest.config.ts"]
+  "include": ["packages/*/src", "packages/*/test", "apps/game/src", "apps/game/test", "apps/game/vite.config.ts", "apps/game/pwa.ts", "vitest.config.ts"]
 }

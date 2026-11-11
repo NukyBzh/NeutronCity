@@ -19,14 +19,15 @@ avant tout commit, installation, envoi sur GitHub ou action irréversible).*
 | v0.8.2 | L6.3 Ville en images | **Fait** le 2026-11-09, en attente de validation : toute la ville en images Gemini (D-20), damier de tuiles, plus aucun dessin SVG de bâtiment ou de véhicule ; série 3 de Yann intégrée (voitures, bus, habitants, fontaine, piste cyclable, 6 bâtiments) ; APK `livrables/Neutron-City-0.8.2.apk` |
 | v0.9.0 | L7.1 Événements et quartiers | **Fait** le 2026-11-09, en attente de validation : 10 événements, 3 au plus par journée, l'enfant agit en touchant la ville, 3 quartiers, hôpital / maison médicale / batterie contre les pannes, bonus selon les étoiles (D-21) ; APK `livrables/Neutron-City-0.9.0.apk` |
 | v0.9.1 | L7.2 Équilibrage | **Fait** le 2026-11-10, en attente de validation : tirage selon les poids, 2 ou 3 événements, panne non aidée ×0,3, étoiles à 75 % / 45 %, prix ×3 et bonus ÷3 (ville complète en 19 journées), joueurs simulés et rapport `docs/EQUILIBRAGE.md` (D-22) ; APK `livrables/Neutron-City-0.9.1.apk` |
-| v0.10.0 | L8 Tablette | **L8.1 Formats fait** le 2026-11-11, en attente de validation : tablettes Galaxy Tab A7, A6 (10.1" et 7" de 2016), A11+ et téléphones iPhone 11 / 14, Galaxy S20 / S23 Ultra, en paysage seulement ; scène propre aux téléphones (48 × 22,5 rem), zones sûres (D-23). Puis le reste de L8 |
+| v0.10.0 | L8 Tablette | **L8.1 Formats fait** le 2026-11-11, en attente de validation : tablettes Galaxy Tab A7, A6 (10.1" et 7" de 2016), A11+ et téléphones iPhone 11 / 14, Galaxy S20 / S23 Ultra, en paysage seulement ; scène propre aux téléphones (48 × 22,5 rem), zones sûres (D-23). **L8.2 version web installable (PWA)** faite le 2026-11-11, en attente de validation : manifeste, mise en cache hors ligne, icônes, écran « Tourne ton téléphone » avec pause (D-24, `docs/iphone.md`) ; **mise en ligne en HTTPS à décider** (publication). Puis le reste de L8 |
 | v1.0.0 | L9 Essai enfants | À faire |
 
 ## Documents
 - `docs/CADRAGE.md` — cadrage validé.
-- `docs/DECISIONS.md` — décisions D-01 à D-23.
+- `docs/DECISIONS.md` — décisions D-01 à D-24.
 - `docs/RETOURS.md` — retours de test (R1 : premier essai sur la tablette).
 - `docs/tablette.md` — installer l’APK sur la Galaxy Tab A9+.
+- `docs/iphone.md` — version web installable (iPhone, téléphones Android) : mise en ligne et installation.
 - `docs/CONFIGURATION.md` — règles Git, retour en arrière, journal des versions.
 - `CHANGELOG.md` — changements pour le joueur.
 - `docs/GEMINI.md` — images générées avec Gemini (2026-11-08) : prompts, 56 PNG détourés dans `assets/gemini/` (tuiles 23 à 27, objets de la ville 25 à 47 compris), pas encore intégrés (lot à proposer) ; images gardées sur le PC seulement, hors de Git. Originaux du Drive copiés dans `assets/Jeu centrale – assets/`.
