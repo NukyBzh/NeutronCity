@@ -2,7 +2,7 @@
 
 *Ce qui change pour le joueur, en mots simples. Une section par version (voir `docs/CONFIGURATION.md` §4).*
 
-## v0.10.0 (en cours) — 2026-11-11 (lots L8.1 et L8.2 : tablettes, téléphones et iPhone, à valider)
+## v0.10.0 — 2026-11-11 (lot L8 : tablettes, téléphones et iPhone, à valider)
 - Le jeu s'adapte aux téléphones tenus à l'horizontale (iPhone 11 et 14, Galaxy S20 et S23 Ultra) : tout est environ 1,6 fois plus grand qu'avant, les boutons font au moins 44 px et le texte au moins 15 px.
 - Sur téléphone, l'écran de jeu met la ville et les courbes à gauche et les deux curseurs à droite, sur toute la hauteur ; Cassandra parle depuis le coin de la ville.
 - Sur téléphone, la boutique montre ses bâtiments sur 3 colonnes qu'on fait défiler ; le bilan met la ville, le résultat et le conseil de Cassandra côte à côte.
@@ -11,6 +11,8 @@
 - La fenêtre de pause passe toujours devant Cassandra.
 - Version web installable (lot L8.2) : sur iPhone, le jeu s'ajoute à l'écran d'accueil depuis Safari, s'ouvre en plein écran avec son icône et marche ensuite sans réseau (pas encore en ligne).
 - Si on tient le téléphone droit, Cassandra demande de le tourner et la journée se met en pause.
+- Sur la petite tablette de 7 pouces, les boutons de vitesse, « Son », « Nouveau joueur » et « Revoir l'aide » sont plus grands.
+- En vitesse ×4, la ville reste fluide au coucher du soleil : sa lumière change une fois par heure au lieu de toutes les 5 minutes.
 
 ## v0.9.1 — 2026-11-10 (lot L7.2 : l'équilibrage, à valider)
 - Les événements arrivent plus ou moins souvent, comme prévu dans le fichier de Yann : la tempête, le match et l'écureuil souvent, la fête de la ville rarement. Une journée en a 2 ou 3.

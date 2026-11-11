@@ -1,5 +1,5 @@
 // Frame rate of the play screen with the CPU slowed down (tablet-like), through the DevTools protocol.
-const [, , port, url, rate] = process.argv;
+const [, , port, url, rate, width, height] = process.argv;
 const PORT = port;
 const list = await (await fetch(`http://127.0.0.1:${PORT}/json/list`)).json();
 const page = list.find((t) => t.type === 'page');
@@ -9,6 +9,11 @@ let id = 0; const wait = new Map();
 ws.addEventListener('message', (e) => { const m = JSON.parse(e.data); if (wait.has(m.id)) { wait.get(m.id)(m); wait.delete(m.id); } });
 const send = (method, params = {}) => new Promise((r) => { const i = ++id; wait.set(i, r); ws.send(JSON.stringify({ id: i, method, params })); });
 await send('Emulation.setCPUThrottlingRate', { rate: Number(rate) });
+// Optional screen size in CSS pixels (lot L8.3: tablet and phone formats).
+if (width) await send('Emulation.setDeviceMetricsOverride', { width: Number(width), height: Number(height), deviceScaleFactor: 1, mobile: Number(height) <= 500 });
+// The installable web version caches the game (lot L8.2): measure what was just built.
+await send('Network.enable');
+await send('Network.setBypassServiceWorker', { bypass: true });
 await send('Page.navigate', { url });
 await new Promise((r) => setTimeout(r, 4000));
 const expr = `(async () => {
@@ -18,5 +23,5 @@ const expr = `(async () => {
   const n = t.length; return JSON.stringify({ fps: +(n / 8).toFixed(1), median: +t[n >> 1].toFixed(1), p95: +t[Math.floor(n * 0.95)].toFixed(1), worst: +t[n - 1].toFixed(1), nodes: document.querySelectorAll('svg.city *').length });
 })()`;
 const r = await send('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true });
-console.log(rate + 'x', url.split('?')[1], r.result.result.value);
+console.log(rate + 'x', width ? `${width}x${height}` : '', url.split('?')[1], r.result.result.value);
 ws.close();

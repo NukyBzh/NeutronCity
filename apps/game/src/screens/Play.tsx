@@ -279,6 +279,9 @@ export function Play({
   const step = tuto === null ? null : TUTO[tuto]!;
   const pulseElec = step ? step.target === 'elec' : needs(g.plant.elec, g.plant.setElec, view.demand.elec);
   const pulseHeat = !step && view.heat !== null && needs(g.plant.heat, g.plant.setHeat, view.demand.heat);
+  // The town is repainted when its light changes; at ×4 the light moves once a game hour, not every 5 minutes, so a
+  // small tablet keeps 30 images a second at dusk (lot L8.3).
+  const lightGrid = speed * SPEED >= 4 ? 1 : 12;
 
   // Events in the town (lot L7.1): what the child can act on, repairs going on, the class visit, what the town shows.
   const acts = step ? [] : g.surprises.map((e, i) => ({ e, i })).filter(({ e }) => canFix(e, hour));
@@ -323,7 +326,7 @@ export function Play({
       <section className="zone-city" aria-label={t('zone.city')}>
         <IsoCity
           view="band"
-          hour={Math.floor(hour * 12) / 12}
+          hour={Math.floor(hour * lightGrid) / lightGrid}
           season={day.id}
           mood={moodOf(view.elec, view.heat, elecShort, heatShort)}
           elecOn={g.plant.elec > 0}

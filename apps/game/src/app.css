@@ -407,9 +407,10 @@ svg .pop, svg .float { transform-box: fill-box; transform-origin: center; }
 @media (max-height: 680px) {
   .version, .note, .curves-head, .home-reset .btn, .overlay-card .btn-sound,
   .shop-item .shop-effect, .shop-item .shop-bonus { font-size: 1rem; }
-  /* Small buttons reach 44 px too (speed, « Nouveau joueur », « Revoir l'aide »). */
+  /* Small buttons reach the 48 px of a tablet too (speed, « Nouveau joueur », « Revoir l'aide », « Son »; L8.3). */
   .speed { padding: 0.1rem; }
-  .speed-btn, .home-reset .btn { min-height: 2.95rem; height: 2.95rem; }
+  .speed-btn { min-height: 3.2rem; height: 3.2rem; }
+  .home-reset .btn, .btn-sound, .overlay-card .btn-sound { min-height: 3.2rem; }
 }
 
 /* Phones held in landscape (iPhone 11 / 14, Galaxy S20 / S23 Ultra: 360 to 414 px high). The 64 × 40 stage would
