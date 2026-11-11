@@ -62,7 +62,7 @@ export function pwa(options: { version: string; i18n: string; publicDir: string 
         icons: [
           { src: 'icons/icone-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
           { src: 'icons/icone-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-          { src: 'icons/icone-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: 'icons/icone-512-plein.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       };
       this.emitFile({ type: 'asset', fileName: 'manifest.webmanifest', source: JSON.stringify(manifest, null, 2) });
@@ -73,7 +73,7 @@ export function pwa(options: { version: string; i18n: string; publicDir: string 
       // The cache name changes with the version and the list of hashed files, so a new build replaces the old cache.
       let hash = 0;
       for (const ch of unique.join('|')) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
-      this.emitFile({ type: 'asset', fileName: 'sw.js', source: serviceWorker(`neutron-city-${options.version}-${hash.toString(36)}`, unique) });
+      this.emitFile({ type: 'asset', fileName: 'sw.js', source: serviceWorker(`nuki-town-${options.version}-${hash.toString(36)}`, unique) });
     },
   };
 }

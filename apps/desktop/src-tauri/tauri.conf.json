@@ -1,7 +1,7 @@
 {
   "$schema": "../../../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "Neutron City",
-  "version": "0.11.0",
+  "productName": "Nuki Town",
+  "version": "0.12.0",
   "identifier": "fr.neutroncity.jeu",
   "build": {
     "frontendDist": "../../game/dist",
@@ -11,7 +11,7 @@
   },
   "app": {
     "windows": [
-      { "title": "Neutron City", "width": 1280, "height": 800, "minWidth": 1024, "minHeight": 640, "resizable": true, "maximized": true }
+      { "title": "Nuki Town", "width": 1280, "height": 800, "minWidth": 1024, "minHeight": 640, "resizable": true, "maximized": true }
     ],
     "security": {
       "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' ipc: http://ipc.localhost"

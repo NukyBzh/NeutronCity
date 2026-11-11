@@ -1,4 +1,6 @@
-# Neutron City
+# Nuki Town
+
+*Anciennement « Neutron City ». Un jeu de l'équipe NukiTeam.*
 
 Jeu éducatif pour les 8–12 ans : tu pilotes une centrale imaginaire qui fournit électricité et chaleur à ta ville ;
 plus tu suis la demande, plus tu gagnes d'euros du jeu pour embellir la ville. Cassandra, ingénieure de la centrale,

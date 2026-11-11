@@ -1,4 +1,4 @@
-# Neutron City — état d'avancement
+# Nuki Town (anciennement Neutron City) — état d'avancement
 
 *À lire au début de chaque session. Règles de travail : `PROMPT-neutron-city.md` (lots validés un par un, accord
 avant tout commit, installation, envoi sur GitHub ou action irréversible).*
@@ -21,11 +21,12 @@ avant tout commit, installation, envoi sur GitHub ou action irréversible).*
 | v0.9.1 | L7.2 Équilibrage | **Fait** le 2026-11-10, en attente de validation : tirage selon les poids, 2 ou 3 événements, panne non aidée ×0,3, étoiles à 75 % / 45 %, prix ×3 et bonus ÷3 (ville complète en 19 journées), joueurs simulés et rapport `docs/EQUILIBRAGE.md` (D-22) ; APK `livrables/Neutron-City-0.9.1.apk` |
 | v0.10.0 | L8 Tablette | **L8.1 Formats fait** le 2026-11-11, en attente de validation : tablettes Galaxy Tab A7, A6 (10.1" et 7" de 2016), A11+ et téléphones iPhone 11 / 14, Galaxy S20 / S23 Ultra, en paysage seulement ; scène propre aux téléphones (48 × 22,5 rem), zones sûres (D-23). **L8.2 version web installable (PWA)** faite le 2026-11-11, en attente de validation : manifeste, mise en cache hors ligne, icônes, écran « Tourne ton téléphone » avec pause (D-24, `docs/iphone.md`) ; mise en ligne en HTTPS remise à plus tard. **L8.3 fin du lot** faite le 2026-11-11, en attente de validation : pas d'installeur Windows, ergonomie contrôlée aux 8 formats (`docs/ERGONOMIE.md`), fluidité ≥ 44 images/s au pire moment, APK `livrables/Neutron-City-0.10.0.apk` (D-25) |
 | v0.11.0 | L9.1 Préparation de l'essai | **Fait** le 2026-11-11, en attente de validation : journal de l'essai sur l'appareil, écran caché (5 touches sur la version), numéro d'enfant, export pour Excel ; guide et fiche `docs/ESSAI-ENFANTS.md` ; essai sur Tab A11+, Tab A7 (APK `livrables/Neutron-City-0.11.0.apk`) et iPhone (version web sur Netlify, mise en ligne par Yann) (D-26) |
+| v0.12.0 | L9.2a Nouveau nom | **Fait** le 2026-11-11, en attente de validation : le jeu s'appelle **Nuki Town** (jeu NukiTeam), logo choisi par Yann redessiné en SVG (`tools/branding/nuki-town.mjs`), sur l'accueil et en icône (APK, Windows, iPhone, web) ; identifiant Android et clés d'enregistrement gardés (D-27) ; APK `livrables/Nuki-Town-0.12.0.apk`, zip web `livrables/Nuki-Town-web-0.12.0.zip`
 | v1.0.0 | L9.2 Essai enfants et corrections | À faire : Yann fait l'essai, puis retours R2 et corrections |
 
 ## Documents
 - `docs/CADRAGE.md` — cadrage validé.
-- `docs/DECISIONS.md` — décisions D-01 à D-26.
+- `docs/DECISIONS.md` — décisions D-01 à D-27.
 - `docs/ESSAI-ENFANTS.md` — essai avec des enfants : déroulé, ce qu'il faut observer, questions, fiche à imprimer, lecture du journal exporté.
 - `docs/RETOURS.md` — retours de test (R1 : premier essai sur la tablette).
 - `docs/tablette.md` — installer l’APK sur une tablette Android (Tab A9+ au début ; Tab A11+ et Tab A7 pour l'essai L9).
@@ -51,4 +52,4 @@ avant tout commit, installation, envoi sur GitHub ou action irréversible).*
 ## Points ouverts
 - Fichier Figma créé le 2026-11-08 : https://www.figma.com/design/K1BdqYcOLPZ4vCc7bomwdC (lien dans `assets/SOURCES.md`).
 - Conditions d'usage des images générées par IA (dont Cassandra) à vérifier avant une diffusion publique.
-- Nom « Neutron City » : nom de travail, à vérifier avant diffusion.
+- Nom « Nuki Town » (D-27, remplace « Neutron City ») et logo issu de Gemini : à vérifier avant diffusion (marque, autre jeu du même nom). Dépôt GitHub et dossier du projet gardent l'ancien nom.

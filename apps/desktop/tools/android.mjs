@@ -1,7 +1,7 @@
-// Builds the tablet APK of Neutron City (Galaxy Tab A9+): optimised (release) build for 64-bit ARM, signed with the
+// Builds the tablet APK of Nuki Town (Galaxy Tab A9+): optimised (release) build for 64-bit ARM, signed with the
 // standard Android *debug* key (~/.android/debug.keystore, public password "android"): installable by hand for
 // tests. The owner's own release key comes with lot L8. Same chain as the NPP project (apps/desktop/tools there).
-// Usage (from the repo root): npm.cmd run android [-- <output folder>]  →  livrables/Neutron-City-<version>.apk
+// Usage (from the repo root): npm.cmd run android [-- <output folder>]  →  livrables/Nuki-Town-<version>.apk
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -38,7 +38,7 @@ if (!unsigned) { console.error('No unsigned release APK under', root); process.e
 const sdk = process.env.ANDROID_HOME;
 const bt = join(sdk, 'build-tools', readdirSync(join(sdk, 'build-tools')).sort().pop());
 const outDir = process.argv[2] || join(repo, 'livrables');
-const out = join(outDir, `Neutron-City-${version}.apk`);
+const out = join(outDir, `Nuki-Town-${version}.apk`);
 const aligned = out.replace('.apk', '-aligned.apk');
 mkdirSync(dirname(out), { recursive: true });
 run(join(bt, 'zipalign.exe'), ['-p', '-f', '4', unsigned, aligned]);

@@ -383,3 +383,113 @@ Dans exactement le même style que l'image jointe (illustration vectorielle isom
 `assets/Jeu centrale – assets/`), préférée à `Image_d_accueil_2.jpg` après simulation ; ce prompt n'a pas servi.
 Intégrée : `assets/fond-accueil.webp` (1312 × 816, 84 Ko) en fond de `.home` (`cover`, bas centré), titre et boutons sur
 une carte blanche ; contrôle visuel à 1280 × 800 et 1920 × 1200.
+
+## 8. Série 6 : icône et logo de Neutron City (2026-11-11)
+
+Images à joindre : `NukiTeam - Identité/logo-officiel/png/nukiteam-symbole-1024.png` (pour Nuki) et
+`apps/game/public/icons/icone-512.png` (icône actuelle, pour le style du jeu).
+
+```
+Tu es directeur artistique, spécialiste des logos et des icônes d'applications pour enfants.
+Crée l'icône et le logo du jeu « Neutron City » : un jeu éducatif pour les 8–12 ans où l'on pilote
+une petite centrale qui alimente une ville en électricité et en chaleur. Le jeu est signé par
+l'équipe NukiTeam.
+
+Image 1 jointe : le logo NukiTeam. Reprends EXACTEMENT son électron, la mascotte « Nuki » :
+une bille ronde cyan #3DD6FF, contour bleu nuit #0B1B3F épais, reflet blanc ovale en haut à gauche,
+deux petits yeux ronds bleu nuit avec un point blanc, une petite bouche ronde (air curieux),
+un halo cyan doux autour. Ne change ni sa forme, ni sa couleur, ni son visage.
+Image 2 jointe : l'icône actuelle du jeu, pour l'ambiance (ciel bleu clair, herbe verte, formes rondes).
+
+Le principe : Nuki ORBITE autour d'un bâtiment. Une orbite elliptique cyan #3DD6FF, inclinée
+d'environ -30°, cernée d'un fin liseré bleu nuit, passe DERRIÈRE le bâtiment en haut et DEVANT
+lui en bas ; Nuki est posé sur l'orbite, en bas à gauche, et regarde le bâtiment.
+
+Fais 3 propositions, côte à côte sur une seule planche, chacune avec un bâtiment différent :
+1. Une maison : toit rouge-orangé #E07A1F, fenêtres jaunes allumées #FFD23F, petite cheminée qui fume.
+2. Un petit immeuble de ville arrondi, fenêtres allumées, une petite éolienne ou un panneau sur le toit.
+3. La centrale du jeu : un dôme arrondi blanc avec une fenêtre ronde jaune, et à côté une petite
+   cheminée d'où sort un nuage blanc.
+
+Pour chaque proposition, montre deux choses l'une sous l'autre :
+- L'ICÔNE : un carré aux coins très arrondis (rayon = 25 % du côté), fond dégradé de bleu ciel
+  #7CC8FF en haut vers bleu #1D47B8 en bas, une bande d'herbe verte #5BBF4A arrondie en bas,
+  le bâtiment au centre, l'orbite et Nuki. Rien d'autre, pas de texte. Lisible à 48 px :
+  formes très simples, gros contours bleu nuit #0B1B3F de même épaisseur partout.
+- LE LOGO : l'icône à gauche et, à sa droite, « Neutron City » sur deux lignes, en sans-serif
+  arrondie très grasse type Nunito Black : « Neutron » en bleu nuit #0B1B3F, « City » en bleu
+  #1D47B8. Dessous, en petit, gris-bleu #3A4660 : « un jeu NukiTeam ».
+
+Style : illustration vectorielle plate, formes géométriques rondes et nettes, contours bleu nuit,
+couleurs vives et gaies, aucun effet 3D, aucune texture, aucune ombre portée. Fond de la planche
+blanc uni, beaucoup d'air entre les propositions, format 16:9. Écris le texte exactement comme
+indiqué, sans faute, sans autre texte. Numérote les propositions 1, 2, 3 sous chacune.
+```
+
+Relances utiles, une par message :
+- « Garde la proposition 2. Montre seulement l'icône, en grand, carrée 1:1, sur fond blanc. »
+- « Même icône, mais le bâtiment et Nuki remplissent mieux le carré : agrandis-les de 15 %. »
+- « Même icône sans le fond ni les coins arrondis, seulement le bâtiment, l'orbite et Nuki, sur fond blanc uni. » (pour l'icône Android découpée en rond)
+- « Même logo, version pour fond sombre : texte blanc et “City” cyan #3DD6FF, fond bleu nuit #0B1B3F. »
+- « Rends Nuki plus grand, presque aussi haut que la porte, sans toucher au reste. »
+
+## 9. Série 7 : logo « Nuki Town » (2026-11-11, remplace la série 6)
+
+Yann veut renommer le jeu « Nuki Town » (renommage dans le jeu : lot à proposer). Images à joindre :
+`assets/gemini/asset_01_reacteur.png` et `asset_03_tour_refroidissement_on.png` (style des bâtiments),
+`NukiTeam - Identité/logo-officiel/png/nuki-clin-1024.png` (Nuki qui cligne de l'œil).
+
+```
+Tu es directeur artistique, spécialiste des logos de jeux vidéo pour enfants.
+Crée le logo du jeu « Nuki Town » : un jeu éducatif pour les 8–12 ans où l'on pilote une petite
+centrale nucléaire qui alimente une ville en électricité et en chaleur ; en suivant bien la demande
+de la ville, on gagne des euros pour embellir la ville. Le jeu est créé par l'équipe NukiTeam.
+
+Images jointes :
+- images 1 et 2 : des bâtiments du jeu (réacteur, tour de refroidissement). Le dessin de la centrale
+  doit être dans ce style : formes arrondies, aplats propres, ombrage doux, lumière venant d'en haut
+  à gauche, béton gris clair, vitres turquoise ;
+- image 3 : la mascotte « Nuki ». Reprends-la exactement : une bille ronde cyan #3DD6FF, contour
+  bleu nuit épais, reflet blanc ovale en haut à gauche, halo cyan doux ; ici elle CLIGNE D'UN ŒIL
+  (un œil rond, un œil fermé en arc) avec un grand sourire.
+
+Composition du symbole :
+- au centre, une centrale nucléaire stylisée et mignonne : un réacteur à dôme et une tour de
+  refroidissement d'où sort un petit nuage de vapeur blanc tout rond, posés sur un socle d'herbe
+  verte #2E9E5B ; vue de trois quarts, comme dans le jeu, mais simplifiée pour rester lisible
+  quand le logo est petit ;
+- une orbite elliptique épaisse, inclinée d'environ -25°, qui passe DERRIÈRE la centrale en haut et
+  DEVANT elle en bas, avec un liseré bleu encre #1C2A4A ; elle va du jaune électricité #FFC83D
+  d'un côté à l'orange chaleur #FF8A3D de l'autre ;
+- sur l'orbite, à gauche : Nuki qui cligne de l'œil ;
+- sur l'orbite, à droite, à l'opposé : une grosse pièce dorée #FFC83D, bord jaune foncé #7A5200,
+  frappée d'un symbole euro « € » en relief.
+
+Le nom « Nuki Town » sous le symbole (ou à sa droite), en sans-serif arrondie très grasse type
+Nunito Black : « Nuki » en bleu #1D47B8, « Town » en orange #FF8A3D, avec un contour bleu encre
+#1C2A4A, joyeux et bien lisible. Rien d'autre comme texte.
+
+Palette du jeu, à respecter : bleu encre #1C2A4A, bleu #1D47B8, ciel #BFE3FF, crème #FFF6DC,
+jaune électricité #FFC83D, orange chaleur #FF8A3D, vert #2E9E5B, rose tirelire #FF8FB1 en petite
+touche, blanc.
+
+Fais 3 propositions différentes sur une seule planche, côte à côte, numérotées 1, 2, 3 :
+1. Symbole dans un médaillon rond bleu ciel #BFE3FF, nom en dessous en arc léger.
+2. Symbole sans cadre, posé sur un petit îlot d'herbe, nom à droite sur une ligne.
+3. Symbole dans un carré aux coins très arrondis (25 % du côté), fond dégradé ciel #BFE3FF vers
+   bleu #1D47B8, utilisable comme icône d'application ; nom en dessous.
+
+Style : illustration vectorielle propre, couleurs vives et gaies, contours bleu encre réguliers,
+pas de texture, pas d'ombre portée sur le fond. Fond de la planche blanc uni, beaucoup d'air entre
+les propositions, format 16:9, fichier PNG. Écris le texte exactement « Nuki Town », sans faute.
+```
+
+Relances utiles, une par message :
+- « Garde la proposition 3. Montre-la seule, en grand, carrée 1:1, sans le nom : c'est l'icône. »
+- « Même logo, mais Nuki et la pièce sont 20 % plus grands, le reste ne bouge pas. »
+- « Même logo, version pour fond sombre : fond bleu encre #1C2A4A, “Nuki” en blanc. »
+- « Simplifie la centrale : un seul dôme et une seule tour, moins de détails, pour qu'elle reste lisible à 48 px. »
+
+**Résultat (2026-11-11)** : Yann a choisi une proposition et fourni la planche de ses éléments séparés, gardées dans
+`assets/gemini/logo-nuki-town/` (`logo-choisi.jpg`, `elements.jpg`). Le logo a été redessiné en SVG par
+`tools/branding/nuki-town.mjs` (D-27) ; c'est ce dessin vectoriel qui sert dans le jeu, pas l'image Gemini.

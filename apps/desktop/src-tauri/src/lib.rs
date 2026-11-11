@@ -3,5 +3,5 @@
 pub fn run() {
   tauri::Builder::default()
     .run(tauri::generate_context!())
-    .expect("error while running Neutron City");
+    .expect("error while running Nuki Town");
 }

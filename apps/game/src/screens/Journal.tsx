@@ -25,7 +25,7 @@ export function JournalScreen({ journal, onChild, onErase, onBack }: {
   const csv = toCsv(journal);
 
   const share = async () => {
-    const name = `neutron-city-journal-${localStamp(new Date()).replace(/[:T]/g, '-')}.csv`;
+    const name = `nuki-town-journal-${localStamp(new Date()).replace(/[:T]/g, '-')}.csv`;
     // A byte order mark so that Excel reads the accents.
     const file = new File([`﻿${csv}`], name, { type: 'text/csv' });
     try {

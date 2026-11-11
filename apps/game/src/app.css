@@ -1,4 +1,4 @@
-/* Neutron City — mock-up styles (lot L1). Colours = Figma page "0 · Style" (variables "couleur/*").
+/* Nuki Town (formerly Neutron City) — mock-up styles (lot L1). Colours = Figma page "0 · Style" (variables "couleur/*").
    The whole screen is drawn in rem on a 64 × 40 rem stage: 1 rem = 20 px at 1280×800 (tablet CSS size) and 30 px at
    1920×1200, so the layout is identical on both and the smallest text (0.9 rem) stays ≥ 18 px. */
 :root {
@@ -96,6 +96,13 @@ strong { font-weight: 800; }
   background: rgba(255, 255, 255, 0.85); box-shadow: 0 0.4rem 1.2rem rgba(28, 42, 74, 0.18);
 }
 .home h1 { font-size: 3.6rem; }
+/* Game logo (lot L9.2a): symbol, name in Nunito Black with an ink outline drawn under the letters. */
+.game-logo { display: flex; align-items: center; gap: 1.1rem; }
+.game-logo img { width: 7rem; height: 7rem; flex: none; }
+.game-logo h1 { font-weight: 900; line-height: 1; letter-spacing: 0.01em; -webkit-text-stroke: 0.14em var(--encre); paint-order: stroke fill; }
+.logo-a { color: var(--bleu); }
+.logo-b { color: var(--chaleur); }
+.game-logo-by { margin-top: 0.4rem; font-size: 1rem; font-weight: 700; color: var(--encre); opacity: 0.75; }
 .home-subtitle { font-size: 1.5rem; }
 .home-cassandra { height: 30rem; margin-right: 2rem; }
 .home-cassandra .bubble { right: 78%; top: 3rem; width: 15rem; }
@@ -437,6 +444,7 @@ svg .pop, svg .float { transform-box: fill-box; transform-origin: center; }
   /* Home. */
   .home { padding: 1rem 2rem 1rem 2.5rem; }
   .home h1 { font-size: 2.8rem; }
+  .game-logo img { width: 5.4rem; height: 5.4rem; }
   .home-subtitle { font-size: 1.25rem; }
   .home-text { gap: 1rem; margin-bottom: 3rem; }
   .home-cassandra { height: 19rem; margin-right: 0; }

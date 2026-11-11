@@ -1,7 +1,7 @@
 {
   "name": "neutron-city",
   "private": true,
-  "version": "0.11.0",
+  "version": "0.12.0",
   "description": "Educational game for children aged 8 to 12: run an imaginary power plant that supplies a town",
   "license": "UNLICENSED",
   "type": "module",

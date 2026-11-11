@@ -1,7 +1,7 @@
 @echo off
 rem Tablette virtuelle (Pixel Tablet, Android 37) pour essayer l'APK sans tablette.
 rem Usage : tools\tablette.cmd            installe le dernier APK de livrables\
-rem         tools\tablette.cmd x.y.z      installe livrables\Neutron-City-x.y.z.apk
+rem         tools\tablette.cmd x.y.z      installe livrables\Nuki-Town-x.y.z.apk
 setlocal
 set SDK=%LOCALAPPDATA%\Android\Sdk
 if defined ANDROID_HOME set SDK=%ANDROID_HOME%
@@ -9,9 +9,9 @@ set ADB=%SDK%\platform-tools\adb.exe
 cd /d "%~dp0.."
 
 if "%~1"=="" (
-  for /f "delims=" %%f in ('dir /b /o:d livrables\Neutron-City-*.apk') do set APK=livrables\%%f
+  for /f "delims=" %%f in ('dir /b /o:d livrables\Nuki-Town-*.apk') do set APK=livrables\%%f
 ) else (
-  set APK=livrables\Neutron-City-%~1.apk
+  set APK=livrables\Nuki-Town-%~1.apk
 )
 echo APK : %APK%
 

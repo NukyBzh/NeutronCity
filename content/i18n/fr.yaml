@@ -1,7 +1,8 @@
 # Textes de l'interface (français). Un identifiant par texte ; la version anglaise (en.yaml) gardera les mêmes.
 # Les répliques de Cassandra sont dans content/dialogues/fr.yaml.
-app.title: Neutron City
+app.title: Nuki Town
 app.subtitle: Ta centrale, ta ville, ta journée.
+app.by: Un jeu NukiTeam
 app.version: "Version {version}"
 rotate.text: Tourne ton téléphone pour jouer !
 cassandra.alt: Cassandra, ingénieure de la centrale.

@@ -1,10 +1,10 @@
-# Neutron City sur la Galaxy Tab A9+ (APK de test)
+# Nuki Town sur la tablette Android (APK de test)
 
 *APK construit le 2026-11-08 depuis la version **0.6.0** (lot L4). Fichier : `livrables/Neutron-City-0.6.0.apk`
 (non versionné). Recompiler : `npm.cmd run android` à la racine du dépôt.*
 
 ## 1. Ce que fait l'APK
-- Installe l'application **Neutron City** (identifiant `fr.neutroncity.jeu`), qui fonctionne entièrement **hors ligne**.
+- Installe l'application **Nuki Town**, anciennement Neutron City (identifiant gardé : `fr.neutroncity.jeu`, la mise à jour s'installe par-dessus), qui fonctionne entièrement **hors ligne**.
 - **Paysage forcé et plein écran** : les barres d'Android sont masquées (un glissement depuis un bord les montre un
   instant) ; l'écran reste allumé pendant le jeu.
 - Progression (euros, étoiles, achats) **gardée sur la tablette** ; « Nouveau joueur » sur l'accueil l'efface
@@ -19,7 +19,7 @@
 3. Au message « installation d'applications inconnues bloquée », toucher **Paramètres** et autoriser
    **Mes fichiers**, puis revenir et toucher **Installer**.
 4. Si Play Protect avertit (application absente du Play Store) : « Installer quand même ».
-5. L'icône **Neutron City** (la centrale sur fond bleu) apparaît dans les applications. Vous pouvez ensuite retirer
+5. L'icône **Nuki Town** (la centrale entourée de son orbite, avec Nuki) apparaît dans les applications. Vous pouvez ensuite retirer
    l'autorisation donnée à l'étape 3.
 
 Mettre à jour : installer le nouvel APK **par-dessus** l'ancien ; la progression est conservée.

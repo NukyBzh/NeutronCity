@@ -1,6 +1,7 @@
 import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import type { Mood } from '@neutron/engine';
 import { townUrl } from '../assets';
+import { t } from '../i18n';
 import {
   BAND_VIEWBOX, FULL_VIEWBOX, PLOTS, TOWN_IMAGES, drawTownLayers, lightKey, seasonOf, type TownImage, type TownLayer, type TownScene,
 } from './iso/town';
@@ -169,7 +170,7 @@ export const IsoCity = memo(function IsoCity(p: IsoCityProps) {
   }, [layers, size, viewBox, aspect]);
 
   return (
-    <div ref={box} className={`city iso-${p.view}`} role="img" aria-label="Neutron City">
+    <div ref={box} className={`city iso-${p.view}`} role="img" aria-label={t('app.title')}>
       {/* The sky moves by quarters of an hour: enough for the sun, and cheap on the tablet. */}
       <Sky view={p.view} hour={Math.floor(p.hour * 4) / 4} viewBox={viewBox} aspect={aspect} />
       {layers.map((l, k) => (l.kind === 'still'

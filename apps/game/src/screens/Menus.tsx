@@ -10,6 +10,21 @@ import { Button, Cassandra, Icon, Rich, SoundButton, Stars } from '../ui/ui';
 const SECRET_TAPS = 5;
 const SECRET_MS = 3000;
 
+/** Game logo (lot L9.2a, D-27): the Nuki Town symbol, the name with its first word in blue and the rest in orange,
+ *  and the NukiTeam signature. The symbol is drawn by tools/branding/nuki-town.mjs. */
+function GameLogo() {
+  const [first, ...rest] = t('app.title').split(' ');
+  return (
+    <div className="game-logo">
+      <img src="./icons/icone.svg" alt="" />
+      <div>
+        <h1><span className="logo-a">{first}</span> <span className="logo-b">{rest.join(' ')}</span></h1>
+        <p className="game-logo-by">{t('app.by')}</p>
+      </div>
+    </div>
+  );
+}
+
 /** Welcome screen: one goal, "Play" pulses. Five quick taps on the version number open the adult's play log. */
 export function Home({ onPlay, onShop, onReset, onTutorial, onSecret }: {
   onPlay: () => void; onShop: () => void; onReset: () => void; onTutorial: () => void; onSecret?: () => void;
@@ -23,7 +38,7 @@ export function Home({ onPlay, onShop, onReset, onTutorial, onSecret }: {
   return (
     <main className="screen home" style={HOME_BACKGROUND ? { backgroundImage: `url("${HOME_BACKGROUND}")` } : undefined}>
       <div className="home-text">
-        <h1>{t('app.title')}</h1>
+        <GameLogo />
         <p className="home-subtitle">{t('app.subtitle')}</p>
         <div className="row">
           <Button kind="primary" pulse icon="jouer" label={t('btn.play')} onClick={onPlay} />

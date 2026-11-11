@@ -1,4 +1,4 @@
-# Gestion de configuration — Neutron City
+# Gestion de configuration — Nuki Town (anciennement Neutron City)
 
 *Créé le 2026-11-08 (lot L0), sur le modèle de celui du projet NPP. Ce document fait foi pour les règles ; le journal des
 versions (§4) est tenu à jour à chaque étiquette.*
@@ -71,6 +71,7 @@ Avant tout retour en arrière : `git status` doit être propre (sinon `git stash
 | v0.9.1 | *(à poser après validation)* | 2026-11-10 | L7.2 : équilibrage des événements, des étoiles et de l'argent, joueurs simulés (D-22) |
 | v0.10.0 | *(à poser après validation)* | 2026-11-11 | L8 : formats des tablettes et des téléphones, version web installable pour l'iPhone, ergonomie et fluidité vérifiées (D-23 à D-25) |
 | v0.11.0 | *(à poser après validation)* | 2026-11-11 | L9.1 : journal de l'essai sur l'appareil, écran caché pour l'adulte, guide et fiche de l'essai, mise en ligne privée de la version web sur Netlify (D-26) |
+| v0.12.0 | *(à poser après validation)* | 2026-11-11 | L9.2a : le jeu s'appelle « Nuki Town », logo et icônes NukiTeam (D-27) |
 | v0.7.0 | *(à poser après validation)* | 2026-11-09 | L5 : tutoriel guidé de la première partie, musique CC0 en boucle, bruitages, bouton « Son » (D-18) |
 
 Un commit ne peut pas citer son propre identifiant : la colonne « Commit » de la dernière ligne se complète au commit
@@ -80,7 +81,7 @@ suivant (`git rev-list -n1 vX.Y.Z` le donne).
 1. `git switch --detach vX.Y.Z`, puis `npm.cmd install`.
 2. Livrable :
    - web : `npm.cmd run build` (`apps/game/dist`) ;
-   - APK de test pour la tablette : `npm.cmd run android` → `livrables/Neutron-City-<version>.apk` (release ARM 64 bits,
+   - APK de test pour la tablette : `npm.cmd run android` → `livrables/Nuki-Town-<version>.apk` (release ARM 64 bits,
      clé de débogage Android ; notice `docs/tablette.md`) ;
    - installeur Windows : commande ajoutée au lot L8 (chaîne Tauri reprise du projet NPP).
 3. Noter dans le journal (§4) le livrable reconstruit et sa date si on le diffuse.
