@@ -2,6 +2,12 @@
 
 *Ce qui change pour le joueur, en mots simples. Une section par version (voir `docs/CONFIGURATION.md` §4).*
 
+## v0.11.0 — 2026-11-11 (lot L9.1 : préparation de l'essai avec des enfants, à valider)
+- Le jeu tient un journal de l'essai, gardé seulement sur l'appareil et sans nom : chaque partie (journée, étoiles, euros, temps à chaque vitesse, événements aidés ou non, tutoriel suivi ou passé) et chaque achat.
+- Pour l'adulte : 5 touches rapides sur le numéro de version, sur l'accueil, ouvrent le journal. On y règle le numéro de l'enfant qui joue, on voit un résumé par enfant et les dernières parties, et on exporte le tableau (fichier pour Excel), on le copie ou on l'efface.
+- « Nouveau joueur » passe au numéro d'enfant suivant ; le journal n'est pas effacé.
+- Guide de l'essai et fiche à imprimer : `docs/ESSAI-ENFANTS.md`.
+
 ## v0.10.0 — 2026-11-11 (lot L8 : tablettes, téléphones et iPhone, à valider)
 - Le jeu s'adapte aux téléphones tenus à l'horizontale (iPhone 11 et 14, Galaxy S20 et S23 Ultra) : tout est environ 1,6 fois plus grand qu'avant, les boutons font au moins 44 px et le texte au moins 15 px.
 - Sur téléphone, l'écran de jeu met la ville et les courbes à gauche et les deux curseurs à droite, sur toute la hauteur ; Cassandra parle depuis le coin de la ville.

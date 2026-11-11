@@ -1,22 +1,24 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   dayBonus, dayEffects, dayResult, eventMods, heatOpen, isHeatingDay, shopStatus, starBonus, type DayResult, type GameState,
 } from '@neutron/engine';
 import { DAYS, SHOP, dayById } from './content';
 import { Days, Home, Shop, Summary, type DayCard } from './screens/Menus';
 import { Play, type Speed } from './screens/Play';
+import { JournalScreen } from './screens/Journal';
+import { gameRecord, loadJournal, localStamp, saveJournal, upsert, type GameEnd, type Journal, type PlayStats } from './journal';
 import { EMPTY, clearProgress, loadProgress, saveProgress } from './save';
 import { quarterOfPlot } from './play/iso/town';
 import './app.css';
 
-type Screen = 'home' | 'days' | 'play' | 'summary' | 'shop';
+type Screen = 'home' | 'days' | 'play' | 'summary' | 'shop' | 'journal';
 
 /**
  * Review settings in the address: `?ecran=jeu&journee=ete&heure=19&achats=parc,fontaine&graine=42` opens a screen
  * directly (`accueil`, `journees`, `jeu`, `bilan`, `boutique`), with a day, upgrades already bought and a fixed seed.
  */
 const PARAMS = new URLSearchParams(window.location.search);
-const SCREENS: Record<string, Screen> = { accueil: 'home', journees: 'days', jeu: 'play', bilan: 'summary', boutique: 'shop' };
+const SCREENS: Record<string, Screen> = { accueil: 'home', journees: 'days', jeu: 'play', bilan: 'summary', boutique: 'shop', journal: 'journal' };
 const START_SCREEN = SCREENS[PARAMS.get('ecran') ?? ''] ?? 'home';
 const START_DAY = dayById(PARAMS.get('journee') ?? '') ?? DAYS[0]!;
 const START_OWNED = (PARAMS.get('achats') ?? '').split(',').filter(Boolean);
@@ -58,6 +60,16 @@ export function App() {
   // Guided tutorial (lot L5): seen once per player, shown again with « Revoir l'aide ».
   const [tutoSeen, setTutoSeen] = useState(SAVED.tuto && !FORCE_TUTO);
   const [tutoAsked, setTutoAsked] = useState(false);
+  // Play log of the trial with children (lot L9.1, D-26): kept on the device, never written in review mode.
+  const [journal, setJournal] = useState<Journal>(loadJournal);
+  const game = useRef({ id: 0, at: '' });
+  const log = useCallback((change: (j: Journal) => Journal) => {
+    if (REVIEW) return;
+    setJournal((j) => { const next = change(j); saveJournal(next); return next; });
+  }, []);
+  const logGame = useCallback((g: GameState, stats: PlayStats, end: GameEnd) => {
+    log((j) => upsert(j, gameRecord({ ...game.current, child: j.child }, day, g, stats, end)));
+  }, [day, log]);
 
   useEffect(() => {
     if (!REVIEW) saveProgress({ version: 1, wallet, owned, stars, lastDay: day.id, tuto: tutoSeen, seen });
@@ -65,6 +77,8 @@ export function App() {
 
   const reset = () => {
     clearProgress();
+    // A new player is the next child of the trial (the log itself stays).
+    log((j) => (j.records.some((r) => r.child === j.child) ? { ...j, child: j.child + 1 } : j));
     setWallet(0);
     setOwned([]);
     setStars({});
@@ -82,8 +96,9 @@ export function App() {
     return { id: d.id, stars: stars[d.id] ?? 0, locked: prev || noHeat, lockReason: noHeat ? 'heat' : 'prev', heat: isHeatingDay(d) };
   });
 
-  const finish = useCallback((game: GameState) => {
-    const r = dayResult(day, game);
+  const finish = useCallback((g: GameState, stats: PlayStats) => {
+    logGame(g, stats, 'fini');
+    const r = dayResult(day, g);
     const full = dayBonus(SHOP, owned);
     const bonus = starBonus(full, r.stars);
     setLast(r);
@@ -92,32 +107,42 @@ export function App() {
     setWallet((w) => w + r.euros + bonus);
     setStars((s) => ({ ...s, [day.id]: Math.max(s[day.id] ?? 0, r.stars) }));
     setScreen('summary');
-  }, [day, owned]);
+  }, [day, owned, logGame]);
 
   const startDay = (id: string) => {
     setDay(dayById(id) ?? DAYS[0]!);
     setSeed(newSeed());
     setRound((r) => r + 1);
+    const now = new Date();
+    game.current = { id: now.getTime(), at: localStamp(now) };
     setScreen('play');
   };
 
   switch (screen) {
     case 'home':
-      return <Home onPlay={() => setScreen('days')} onShop={() => setScreen('shop')} onReset={reset} onTutorial={() => { setTutoAsked(true); startDay(DAYS[0]!.id); }} />;
+      return <Home onPlay={() => setScreen('days')} onShop={() => setScreen('shop')} onReset={reset} onTutorial={() => { setTutoAsked(true); startDay(DAYS[0]!.id); }} onSecret={() => setScreen('journal')} />;
+    case 'journal':
+      return <JournalScreen journal={journal} onChild={(n) => log((j) => ({ ...j, child: n }))} onErase={() => log((j) => ({ ...j, records: [] }))} onBack={() => setScreen('home')} />;
     case 'days':
       return <Days cards={cards} onPick={startDay} onHome={() => setScreen('home')} />;
     case 'play':
       return (
         <Play key={round} day={day} seed={seed} upgrades={owned} effects={dayEffects(day, SHOP, owned)} mods={eventMods(SHOP, owned, quarterOfPlot)}
           seen={seen} onSeen={(k) => setSeen((s) => (s.includes(k) ? s : [...s, k]))} speed={speed} onSpeed={setSpeed} onFinish={finish} onRestart={() => startDay(day.id)}
-          onHome={() => setScreen('home')} tutorial={!tutoSeen || tutoAsked} onTutorialDone={() => { setTutoSeen(true); setTutoAsked(false); }} />
+          onHome={() => setScreen('home')} tutorial={!tutoSeen || tutoAsked} onTutorialDone={() => { setTutoSeen(true); setTutoAsked(false); }} onRecord={logGame} />
       );
     case 'summary':
       return <Summary earned={last.euros} bonus={lastBonus} townBonus={townBonus} stars={last.stars} advice={last.advice} season={day.id} upgrades={owned} onShop={() => setScreen('shop')} onAgain={() => startDay(day.id)} onDays={() => setScreen('days')} />;
     case 'shop':
       return (
         <Shop items={SHOP} wallet={wallet} owned={owned} fresh={fresh} season={day.id} onBack={() => { setFresh(null); setScreen('home'); }}
-          onBuy={(item) => { if (wallet >= item.price && shopStatus(SHOP, owned, item).kind === 'open') { setWallet(wallet - item.price); setOwned([...owned, item.id]); setFresh(item.id); } }} />
+          onBuy={(item) => {
+            if (wallet >= item.price && shopStatus(SHOP, owned, item).kind === 'open') {
+              setWallet(wallet - item.price); setOwned([...owned, item.id]); setFresh(item.id);
+              const now = new Date();
+              log((j) => upsert(j, { type: 'achat', id: now.getTime(), child: j.child, at: localStamp(now), item: item.id, price: item.price }));
+            }
+          }} />
       );
   }
 }

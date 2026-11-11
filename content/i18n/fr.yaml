@@ -156,3 +156,53 @@ event.newcomers.action: Accueillir la famille
 event.classVisit.progress: Visite de la classe
 event.repair: Réparation en cours…
 event.label: Événement
+# Journal de l'essai avec des enfants (lot L9.1, D-26) : écran caché, pour l'adulte (5 touches sur le numéro de version).
+journal.title: Journal de l'essai
+journal.intro: "Gardé sur cet appareil seulement, sans nom. « Nouveau joueur » sur l'accueil passe à l'enfant suivant ; le journal reste."
+journal.child: "Enfant qui joue maintenant : n°"
+journal.child.less: Enfant précédent
+journal.child.more: Enfant suivant
+journal.child.hint: Note ce numéro sur sa fiche.
+journal.export: Exporter le tableau
+journal.copy: Copier le tableau
+journal.showTable: Afficher le tableau
+journal.hideTable: Cacher le tableau
+journal.erase: Effacer le journal
+journal.erase.title: Effacer le journal ?
+journal.erase.text: Toutes les lignes de l'essai seront effacées. Exporte le tableau avant.
+journal.shared: Tableau envoyé.
+journal.downloaded: "Tableau enregistré dans les téléchargements : {name}"
+journal.copied: Tableau copié. Colle-le dans un e-mail ou un tableur.
+journal.failed: "Impossible ici : touche le tableau affiché, sélectionne tout et copie-le."
+journal.byChild: Par enfant
+journal.latest: Dernières parties
+journal.empty: Rien pour l'instant.
+journal.col.child: Enfant
+journal.col.games: Parties
+journal.col.acted: Événements aidés
+journal.col.delay: Délai moyen
+journal.col.bought: Achats
+journal.col.minutes: Minutes
+journal.col.tutorial: Tutoriel
+journal.col.when: Date
+journal.col.day: Journée
+journal.col.end: Fin
+journal.col.stars: Étoiles
+journal.col.euros: Euros
+journal.col.events: Événements
+journal.games: "{n} ({done} finies)"
+journal.minutes: "{n} min de jeu"
+journal.tuto.non: –
+journal.tuto.fini: Suivi
+journal.tuto.passe: "Passé à l'étape {n}"
+journal.end.fini: Finie
+journal.end.recommence: "Recommencée à {hour}"
+journal.end.accueil: "Quittée à {hour}"
+journal.end.interrompu: "Fermée à {hour}"
+journal.event.acted: "{name} (+{n} min)"
+journal.event.missed: "{name} (non)"
+journal.kind.storm: Tempête
+journal.kind.squirrel: Écureuil
+journal.kind.heatLeak: Fuite
+journal.kind.scale: Calcaire
+journal.kind.newcomers: Famille

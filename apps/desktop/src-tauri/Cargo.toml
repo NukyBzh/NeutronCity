@@ -1,6 +1,6 @@
 [package]
 name = "neutron-city"
-version = "0.10.0"
+version = "0.11.0"
 description = "Neutron City - educational game for children aged 8 to 12"
 authors = ["Neutron City"]
 edition = "2021"

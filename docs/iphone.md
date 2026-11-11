@@ -15,13 +15,22 @@ installable** (PWA), c'est-à-dire le même jeu, servi par un site et gardé ens
 - Marche aussi sur un téléphone Android (Chrome : menu ⋮ → « Ajouter à l'écran d'accueil » ou « Installer
   l'application »), en plus de l'APK.
 
-## 2. Mettre le jeu en ligne (une fois, à faire avec l'accord de Yann)
-La version web doit être servie en **HTTPS** pour s'installer. **Pas encore fait** : mettre le jeu en ligne revient à
-le publier. Avant cela, il faut régler deux points ouverts (`docs/STATUS.md`) : les conditions d'usage des images
-générées par IA et le nom « Neutron City ».
-- Construire : `npm.cmd run build` → dossier `apps/game/dist` (contient `manifest.webmanifest` et `sw.js`).
-- Héberger ce dossier sur un service gratuit en HTTPS (Netlify, Cloudflare Pages). GitHub Pages est payant pour un
-  dépôt privé. Une adresse non référencée suffit pour un essai.
+## 2. Mettre le jeu en ligne sur Netlify (essai L9, D-26)
+Mise en ligne **privée**, pour l'essai seulement : l'adresse n'est pas référencée, mais toute personne qui la connaît
+peut jouer. La diffusion publique attend toujours les deux points ouverts de `docs/STATUS.md` (conditions d'usage des
+images IA, nom « Neutron City »).
+
+**La première fois (Yann)**
+1. Créer un compte gratuit sur https://app.netlify.com (avec une adresse e-mail ou GitHub).
+2. Ouvrir https://app.netlify.com/drop.
+3. Y glisser **le fichier `livrables/Neutron-City-web-<version>.zip`** (ou le dossier `apps/game/dist`).
+4. Netlify donne une adresse `https://<nom-au-hasard>.netlify.app`. On peut changer le nom dans *Site configuration →
+   Change site name*, par exemple un nom qui ne dit rien du jeu.
+
+**Pour une nouvelle version**
+1. Construire le fichier : `npm.cmd run web` (il écrit `livrables/Neutron-City-web-<version>.zip`).
+2. Dans Netlify, ouvrir le site → *Deploys*, puis glisser le nouveau `.zip` dans la zone « Drag and drop ». L'adresse
+   ne change pas. À la prochaine ouverture avec le réseau, l'iPhone prend la nouvelle version (§ 1).
 
 ## 3. Installer sur l'iPhone
 1. Ouvrir l'adresse du jeu dans **Safari** (pas Chrome : sur iPhone, seul Safari sait ajouter une version web à

@@ -11,6 +11,7 @@ import { Curves } from '../play/Curves';
 import { REAL_SECONDS_PER_GAME_MINUTE, START_HOUR, advance, playUntil, startOf, timelineOf, type Sample } from '../play/session';
 import { sound } from '../sound';
 import { Button, Cassandra, Gauge, Icon, Rich, SoundButton } from '../ui/ui';
+import { NO_STATS, type GameEnd, type PlayStats } from '../journal';
 
 /** A bubble stays about 7 s (auto-advance, no "Continue" button). */
 const BUBBLE_SECONDS = 7;
@@ -85,7 +86,7 @@ export const SPEEDS = [1, 2, 4] as const;
 export type Speed = (typeof SPEEDS)[number];
 
 export function Play({
-  day, seed, upgrades, effects = [], mods = NO_MODS, seen = [], onSeen, speed, onSpeed, onFinish, onRestart, onHome, tutorial = false, onTutorialDone,
+  day, seed, upgrades, effects = [], mods = NO_MODS, seen = [], onSeen, speed, onSpeed, onFinish, onRestart, onHome, tutorial = false, onTutorialDone, onRecord,
 }: {
   day: DayDef;
   /** Effects of the buildings bought on this day's demand (lot L6). */
@@ -99,11 +100,13 @@ export function Play({
   upgrades: readonly string[];
   speed: Speed;
   onSpeed: (s: Speed) => void;
-  onFinish: (game: GameState) => void;
+  onFinish: (game: GameState, stats: PlayStats) => void;
   onRestart: () => void;
   onHome: () => void;
   tutorial?: boolean;
   onTutorialDone?: () => void;
+  /** Play log of the trial (lot L9.1): the game as it stands, written at the start, every game hour and when it ends. */
+  onRecord?: (game: GameState, stats: PlayStats, end: GameEnd) => void;
 }) {
   const [run, setRun] = useState(() => (REVIEW_START > START_HOUR ? playUntil(day, seed, REVIEW_START, REVIEW_FOLLOW, effects, mods) : startOf(day, seed, effects, mods)));
   const [timeline] = useState(() => timelineOf(day, run.game, seen));
@@ -133,7 +136,21 @@ export function Play({
 
   const say = (id: string, pose: Pose) => setLine({ id, pose });
 
+  // What the play log counts (lot L9.1), written with the game at the start, every game hour and at the end.
+  const stats = useRef<PlayStats>({ ...NO_STATS, seconds: [0, 0, 0] });
+  const record = useRef(onRecord);
+  record.current = onRecord;
+  const lastHour = useRef(-1);
+  useEffect(() => {
+    record.current?.(current.current.game, stats.current, 'interrompu');
+  }, []);
+  const leave = (end: GameEnd, go: () => void) => {
+    record.current?.(current.current.game, stats.current, end);
+    go();
+  };
+
   const endTuto = () => {
+    if (tuto !== null) stats.current.tutorial = tuto + 1 >= TUTO.length ? 'fini' : `passe-${tuto + 1}`;
     setTuto(null);
     onTutorialDone?.();
   };
@@ -156,6 +173,7 @@ export function Play({
       last = now;
       c.real += dt;
       c.carry += dt * pace.current;
+      stats.current.seconds[pace.current === 4 ? 2 : pace.current === 2 ? 1 : 0] += dt / SPEED;
       let r: { game: GameState; history: Sample[] } = current.current;
       while (c.carry >= REAL_SECONDS_PER_GAME_MINUTE && !isOver(r.game)) {
         c.carry -= REAL_SECONDS_PER_GAME_MINUTE;
@@ -192,6 +210,7 @@ export function Play({
           const up = which === 'elec' ? g.plant.elec < view.demand.elec : g.plant.heat < view.demand.heat;
           // Pointing pose: Cassandra shows the slider to move (R1-07).
           say(`jeu.indice.${which}.${up ? 'monter' : 'baisser'}`, 'explique');
+          stats.current.hints++;
           c.farSince = c.real;
         }
       } else c.farSince = -1;
@@ -211,8 +230,12 @@ export function Play({
         }
       } else c.goodSince = -1;
       if (isOver(g)) {
-        onFinish(g);
+        onFinish(g, stats.current);
         return;
+      }
+      if (Math.floor(h) !== lastHour.current) {
+        lastHour.current = Math.floor(h);
+        record.current?.(g, stats.current, 'interrompu');
       }
       raf = requestAnimationFrame(frame);
     };
@@ -249,6 +272,8 @@ export function Play({
 
   const setOutput = (moved: 'elec' | 'heat', v: number) => {
     const c = clock.current;
+    // A new hold of a slider: the last move was more than a second ago (in real time).
+    if (c.real - c.lastInput > 1 || stats.current.moves === 0) stats.current.moves++;
     c.lastInput = c.real;
     const r = current.current;
     const wanted = moved === 'elec' ? { e: v, h: r.game.plant.setHeat } : { e: r.game.plant.setElec, h: v };
@@ -399,8 +424,8 @@ export function Play({
             <p>{t('pause.text')}</p>
             <div className="row">
               <Button kind="primary" pulse icon="jouer" label={t('btn.resume')} onClick={() => setPaused(false)} />
-              <Button icon="recommencer" label={t('btn.restart')} onClick={onRestart} />
-              <Button icon="accueil" label={t('btn.home')} onClick={onHome} />
+              <Button icon="recommencer" label={t('btn.restart')} onClick={() => leave('recommence', onRestart)} />
+              <Button icon="accueil" label={t('btn.home')} onClick={() => leave('accueil', onHome)} />
             </div>
             <SoundButton />
           </div>

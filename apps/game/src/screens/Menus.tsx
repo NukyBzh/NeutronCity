@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { nextDiscovery, shopStatus, townHappiness, type Advice, type ShopItem, type ShopStatus } from '@neutron/engine';
 import { HOME_BACKGROUND, shopUrl } from '../assets';
 import { euros, t } from '../i18n';
@@ -6,9 +6,20 @@ import { IsoCity } from '../play/IsoCity';
 import { sound } from '../sound';
 import { Button, Cassandra, Icon, Rich, SoundButton, Stars } from '../ui/ui';
 
-/** Welcome screen: one goal, "Play" pulses. */
-export function Home({ onPlay, onShop, onReset, onTutorial }: { onPlay: () => void; onShop: () => void; onReset: () => void; onTutorial: () => void }) {
+/** Taps on the version number that open the hidden play log (lot L9.1), within this many milliseconds. */
+const SECRET_TAPS = 5;
+const SECRET_MS = 3000;
+
+/** Welcome screen: one goal, "Play" pulses. Five quick taps on the version number open the adult's play log. */
+export function Home({ onPlay, onShop, onReset, onTutorial, onSecret }: {
+  onPlay: () => void; onShop: () => void; onReset: () => void; onTutorial: () => void; onSecret?: () => void;
+}) {
   const [asking, setAsking] = useState(false);
+  const taps = useRef<number[]>([]);
+  const tapVersion = (e: { timeStamp: number }) => {
+    taps.current = [...taps.current.filter((x) => e.timeStamp - x < SECRET_MS), e.timeStamp];
+    if (taps.current.length >= SECRET_TAPS) { taps.current = []; onSecret?.(); }
+  };
   return (
     <main className="screen home" style={HOME_BACKGROUND ? { backgroundImage: `url("${HOME_BACKGROUND}")` } : undefined}>
       <div className="home-text">
@@ -25,7 +36,7 @@ export function Home({ onPlay, onShop, onReset, onTutorial }: { onPlay: () => vo
         <Button icon="jouer" label={t('btn.tutorial')} onClick={onTutorial} />
       </div>
       <div className="home-sound"><SoundButton /></div>
-      <p className="version">{t('app.version', { version: __APP_VERSION__ })}</p>
+      <p className="version" onClick={tapVersion}>{t('app.version', { version: __APP_VERSION__ })}</p>
       {asking ? (
         <div className="overlay" role="dialog" aria-modal aria-label={t('reset.title')}>
           <div className="overlay-card">
