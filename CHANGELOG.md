@@ -8,6 +8,8 @@
 - La progression et le journal de l'essai sont gardés : l'APK s'installe par-dessus l'ancienne version.
 - Sur l'iPhone, supprimer l'ancienne icône de l'écran d'accueil puis rajouter le jeu pour voir le nouveau nom.
 - Le numéro de version de l'accueil passe en bas à gauche, à côté de « Revoir l'aide » : en ligne, le badge « Powered by Netlify » couvrait le coin en bas à droite et empêchait d'ouvrir le journal de l'essai (L9.2b).
+- Sur la tablette Android, « Exporter le tableau » ouvre maintenant le menu de partage d'Android (Signal, e-mail, Drive) : avant, le jeu disait « enregistré » mais aucun fichier n'était créé (L9.2c).
+- L'APK se télécharge depuis l'adresse de l'essai : https://stunning-haupia-9181a8.netlify.app/Nuki-Town-0.12.0.apk
 
 ## v0.11.0 — 2026-11-11 (lot L9.1 : préparation de l'essai avec des enfants, à valider)
 - Le jeu tient un journal de l'essai, gardé seulement sur l'appareil et sans nom : chaque partie (journée, étoiles, euros, temps à chaque vitesse, événements aidés ou non, tutoriel suivi ou passé) et chaque achat.

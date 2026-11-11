@@ -30,7 +30,10 @@ images IA, nom « Nuki Town »).
 **Pour une nouvelle version**
 1. Construire le fichier : `npm.cmd run web` (il écrit `livrables/Nuki-Town-web-<version>.zip`).
 2. Dans Netlify, ouvrir le site → *Deploys*, puis glisser le nouveau `.zip` dans la zone « Drag and drop ». L'adresse
-   ne change pas. À la prochaine ouverture avec le réseau, l'iPhone prend la nouvelle version (§ 1).
+   ne change pas. **Attention** : le site sert aussi l'APK des testeurs Android (`/Nuki-Town-<version>.apk`, L9.2c) ;
+   le zip seul l'efface. Mettre l'APK dans le même envoi (dossier dézippé + APK + `netlify.toml` qui le sert en
+   téléchargement), ou demander à Claude de republier.
+   Le badge « Powered by Netlify » couvre le coin en bas à droite : rien d'utile ne doit y être (L9.2b). À la prochaine ouverture avec le réseau, l'iPhone prend la nouvelle version (§ 1).
 
 ## 3. Installer sur l'iPhone
 1. Ouvrir l'adresse du jeu dans **Safari** (pas Chrome : sur iPhone, seul Safari sait ajouter une version web à

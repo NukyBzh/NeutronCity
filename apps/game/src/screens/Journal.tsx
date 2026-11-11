@@ -27,7 +27,15 @@ export function JournalScreen({ journal, onChild, onErase, onBack }: {
   const share = async () => {
     const name = `nuki-town-journal-${localStamp(new Date()).replace(/[:T]/g, '-')}.csv`;
     // A byte order mark so that Excel reads the accents.
-    const file = new File([`﻿${csv}`], name, { type: 'text/csv' });
+    const text = `﻿${csv}`;
+    // Android app (L9.2c): the native share sheet, since its WebView can neither share nor download a file.
+    if (window.NukiAndroid) {
+      const ok = window.NukiAndroid.shareFile(name, text, 'text/csv', t('journal.shareTitle'));
+      if (!ok) setShowCsv(true);
+      setNote(t(ok ? 'journal.shareOpen' : 'journal.failed'));
+      return;
+    }
+    const file = new File([text], name, { type: 'text/csv' });
     try {
       if (navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file], title: t('journal.title') });

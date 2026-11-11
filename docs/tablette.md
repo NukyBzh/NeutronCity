@@ -13,12 +13,15 @@
   une installation à la main. La signature avec une clé à vous viendra au lot L8.
 
 ## 2. Installer l'APK sur la tablette (une fois)
-1. Copier `Neutron-City-0.6.0.apk` sur la tablette : câble USB (dossier `Download`), ou envoi à soi-même
-   (Google Drive, e-mail).
+1. Mettre l'APK sur la tablette, au choix :
+   - **lien de l'essai** (L9.2c) : ouvrir dans Chrome https://stunning-haupia-9181a8.netlify.app/Nuki-Town-0.12.0.apk,
+     puis « Télécharger quand même » si Chrome prévient ;
+   - câble USB (dossier `Download`), ou envoi à soi-même (Google Drive, e-mail).
 2. Sur la tablette, ouvrir **Mes fichiers** → `Téléchargements` → toucher le fichier APK.
 3. Au message « installation d'applications inconnues bloquée », toucher **Paramètres** et autoriser
    **Mes fichiers**, puis revenir et toucher **Installer**.
-4. Si Play Protect avertit (application absente du Play Store) : « Installer quand même ».
+4. Si Play Protect propose d'analyser l'appli (application absente du Play Store) : **Plus de détails** →
+   **Installer sans analyser** (essayé sur la tablette virtuelle Android 17 le 2026-11-11).
 5. L'icône **Nuki Town** (la centrale entourée de son orbite, avec Nuki) apparaît dans les applications. Vous pouvez ensuite retirer
    l'autorisation donnée à l'étape 3.
 

@@ -172,6 +172,8 @@ journal.erase: Effacer le journal
 journal.erase.title: Effacer le journal ?
 journal.erase.text: Toutes les lignes de l'essai seront effacées. Exporte le tableau avant.
 journal.shared: Tableau envoyé.
+journal.shareTitle: Envoyer le tableau
+journal.shareOpen: Choisis où envoyer le tableau (Signal, e-mail…).
 journal.downloaded: "Tableau enregistré dans les téléchargements : {name}"
 journal.copied: Tableau copié. Colle-le dans un e-mail ou un tableur.
 journal.failed: "Impossible ici : touche le tableau affiché, sélectionne tout et copie-le."

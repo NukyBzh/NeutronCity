@@ -86,9 +86,9 @@ Montrer les visages (🙂 😐 🙁) et entourer sa réponse sur la fiche.
 ## 7. Après la séance
 1. Sur chaque appareil : 5 touches sur la version → **Exporter le tableau**.
    - Sur l'iPhone, le tableau part par le menu de partage (e-mail, Fichiers).
-   - Sur les tablettes, il va dans les téléchargements. Si l'export ne marche pas, utiliser **Copier le tableau** et
-     le coller dans un e-mail, ou **Afficher le tableau** et le sélectionner à la main. Prendre aussi une photo du
-     tableau « Par enfant ».
+   - Sur les tablettes Android aussi, le menu de partage d'Android s'ouvre (Signal, e-mail, Drive ; lot L9.2c).
+   - Si l'export ne marche pas, utiliser **Copier le tableau** et le coller dans un message ou un e-mail, ou
+     **Afficher le tableau** et le sélectionner à la main. Prendre aussi une photo du tableau « Par enfant ».
 2. M'envoyer les tableaux (fichiers `.csv`, à ouvrir dans Excel) et une photo ou un résumé des fiches. Je fais la
    liste R2 dans `docs/RETOURS.md`, avec une cause et un lot pour chaque retour, et je te la soumets.
 3. Effacer le journal (**Effacer le journal**) seulement après avoir vérifié que le tableau est bien arrivé.
