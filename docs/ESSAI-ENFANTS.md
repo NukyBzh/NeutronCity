@@ -18,9 +18,9 @@ qu'on a vu. Les retours deviennent la liste R2 de `docs/RETOURS.md`, et le lot L
 - **Accord des parents** pour chaque enfant. Il n'y a ni nom ni photo du visage. Le journal note seulement un
   numéro, la date et ce qui se passe dans le jeu, et il reste sur l'appareil.
 - **Appareils** chargés, son à mi-volume, mode « Ne pas déranger » :
-  - Galaxy Tab A11+ et Galaxy Tab A7 : APK `livrables/Nuki-Town-0.12.0.apk` (installation : `docs/tablette.md`) ;
+  - Galaxy Tab A11+ et Galaxy Tab A7 : APK `livrables/Nuki-Town-0.13.0.apk` (installation : `docs/tablette.md`) ;
   - iPhone : version web en ligne, ajoutée à l'écran d'accueil (`docs/iphone.md`), ouverte une fois avec le réseau.
-- Sur chaque appareil, sur l'accueil : **Nouveau joueur**, puis **5 touches rapides sur « Version 0.12.0 »** (en bas
+- Sur chaque appareil, sur l'accueil : **Nouveau joueur**, puis **5 touches rapides sur « Version 0.13.0 »** (en bas
   à gauche, à côté de « Revoir l'aide ») pour ouvrir le **journal de l'essai**. Vérifier le numéro de l'enfant, puis **Retour**.
 - Une **fiche par enfant** (§ 6), imprimée, et un crayon. Une montre pour noter les temps.
 

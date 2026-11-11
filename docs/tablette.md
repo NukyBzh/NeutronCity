@@ -14,7 +14,7 @@
 
 ## 2. Installer l'APK sur la tablette (une fois)
 1. Mettre l'APK sur la tablette, au choix :
-   - **lien de l'essai** (L9.2c) : ouvrir dans Chrome https://stunning-haupia-9181a8.netlify.app/Nuki-Town-0.12.0.apk,
+   - **lien de l'essai** (L9.2c) : ouvrir dans Chrome https://stunning-haupia-9181a8.netlify.app/Nuki-Town-0.13.0.apk,
      puis « Télécharger quand même » si Chrome prévient ;
    - câble USB (dossier `Download`), ou envoi à soi-même (Google Drive, e-mail).
 2. Sur la tablette, ouvrir **Mes fichiers** → `Téléchargements` → toucher le fichier APK.
