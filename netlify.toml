@@ -1,0 +1,7 @@
+# Guard (L9.2d): the Netlify site is never built from this repository. A deploy of the raw repo published its root,
+# which has no index.html, and the game showed "Page not found" (2026-11-11). This build fails on purpose, so Netlify
+# keeps the live version. Publish with `npm.cmd run web` instead (docs/iphone.md §2): it prepares
+# livrables/web-<version>/ (game + Android APK + download header) and the zip for drag and drop.
+[build]
+  command = "echo 'Nuki Town: publish with npm.cmd run web (docs/iphone.md section 2), not from the repository.' && exit 1"
+  publish = "apps/game/dist"
