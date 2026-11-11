@@ -40,6 +40,9 @@ des PNG Gemini de `gemini/` (images IA, même point ouvert que Cassandra) : tuil
 neige, coupure), maisons 16, usines 13 (2 et 3), gare 15, centrale 01 à 10, arbre 19, lampadaire 20, panneau d'alerte 21,
 enfants 42, balançoire 43, oiseaux 44 ; série 3 : voitures 48 à 51, bus 52, habitants 53 à 55, bâtiments 58 à 63 (noms courts : `immeuble-nuit` ← `asset_11_immeuble_nuit_allume`, etc.).
 
+## Fond de l'écran d'accueil (`fond-accueil.webp`) — 2026-11-11
+Image fournie par Yann (`assets/Jeu centrale – assets/Image_d_accueil_1.jpg`), réduite en WebP (qualité 82, 1312 × 816).
+
 ## Bâtiments de la boutique (`objets/`) — 2026-11-09 (lot L6.1)
 15 images WebP (384 px au plus depuis le lot L6.2, 351 Ko en tout), réduites par Claude à partir des PNG Gemini de `gemini/` (images IA,
 même point ouvert que Cassandra avant diffusion) : ferme ← `asset_25_ferme_moderne`, reseau-chaleur ← `asset_64_reseau_chaleur` (station de chaleur collée à la centrale, 2026-11-10 ; avant : `asset_39_tuyau_chaleur`),

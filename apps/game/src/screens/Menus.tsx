@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { nextDiscovery, shopStatus, townHappiness, type Advice, type ShopItem, type ShopStatus } from '@neutron/engine';
-import { shopUrl } from '../assets';
+import { HOME_BACKGROUND, shopUrl } from '../assets';
 import { euros, t } from '../i18n';
 import { IsoCity } from '../play/IsoCity';
 import { sound } from '../sound';
@@ -10,7 +10,7 @@ import { Button, Cassandra, Icon, Rich, SoundButton, Stars } from '../ui/ui';
 export function Home({ onPlay, onShop, onReset, onTutorial }: { onPlay: () => void; onShop: () => void; onReset: () => void; onTutorial: () => void }) {
   const [asking, setAsking] = useState(false);
   return (
-    <main className="screen home">
+    <main className="screen home" style={HOME_BACKGROUND ? { backgroundImage: `url("${HOME_BACKGROUND}")` } : undefined}>
       <div className="home-text">
         <h1>{t('app.title')}</h1>
         <p className="home-subtitle">{t('app.subtitle')}</p>

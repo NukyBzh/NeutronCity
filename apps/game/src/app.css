@@ -83,8 +83,12 @@ strong { font-weight: 800; }
 .star-off { filter: grayscale(1); opacity: 0.35; }
 
 /* Home. */
-.home { display: flex; align-items: center; justify-content: space-between; padding: 2rem 3rem; }
-.home-text { display: flex; flex-direction: column; gap: 1.2rem; }
+.home { display: flex; align-items: flex-start; justify-content: space-between; padding: 3rem 3rem 2rem; background: center bottom / cover no-repeat; }
+/* Over the home picture (2026-11-11): a white card keeps the title and the buttons easy to read. */
+.home-text {
+  display: flex; flex-direction: column; gap: 1.2rem; padding: 1.6rem 2rem; border-radius: 1.6rem;
+  background: rgba(255, 255, 255, 0.85); box-shadow: 0 0.4rem 1.2rem rgba(28, 42, 74, 0.18);
+}
 .home h1 { font-size: 3.6rem; }
 .home-subtitle { font-size: 1.5rem; }
 .home-cassandra { height: 30rem; margin-right: 2rem; }

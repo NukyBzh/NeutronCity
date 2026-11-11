@@ -23,3 +23,5 @@ export const shopUrl = (name: string): string => OBJETS[name] ?? SHOP[name] ?? '
 /** A picture of the town or of a shop building. */
 export const townUrl = (name: string): string => VILLE[name] ?? OBJETS[name] ?? '';
 export const poseUrl = (pose: Pose): string => POSES[pose] ?? '';
+/** Background of the home screen (Yann's picture « Image_d_accueil_1 », reduced to WebP, 2026-11-11). */
+export const HOME_BACKGROUND: string = (Object.values(import.meta.glob<string>('../../../assets/fond-accueil.webp', { eager: true, query: '?url', import: 'default' }))[0]) ?? '';

@@ -7,6 +7,7 @@
 - Une panne coûte cher : tant que tu n'as pas envoyé le camion ou fait sortir l'écureuil, la ville gagne 3 fois moins. Si tu aides tout de suite, tu ne perds rien.
 - 3 étoiles dès 75 % du maximum, 2 étoiles dès 45 %.
 - Les bâtiments coûtent 3 fois plus cher et rapportent 3 fois moins chaque jour : il faut une vingtaine de journées pour construire toute la ville.
+- L'écran d'accueil a une image de fond : la ville et sa centrale vues de haut.
 - Le réseau de chaleur est maintenant une station de chaleur en briques, collée à la centrale, avec ses gros tuyaux orange qui partent vers la ville.
 
 ## v0.9.0 — 2026-11-09 (lot L7.1 : les événements, à valider)

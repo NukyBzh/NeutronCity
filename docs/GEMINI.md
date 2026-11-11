@@ -367,3 +367,19 @@ centrale (côté ville) au lieu du terrain actuel.
 ```
 Dans exactement le même style que l'image jointe (illustration vectorielle isométrique 2:1, aplats propres, ombrage doux, lumière haut-gauche, palette pastel, vitres turquoise), dessine un seul objet : la station de chaleur d'une centrale, un bâtiment industriel bas et compact en briques rouge clair et bardage gris, toit plat avec une petite cheminée sans fumée, une grande porte de garage, et sur le côté droit trois gros tuyaux calorifugés orange qui sortent du mur, font un coude et partent vers le bas à droite de l'image, coupés net comme s'ils continuaient sous la ville. Un petit logo de flamme sans texte sur la façade. Posé sur un socle de béton gris clair en losange, sans herbe. Métaux en gris neutre. Fond uni magenta #FF00FF, sans décor ni ombre portée sur le fond. Format PNG carré 1024x1024, fichier .png obligatoire (pas de JPG), objet centré sur 75 % de la largeur. Aucun texte, aucune lettre, aucun chiffre.
 ```
+
+## 7. Série 5 : image de fond de l'écran d'accueil (2026-11-11)
+*Demande de Yann : rendre l'écran d'accueil (`docs/maquettes/1-accueil.png`) plus agréable avec une image de fond.
+Disposition actuelle (`apps/game/src/app.css`, `.home`) : titre, sous-titre et boutons dans les 40 % gauche, à mi-hauteur ;
+Cassandra en pied à droite (≈ 70-90 % de la largeur, presque toute la hauteur) ; sa bulle au centre-haut ; fond actuel
+dégradé `--ciel` #BFE3FF → `--creme` #FFF6DC. Tablette 1920 × 1200 paysage.*
+
+**fond_accueil.png**
+
+```
+Dans exactement le même style que l'image jointe (illustration vectorielle isométrique 2:1, aplats propres, ombrage doux, lumière haut-gauche, palette pastel, vitres turquoise, contours nets, rendu « dessin animé » doux pour enfants de 8 à 12 ans), dessine une image de fond panoramique pour l'écran d'accueil d'un jeu vidéo. Les deux tiers supérieurs de l'image sont un ciel uni en dégradé vertical, bleu ciel #BFE3FF en haut vers crème #FFF6DC à l'horizon, avec seulement deux ou trois petits nuages blancs arrondis près des bords. Le tiers inférieur montre une petite ville vue en isométrique, en bande horizontale sur toute la largeur. Au centre de cette bande, une centrale nucléaire compacte au bord d'une rivière turquoise : bâtiment réacteur cylindrique en béton gris clair surmonté d'un dôme, salle des machines au bardage gris, une tour aéroréfrigérante en hyperboloïde avec un petit panache de vapeur blanc en nuages arrondis, une ligne de pylônes haute tension gris neutre qui part vers la ville. De part et d'autre : immeubles en pierre claire à toits d'ardoise, immeubles rose pâle et en brique orangée, maisons à toits rouges, un parc avec arbres verts arrondis, routes beiges avec trottoirs gris clair, quelques petites voitures rouges et bleues. Les bâtiments restent bas : aucun ne dépasse le tiers inférieur de l'image, pour qu'un titre, des boutons et un personnage puissent être posés devant sans gêne. Derrière la ville, des collines vertes pâles qui se fondent dans le ciel ; en bas, la ville se termine par une pelouse verte unie. Ambiance de matin de printemps, gaie et calme, contraste modéré, couleurs légèrement adoucies. Format paysage 16:10 (1920x1200), fichier .png obligatoire (pas de JPG). Aucun personnage, aucun texte, aucune lettre, aucun chiffre, aucun logo.
+```
+**Choix de Yann le 2026-11-11** : sa propre image `Image_d_accueil_1.jpg` (ville et centrale vues de haut, dossier
+`assets/Jeu centrale – assets/`), préférée à `Image_d_accueil_2.jpg` après simulation ; ce prompt n'a pas servi.
+Intégrée : `assets/fond-accueil.webp` (1312 × 816, 84 Ko) en fond de `.home` (`cover`, bas centré), titre et boutons sur
+une carte blanche ; contrôle visuel à 1280 × 800 et 1920 × 1200.
