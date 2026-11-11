@@ -20,8 +20,8 @@ qu'on a vu. Les retours deviennent la liste R2 de `docs/RETOURS.md`, et le lot L
 - **Appareils** chargés, son à mi-volume, mode « Ne pas déranger » :
   - Galaxy Tab A11+ et Galaxy Tab A7 : APK `livrables/Nuki-Town-0.12.0.apk` (installation : `docs/tablette.md`) ;
   - iPhone : version web en ligne, ajoutée à l'écran d'accueil (`docs/iphone.md`), ouverte une fois avec le réseau.
-- Sur chaque appareil, sur l'accueil : **Nouveau joueur**, puis **5 touches rapides sur « Version 0.11.0 »** (en bas
-  à droite) pour ouvrir le **journal de l'essai**. Vérifier le numéro de l'enfant, puis **Retour**.
+- Sur chaque appareil, sur l'accueil : **Nouveau joueur**, puis **5 touches rapides sur « Version 0.12.0 »** (en bas
+  à gauche, à côté de « Revoir l'aide ») pour ouvrir le **journal de l'essai**. Vérifier le numéro de l'enfant, puis **Retour**.
 - Une **fiche par enfant** (§ 6), imprimée, et un crayon. Une montre pour noter les temps.
 
 ## 3. Déroulé, de 20 à 30 minutes par enfant

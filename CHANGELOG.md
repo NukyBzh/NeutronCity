@@ -7,6 +7,7 @@
 - Nouveau logo sur l'accueil et nouvelle icône sur la tablette, le PC et l'iPhone : la centrale sur son îlot d'herbe, entourée d'une orbite jaune et orange avec Nuki qui cligne de l'œil et une pièce en euro.
 - La progression et le journal de l'essai sont gardés : l'APK s'installe par-dessus l'ancienne version.
 - Sur l'iPhone, supprimer l'ancienne icône de l'écran d'accueil puis rajouter le jeu pour voir le nouveau nom.
+- Le numéro de version de l'accueil passe en bas à gauche, à côté de « Revoir l'aide » : en ligne, le badge « Powered by Netlify » couvrait le coin en bas à droite et empêchait d'ouvrir le journal de l'essai (L9.2b).
 
 ## v0.11.0 — 2026-11-11 (lot L9.1 : préparation de l'essai avec des enfants, à valider)
 - Le jeu tient un journal de l'essai, gardé seulement sur l'appareil et sans nom : chaque partie (journée, étoiles, euros, temps à chaque vitesse, événements aidés ou non, tutoriel suivi ou passé) et chaque achat.

@@ -49,9 +49,10 @@ export function Home({ onPlay, onShop, onReset, onTutorial, onSecret }: {
       <div className="home-reset">
         <Button icon="recommencer" label={t('btn.newPlayer')} onClick={() => setAsking(true)} />
         <Button icon="jouer" label={t('btn.tutorial')} onClick={onTutorial} />
+        {/* Next to the buttons, not in the bottom-right corner: the Netlify badge covers that corner online (L9.2b). */}
+        <p className="version" onClick={tapVersion}>{t('app.version', { version: __APP_VERSION__ })}</p>
       </div>
       <div className="home-sound"><SoundButton /></div>
-      <p className="version" onClick={tapVersion}>{t('app.version', { version: __APP_VERSION__ })}</p>
       {asking ? (
         <div className="overlay" role="dialog" aria-modal aria-label={t('reset.title')}>
           <div className="overlay-card">
