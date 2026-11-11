@@ -7,9 +7,17 @@ const memory = () => {
 };
 
 describe('progress saved on the device', () => {
+  it('keeps the lots chosen for the buildings, and drops broken ones (lot L9.4)', () => {
+    const s = memory();
+    s.setItem('neutron-city.progress', JSON.stringify({ ...EMPTY, places: { parc: [9, 6], ecole: 'x', piscine: [1.5, 2], fontaine: [4] } }));
+    expect(loadProgress(s).places).toEqual({ parc: [9, 6] });
+    s.setItem('neutron-city.progress', JSON.stringify({ version: 1, wallet: 0, owned: ['parc'], stars: {}, lastDay: null }));
+    expect(loadProgress(s).places).toEqual({});
+  });
+
   it('comes back as it was saved', () => {
     const s = memory();
-    const p = { version: 1 as const, wallet: 3120, owned: ['parc'], stars: { ete: 3, printemps: 1 }, lastDay: 'printemps', tuto: true, seen: ['storm'] };
+    const p = { version: 1 as const, wallet: 3120, owned: ['parc'], stars: { ete: 3, printemps: 1 }, lastDay: 'printemps', tuto: true, seen: ['storm'], places: { parc: [9, 6] as [number, number] } };
     saveProgress(p, s);
     expect(loadProgress(s)).toEqual(p);
   });

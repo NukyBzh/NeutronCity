@@ -38,7 +38,17 @@ Dessins vectoriels écrits à la main en SVG (aucune image externe, aucune IA), 
 46 images WebP (320 px au plus pour les bâtiments, 256 px pour les tuiles, 160 px pour les véhicules ; 669 Ko en tout), réduites par Claude à partir
 des PNG Gemini de `gemini/` (images IA, même point ouvert que Cassandra) : tuiles 23 à 27, immeuble 11 et 12 (jour, nuit,
 neige, coupure), maisons 16, usines 13 (2 et 3), gare 15, centrale 01 à 10, arbre 19, lampadaire 20, panneau d'alerte 21,
-enfants 42, balançoire 43, oiseaux 44 ; série 3 : voitures 48 à 51, bus 52, habitants 53 à 55, bâtiments 58 à 63 (noms courts : `immeuble-nuit` ← `asset_11_immeuble_nuit_allume`, etc.).
+enfants 42, balançoire 43, oiseaux 44 (lot L9.3 : planche découpée en 4 oiseaux tournés à gauche, deux paires ailes hautes / basses calées sur l'œil : `oiseau-bleu-haut`, `oiseau-bleu-bas`, `oiseau-jaune-haut`, `oiseau-jaune-bas`, 128 px) ; série 3 : voitures 48 à 51, bus 52, habitants 53 à 55, bâtiments 58 à 63 (noms courts : `immeuble-nuit` ← `asset_11_immeuble_nuit_allume`, etc.).
+
+## Fond des autres écrans (`fond-jeu.webp`) et cochon tirelire (`icons/tirelire.webp`) — 2026-11-11 (lot L9.3)
+Images fournies par Yann (images IA, même point ouvert que Cassandra) : `assets/Jeu centrale – assets/asset_66_fond.jpg`
+réduite en WebP (qualité 82, 1312 × 816) ; `asset_65_cochon.jpg` détouré (fond vert, `tools/detourage/detoure.py`),
+recadré et réduit à 256 px. L'image WebP remplace l'icône SVG du même nom partout (en-tête, boutique, bilan, tutoriel).
+
+## Campagne autour de la ville (`ville/arriere-ville.webp`) — 2026-11-11 (lot L9.3)
+Image fournie par Yann (`assets/Jeu centrale – assets/asset_67_arrière_ville.jpg`, image IA) : ciel au-dessus des
+collines rendu transparent (le ciel du jeu passe derrière), WebP qualité 80, 1024 × 1024. Son losange vert foncé est
+calé sous les terrains de la ville (`BACKDROP` dans `apps/game/src/play/iso/town.ts`).
 
 ## Fond de l'écran d'accueil (`fond-accueil.webp`) — 2026-11-11
 Image fournie par Yann (`assets/Jeu centrale – assets/Image_d_accueil_1.jpg`), réduite en WebP (qualité 82, 1312 × 816).

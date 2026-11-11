@@ -4,7 +4,8 @@ import { describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
 import { validateShop } from '@neutron/engine';
 import {
-  BAND_VIEWBOX, HAT, PLOTS, TOWN_IMAGES, drawTown, drawTownLayers, isLot, lightKey, tileCentre, type TownImage, type TownOptions,
+  BAND_VIEWBOX, BUILD_LOTS, HAT, PLACEABLE, PLOTS, TOWN_IMAGES, drawTown, drawTownLayers, freeLots, isBuildLot, isLot, lightKey, quarterOf,
+  settle, tileCentre, tileCorners, type TownImage, type TownOptions,
 } from '../src/play/iso/town';
 import { skyColours } from '../src/play/iso/Sky';
 
@@ -158,5 +159,94 @@ describe('shop buildings in the town (lots L6.2, L6.3)', () => {
       expect(m, id).toContain('mark-arrow');
     }
     expect(town({}, 'full')).not.toContain('mark-arrow');
+  });
+});
+
+describe('the child chooses where to build (lot L9.4)', () => {
+  it('30 lawns to build on, all of them lots, the default plots among them', () => {
+    expect(BUILD_LOTS).toHaveLength(30);
+    expect(new Set(BUILD_LOTS.map(([c, r]) => `${c},${r}`)).size).toBe(30);
+    for (const [c, r] of BUILD_LOTS) expect(isLot(c, r), `${c},${r}`).toBe(true);
+    for (const id of PLACEABLE) expect(isBuildLot(PLOTS[id]!.c, PLOTS[id]!.r), id).toBe(true);
+    expect(PLACEABLE).not.toContain('reseau-chaleur');
+    expect(PLACEABLE.length).toBeLessThan(BUILD_LOTS.length);
+    // Most of them are seen in the band of the play screen.
+    const [, by, , bh] = BAND_VIEWBOX.split(' ').map(Number) as [number, number, number, number];
+    expect(BUILD_LOTS.filter(([c, r]) => { const y = tileCentre(c, r)[1]; return y > by + 40 && y < by + bh; }).length).toBeGreaterThanOrEqual(16);
+  });
+
+  it('settles every building on a lot of its own: kept, else its default plot, else the first free lot', () => {
+    expect(settle(['parc', 'piste'], {})).toEqual({ parc: [PLOTS.parc!.c, PLOTS.parc!.r] });
+    expect(settle(['parc'], { parc: [9, 6] })).toEqual({ parc: [9, 6] });
+    // Not a building lot, or a lot already taken: back to a free lot.
+    const s = settle(['parc', 'ecole'], { parc: [9, 0], ecole: [PLOTS.parc!.c, PLOTS.parc!.r] });
+    expect(s.ecole).toEqual([PLOTS.parc!.c, PLOTS.parc!.r]);
+    // The park's lot is not a building lot (a landmark): it goes to a free lot.
+    expect(isBuildLot(...(s.parc as [number, number]))).toBe(true);
+    expect(`${s.parc}`).not.toBe(`${s.ecole}`);
+    // The building being placed gets no lot, and the free lots leave out those taken.
+    expect(settle(['parc', 'ecole'], {}, 'ecole')).not.toHaveProperty('ecole');
+    expect(freeLots({ parc: [9, 6] })).toHaveLength(29);
+  });
+
+  it('draws a building on the lot chosen, and a lawn on its default plot', () => {
+    const at = (svg: string, id: string): string => { const k = svg.indexOf(`href="#p-${id}" transform="`); return k < 0 ? '' : svg.slice(k, svg.indexOf('"/>', k)); };
+    const base = still({ upgrades: ['parc'] }, 'full');
+    const moved = still({ upgrades: ['parc'], places: { parc: [9, 6] } }, 'full');
+    expect(at(moved, 'parc')).not.toBe('');
+    expect(at(moved, 'parc')).not.toBe(at(base, 'parc'));
+    // Being placed: not drawn at all.
+    expect(still({ upgrades: ['parc'], places: {} }, 'full')).not.toContain('#p-parc"');
+    // The heat station always stands by the plant.
+    expect(still({ upgrades: ['reseau-chaleur'], places: {} }, 'full')).toContain('#p-reseau-chaleur"');
+  });
+
+  it('the hospital protects the quarter where the child put it', () => {
+    expect(quarterOf({ hopital: [3, 6] })('hopital')).toBe(0);
+    expect(quarterOf({ hopital: [10, 3] })('hopital')).toBe(2);
+    expect(quarterOf({})('hopital')).toBeNull();
+    expect(quarterOf()('hopital')).toBe(1);
+  });
+
+  it('a lot to touch is a diamond on its tile', () => {
+    const [top, right, bottom, left] = tileCorners(4, 6);
+    expect(top![1]).toBeLessThan(bottom![1]);
+    expect(left![0]).toBeLessThan(right![0]);
+    const [cx, cy] = tileCentre(4, 6);
+    expect((top![0] + bottom![0]) / 2).toBeCloseTo(cx, 0);
+    expect((top![1] + bottom![1]) / 2).toBeCloseTo(cy, 0);
+  });
+});
+
+describe('fixes of lot L9.3', () => {
+  it('the building just bought pops in at its own depth: pictures in front of it are drawn after it', () => {
+    const layers = drawTownLayers(opts({ upgrades: ['maison-ve', 'maison-lilas'], fresh: 'maison-ve' }), 'full');
+    const ve = layers.findIndex((l) => l.svg.includes('<g class="pop">') && l.svg.includes('#p-maison-ve"'));
+    const lilas = layers.findIndex((l) => l.svg.includes('#p-maison-lilas"'));
+    expect(ve).toBeGreaterThanOrEqual(0);
+    expect(lilas).toBeGreaterThan(ve);
+  });
+
+  it('a flock of birds by day, each beating its wings, all heading the same way; none at night', () => {
+    const day = moving({ hour: 11 }, 'band');
+    expect(day.split('class="bird-wave"').length - 1).toBe(4);
+    expect(day.split('class="flap-up"').length - 1).toBe(4);
+    expect(day.split('class="flap-down"').length - 1).toBe(4);
+    expect(day).not.toMatch(/oiseau-[a-z]+-(haut|bas)" transform="translate\([^)]*\) scale\(-/);
+    expect(moving({ hour: 23 }, 'band')).not.toContain('bird-wave');
+  });
+});
+
+describe('countryside behind the town (lot L9.3)', () => {
+  it('is the first picture of the ground, under every tile, and takes the light of the hour', () => {
+    for (const view of ['band', 'full'] as const) {
+      const ground = drawTownLayers(opts(), view)[0]!.svg;
+      const body = ground.slice(ground.indexOf('</defs>'));
+      expect(body.indexOf('#p-arriere-ville"')).toBeGreaterThan(-1);
+      expect(body.indexOf('#p-arriere-ville"')).toBeLessThan(body.indexOf('#p-herbe"'));
+    }
+    expect(drawTownLayers(opts({ hour: 23 }), 'full')[0]!.svg).toContain('filter="url(#f-light)"');
+    const { 'arriere-ville': _a, ...rest } = IMAGES;
+    expect(drawTownLayers(opts({ images: rest }), 'full')[0]!.svg).not.toContain('arriere-ville');
   });
 });

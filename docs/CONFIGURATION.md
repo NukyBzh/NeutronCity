@@ -72,6 +72,7 @@ Avant tout retour en arrière : `git status` doit être propre (sinon `git stash
 | v0.10.0 | *(à poser après validation)* | 2026-11-11 | L8 : formats des tablettes et des téléphones, version web installable pour l'iPhone, ergonomie et fluidité vérifiées (D-23 à D-25) |
 | v0.11.0 | *(à poser après validation)* | 2026-11-11 | L9.1 : journal de l'essai sur l'appareil, écran caché pour l'adulte, guide et fiche de l'essai, mise en ligne privée de la version web sur Netlify (D-26) |
 | v0.12.0 | *(à poser après validation)* | 2026-11-11 | L9.2a : le jeu s'appelle « Nuki Town », logo et icônes NukiTeam (D-27) |
+| v0.13.0 | *(à poser après validation)* | 2026-11-11 | L9.3 et L9.4 : premier achat dès la 1re journée, son, boutique, oiseaux, cochon et fond (D-28) ; l'enfant choisit où construire (D-29) |
 | v0.7.0 | *(à poser après validation)* | 2026-11-09 | L5 : tutoriel guidé de la première partie, musique CC0 en boucle, bruitages, bouton « Son » (D-18) |
 
 Un commit ne peut pas citer son propre identifiant : la colonne « Commit » de la dernière ligne se complète au commit

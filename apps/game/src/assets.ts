@@ -1,5 +1,7 @@
 /** Image URLs of the shared assets folder (icons and shop drawings: own SVG, Cassandra: PNG from the NPP project). */
 const icons = import.meta.glob<string>('../../../assets/icons/*.svg', { eager: true, query: '?url', import: 'default' });
+/** Icons drawn in pictures (lot L9.3: Yann's piggy bank, Gemini, cut out): they replace the SVG of the same name. */
+const iconPictures = import.meta.glob<string>('../../../assets/icons/*.webp', { eager: true, query: '?url', import: 'default' });
 const shop = import.meta.glob<string>('../../../assets/shop/*.svg', { eager: true, query: '?url', import: 'default' });
 /** Buildings of the shop (lot L6): Gemini images reduced to WebP (assets/SOURCES.md); the older ones keep their SVG. */
 const objets = import.meta.glob<string>('../../../assets/objets/*.webp', { eager: true, query: '?url', import: 'default' });
@@ -10,7 +12,7 @@ const poses = import.meta.glob<string>('../../../assets/cassandra/cassandra-*.pn
 const byName = (files: Record<string, string>, prefix = ''): Record<string, string> =>
   Object.fromEntries(Object.entries(files).map(([path, url]) => [path.split('/').pop()!.replace(/\.\w+$/, '').replace(prefix, ''), url]));
 
-const ICONS = byName(icons);
+const ICONS = { ...byName(icons), ...byName(iconPictures) };
 const SHOP = byName(shop);
 const OBJETS = byName(objets);
 const VILLE = byName(ville);

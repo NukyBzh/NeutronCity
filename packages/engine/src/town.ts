@@ -90,6 +90,16 @@ export function nextDiscovery(shop: readonly ShopItem[], owned: readonly string[
   return discoveryOf(shop).find((i) => !owned.includes(i.id)) ?? null;
 }
 
+/**
+ * Welcome gift (lot L9.3): while nothing has been bought, the end of a day tops the piggy bank up to the price of the
+ * first building, so that every child buys something after the very first day. Returns the euros to add (0 if none).
+ */
+export function welcomeGift(shop: readonly ShopItem[], owned: readonly string[], wallet: number): number {
+  if (owned.length) return 0;
+  const first = nextDiscovery(shop, owned);
+  return first ? Math.max(0, first.price - wallet) : 0;
+}
+
 export type ShopStatus =
   | { kind: 'owned' }
   | { kind: 'open' }

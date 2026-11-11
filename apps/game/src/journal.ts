@@ -43,7 +43,8 @@ export interface GameRecord {
   events: { kind: string; start: number; fixed: number | null }[];
 }
 
-export interface BuyRecord { type: 'achat'; id: number; child: number; at: string; item: string; price: number }
+/** A purchase; `place`: the lot chosen in the town, « column,row » (lot L9.4). */
+export interface BuyRecord { type: 'achat'; id: number; child: number; at: string; item: string; price: number; place?: string }
 export type JournalRecord = GameRecord | BuyRecord;
 
 export interface Journal {
@@ -147,7 +148,7 @@ export function summarize(j: Journal, actable: (kind: string) => boolean): Child
 }
 
 const CSV_HEAD = ['type', 'enfant', 'date', 'journee', 'fin', 'heure_atteinte', 'etoiles', 'euros', 'maximum', 'secondes_x1', 'secondes_x2', 'secondes_x4',
-  'prises_curseur', 'indices', 'tutoriel', 'evenements', 'achat', 'prix', 'graine'];
+  'prises_curseur', 'indices', 'tutoriel', 'evenements', 'achat', 'prix', 'graine', 'terrain'];
 
 /**
  * The log as a table for a spreadsheet (semicolons, as French Excel expects). Events read « storm 9.5>9.9 »: started
@@ -157,12 +158,12 @@ export function toCsv(j: Journal): string {
   const lines = [CSV_HEAD.join(';')];
   for (const r of j.records) {
     if (r.type === 'achat') {
-      lines.push(['achat', r.child, r.at, '', '', '', '', '', '', '', '', '', '', '', '', '', r.item, r.price, ''].join(';'));
+      lines.push(['achat', r.child, r.at, '', '', '', '', '', '', '', '', '', '', '', '', '', r.item, r.price, '', r.place ?? ''].join(';'));
       continue;
     }
     const ev = r.events.map((e) => `${e.kind} ${e.start}>${e.fixed ?? '-'}`).join(' | ');
     lines.push(['jour', r.child, r.at, r.day, r.end, r.hour, r.stars ?? '', r.euros, r.max ?? '', ...r.stats.seconds, r.stats.moves, r.stats.hints, r.stats.tutorial,
-      ev, '', '', r.seed].join(';'));
+      ev, '', '', r.seed, ''].join(';'));
   }
   return `${lines.join('\r\n')}\r\n`;
 }

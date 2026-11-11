@@ -4,7 +4,7 @@
  */
 import { type DayDef, type SurpriseKind } from './day';
 import { dayResult, demandAt, hourOf, simulate, starBonus, type GameState } from './game';
-import { dayBonus, dayEffects, eventMods, shopStatus, type ShopItem } from './town';
+import { dayBonus, dayEffects, eventMods, shopStatus, welcomeGift, type ShopItem } from './town';
 
 /** A simulated player: how it moves the sliders, and how long it takes to act on an event (null: never). */
 export interface Bot {
@@ -98,6 +98,7 @@ export function campaign(days: readonly DayDef[], shop: readonly ShopItem[], bot
     const day = days[(n - 1) % days.length]!;
     const { game, result } = playDay(day, n, bot, shop, owned, quarterOf);
     wallet += game.euros + starBonus(dayBonus(shop, owned), result.stars);
+    wallet += welcomeGift(shop, owned, wallet);
     for (;;) {
       const open = shop.filter((i) => shopStatus(shop, owned, i).kind === 'open' && i.price <= wallet).sort((a, b) => a.price - b.price);
       if (!open.length) break;

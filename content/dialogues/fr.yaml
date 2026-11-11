@@ -73,6 +73,8 @@ shop.discover.usine-cereales: "L'usine **sèche** les céréales avec la chaleur
 shop.discover.maison-medicale: "Des **médecins** pour soigner les habitants. Dernière découverte !"
 shop.say.free: "Bravo, la ville grandit ! Choisis ce que tu veux construire."
 shop.say.wait: "Encore quelques euros ! Joue une journée pour remplir ta tirelire."
+# Lot L9.4 : l'enfant choisit où construire.
+shop.place: "Où veux-tu le construire ? Touche un **terrain qui brille** dans la ville."
 
 # Bilan : un seul conseil, choisi par le moteur (dayResult).
 bilan.bravo: "Génial ! Ta ville a eu juste ce qu'il fallait toute la journée."

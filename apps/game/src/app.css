@@ -31,7 +31,8 @@
   font-size: min(calc((100vw - var(--sa-l) - var(--sa-r)) / 64), calc((100vh - var(--sa-t) - var(--sa-b)) / 40));
   font-size: min(calc((100dvw - var(--sa-l) - var(--sa-r)) / 64), calc((100dvh - var(--sa-t) - var(--sa-b)) / 40));
   color: var(--encre);
-  background: linear-gradient(var(--ciel), var(--creme));
+  /* Background of every screen but the home screen, which has its own picture (lot L9.3, Yann's picture asset_66). */
+  background: url('../../../assets/fond-jeu.webp') center bottom / cover no-repeat, linear-gradient(var(--ciel), var(--creme));
 }
 html, body, #root { height: 100%; margin: 0; overflow: hidden; }
 #root { display: flex; align-items: center; justify-content: center; padding: var(--sa-t) var(--sa-r) var(--sa-b) var(--sa-l); }
@@ -307,18 +308,35 @@ svg .pop, svg .float { transform-box: fill-box; transform-origin: center; }
   95% { opacity: 1; }
   100% { transform: translate(var(--tx), var(--ty)); opacity: 0; }
 }
-.birds { animation: drift 45s linear infinite; }
+/* Birds (lot L9.3): the flock flies to the left across the sky; each bird rises and falls on its own wave and beats its
+   wings (two pictures shown in turn). */
+.birds { animation: fly-left 40s linear infinite; }
+@keyframes fly-left { from { transform: translateX(0); } to { transform: translateX(-2400px); } }
+.bird-wave { animation: bird-wave var(--wave, 3s) ease-in-out var(--d, 0s) infinite alternate; }
+@keyframes bird-wave { from { transform: translateY(-7px); } to { transform: translateY(7px); } }
+.flap-up { animation: flap-up var(--flap, 0.45s) steps(1, end) var(--d, 0s) infinite; }
+.flap-down { opacity: 0; animation: flap-down var(--flap, 0.45s) steps(1, end) var(--d, 0s) infinite; }
+@keyframes flap-up { 0% { opacity: 1; } 50% { opacity: 0; } }
+@keyframes flap-down { 0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; } }
 .city .iso-move, .city .birds,
 .city .iso-car, .city .walker-iso, .city .flake, .city .steam, .city .plume, .city .flow, .city .float {
   animation-delay: calc(var(--d, 0s) - var(--phase, 0s));
 }
 .walker-iso { animation: iso-walk 9s ease-in-out infinite alternate; }
 @keyframes iso-walk { from { transform: translate(0, 0); } to { transform: translate(52px, 30px); } }
-@media (prefers-reduced-motion: reduce) { .iso-car, .walker-iso, .iso-move, .birds { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .city-spots .spot { animation: none; } .iso-car, .walker-iso, .iso-move, .birds, .bird-wave, .flap-up, .flap-down { animation: none; } .flap-down { opacity: 0; } }
 
 /* Whole town (isometric) in the summary and the shop. */
 .town-panel { border: 0.15rem solid var(--encre); border-radius: 1.2rem; overflow: hidden; background: var(--ciel); }
 .town-panel .city { width: 100%; height: 100%; }
+/* Lot L9.4: free lots glow while the child chooses where to build; a lot grows a little under the finger. */
+.city-spots { pointer-events: none; }
+.city-spots .spot { pointer-events: auto; cursor: pointer; fill: #FFE27A; fill-opacity: 0.45; stroke: #FFC83D; stroke-width: 4;
+  stroke-linejoin: round; animation: spot-glow 1.2s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+.city-spots .spot:hover, .city-spots .spot:focus-visible { fill-opacity: 0.8; stroke: #1C2A4A; outline: none; }
+@keyframes spot-glow { from { fill-opacity: 0.25; } to { fill-opacity: 0.6; } }
+.town-panel.placing { box-shadow: 0 0 0 0.3rem #FFC83D; }
+.shop-placing { border-color: #FFC83D; }
 .summary { display: grid; grid-template-columns: 31rem 1fr; gap: 0.8rem; align-items: start; justify-content: stretch; }
 .summary .town-panel { height: 38.4rem; }
 .summary .summary-card { grid-column: 2; padding: 1.2rem 1rem; gap: 0.9rem; }

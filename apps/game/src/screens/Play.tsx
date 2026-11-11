@@ -6,10 +6,11 @@ import {
 import { townUrl } from '../assets';
 import { euros, t } from '../i18n';
 import { IsoCity } from '../play/IsoCity';
+import type { Places } from '../play/iso/town';
 import { Clock, CoreBar, Slider } from '../play/Controls';
 import { Curves } from '../play/Curves';
 import { REAL_SECONDS_PER_GAME_MINUTE, START_HOUR, advance, playUntil, startOf, timelineOf, type Sample } from '../play/session';
-import { sound } from '../sound';
+import { coinShows, sound, tickSounds } from '../sound';
 import { Button, Cassandra, Gauge, Icon, Rich, SoundButton } from '../ui/ui';
 import { NO_STATS, type GameEnd, type PlayStats } from '../journal';
 
@@ -86,7 +87,7 @@ export const SPEEDS = [1, 2, 4] as const;
 export type Speed = (typeof SPEEDS)[number];
 
 export function Play({
-  day, seed, upgrades, effects = [], mods = NO_MODS, seen = [], onSeen, speed, onSpeed, onFinish, onRestart, onHome, tutorial = false, onTutorialDone, onRecord,
+  day, seed, upgrades, places, effects = [], mods = NO_MODS, seen = [], onSeen, speed, onSpeed, onFinish, onRestart, onHome, tutorial = false, onTutorialDone, onRecord,
 }: {
   day: DayDef;
   /** Effects of the buildings bought on this day's demand (lot L6). */
@@ -98,6 +99,8 @@ export function Play({
   onSeen?: (kind: string) => void;
   seed: number;
   upgrades: readonly string[];
+  /** Lot of each building (lot L9.4). */
+  places?: Places;
   speed: Speed;
   onSpeed: (s: Speed) => void;
   onFinish: (game: GameState, stats: PlayStats) => void;
@@ -180,9 +183,9 @@ export function Play({
         const paid = r.game.paidMinutes;
         r = advance(day, r.game, r.history);
         const p = r.game.paidMinutes;
-        if (p > paid && p % 10 === 0) {
+        if (p > paid && coinShows(p)) {
           setCoins((k) => [...k.slice(-4), p]);
-          sound.play('coin');
+          if (tickSounds(p)) sound.play('tick');
         }
         const w = r.game.stats.surplusElec;
         if (w > 0 && w % 10 === 0 && w !== c.lastLoss) { c.lastLoss = w; setLosses((k) => [...k.slice(-4), w]); }
@@ -357,6 +360,7 @@ export function Play({
           elecOn={g.plant.elec > 0}
           heatOn={heatDay && g.plant.heat > 0}
           upgrades={upgrades}
+          places={places}
           scene={scene}
         />
         {acts.length || repairing || visit ? (

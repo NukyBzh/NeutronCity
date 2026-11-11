@@ -54,15 +54,16 @@ describe('play log of the trial (lot L9.1)', () => {
     expect(r.stars).toBeGreaterThanOrEqual(1);
     expect(r.max).toBeGreaterThan(0);
     expect(r.stats.seconds).toEqual([100, 20, 0]);
-    const j = upsert(upsert(EMPTY_JOURNAL, r), { type: 'achat', id: 9, child: 2, at: base.at, item: 'parc', price: 2400 });
+    const j = upsert(upsert(EMPTY_JOURNAL, r), { type: 'achat', id: 9, child: 2, at: base.at, item: 'parc', price: 2400, place: '4,6' });
     const [s] = summarize(j, actable);
     expect(s).toMatchObject({ child: 2, games: 1, finished: 1, bought: 1, minutes: 2, tutorial: 'passe-2' });
     expect(s!.acted).toBeGreaterThanOrEqual(1);
     expect(s!.delay).toBeGreaterThanOrEqual(0.5);
     const csv = toCsv(j).split('\r\n');
-    expect(csv[0]!.split(';')).toHaveLength(19);
-    expect(csv[1]!.split(';')).toHaveLength(19);
-    expect(csv[2]!.split(';')).toHaveLength(19);
+    expect(csv[0]!.split(';')).toHaveLength(20);
+    expect(csv[1]!.split(';')).toHaveLength(20);
+    expect(csv[2]!.split(';')).toHaveLength(20);
+    expect(csv[2]!.endsWith(';4,6')).toBe(true);
     expect(csv[1]).toContain(`${g.surprises[i]!.kind} `);
   });
 

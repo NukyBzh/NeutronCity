@@ -3,13 +3,22 @@
  *
  * - Music: « Happy Clappy Loop » by OwlishMedia, CC0 (assets/SOURCES.md), played through Web Audio so the loop has no gap.
  *   Quieter at night. It starts at the first touch: browsers and the Android WebView forbid sound before that.
- * - Effects: tiny tones made here (no file): click, coin, warning, jingle.
+ * - Effects: tiny tones made here (no file): click, tick (euros earned), coin (a real gain), warning, jingle.
  * - « Son » button: one switch for music and effects, kept on the device (settings, not progress: « Nouveau joueur »
  *   does not change it).
  */
 import musicUrl from '../../../assets/audio/musique-happy-clappy-loop.wav?url';
 
-export type Effect = 'click' | 'coin' | 'alert' | 'jingle';
+export type Effect = 'click' | 'tick' | 'coin' | 'alert' | 'jingle';
+
+/**
+ * Euros earned while playing (lot L9.3): a coin shows every 10 paid minutes, but the soft « tick » only every game hour
+ * (18 at most a day instead of 108, which annoyed the players). The bright « coin » is kept for real gains.
+ */
+export const COIN_EVERY = 10;
+export const TICK_EVERY = 60;
+export const coinShows = (paidMinutes: number): boolean => paidMinutes > 0 && paidMinutes % COIN_EVERY === 0;
+export const tickSounds = (paidMinutes: number): boolean => paidMinutes > 0 && paidMinutes % TICK_EVERY === 0;
 
 /** Volumes (0 to 1): music low under the voice of the game, a little lower at night. */
 export const MUSIC_DAY = 0.32;
@@ -43,6 +52,7 @@ export function saveSettings(s: Settings, storage: Pick<Storage, 'setItem'> | un
 /** Notes of each effect: [frequency in Hz, start in s, length in s]. */
 const NOTES: Record<Effect, [number, number, number][]> = {
   click: [[880, 0, 0.05]],
+  tick: [[1175, 0, 0.06]],
   coin: [[1319, 0, 0.08], [1760, 0.07, 0.16]],
   alert: [[660, 0, 0.14], [880, 0.16, 0.2]],
   jingle: [[523, 0, 0.14], [659, 0.12, 0.14], [784, 0.24, 0.14], [1047, 0.36, 0.34]],
@@ -122,7 +132,7 @@ class SoundSystem {
       const env = ctx.createGain();
       osc.type = effect === 'click' ? 'square' : 'triangle';
       osc.frequency.value = freq;
-      const peak = effect === 'click' ? EFFECTS * 0.25 : EFFECTS;
+      const peak = effect === 'click' ? EFFECTS * 0.25 : effect === 'tick' ? EFFECTS * 0.4 : EFFECTS;
       env.gain.setValueAtTime(0, t0 + start);
       env.gain.linearRampToValueAtTime(peak, t0 + start + 0.01);
       env.gain.exponentialRampToValueAtTime(0.001, t0 + start + len);

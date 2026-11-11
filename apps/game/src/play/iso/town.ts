@@ -29,6 +29,11 @@ export interface TownOptions {
   /** Upgrade just bought: only it plays the "appear" animation (otherwise it would replay at every redraw). */
   fresh?: string | null;
   /**
+   * Lot chosen by the child for each building (lot L9.4). Absent: every building on its default plot (PLOTS). Given:
+   * a building without a lot here is not drawn (it is being placed).
+   */
+  places?: Places;
+  /**
    * Pictures as data: URLs (they are painted into still pictures, which cannot load outside files): the town's
    * pictures (TOWN_IMAGES) and those of the shop buildings. What is not loaded yet is simply not drawn.
    */
@@ -48,11 +53,11 @@ export interface TownScene {
 
 /** Quarters of the town (engine's QUARTERS): the lots' columns of the left, centre and right blocks. */
 export const QUARTER_COLS: readonly (readonly number[])[] = [[3, 4], [6, 7], [9, 10]];
-/** Quarter of a shop building's plot (the hospital protects its own, lot L7.1). */
-export const quarterOfPlot = (id: string): number | null => {
-  const pl = PLOTS[id as keyof typeof PLOTS];
-  if (!pl) return null;
-  const q = QUARTER_COLS.findIndex((cols) => cols.includes(pl.c));
+/** Quarter of a shop building's lot (the hospital protects its own, lot L7.1), wherever the child put it (L9.4). */
+export const quarterOf = (places?: Places) => (id: string): number | null => {
+  const at = placeOf(id, places);
+  if (!at) return null;
+  const q = QUARTER_COLS.findIndex((cols) => cols.includes(at[0]));
   return q >= 0 ? q : null;
 };
 
@@ -103,11 +108,31 @@ export const PLOTS: Readonly<Record<string, { c: number; r: number; size: number
   cuve: { c: 3, r: 7, size: 0.6 },
   fontaine: { c: 4, r: 7, size: 0.62 },
 };
+/** Where each building stands: column and row of its lot (lot L9.4). */
+export type Places = Readonly<Record<string, readonly [number, number]>>;
+/** The heat station always stands against the plant; the other buildings with a plot go where the child wants. */
+export const FIXED_PLOTS: readonly string[] = ['reseau-chaleur'];
+export const PLACEABLE: readonly string[] = Object.keys(PLOTS).filter((id) => !FIXED_PLOTS.includes(id));
+
+/**
+ * Lots where the child builds (lot L9.4, « une ville plus vide, à construire »): 30 lawns. All the lots seen in the band
+ * of the play screen (rows and columns adding up to 4 to 12) that hold no landmark, and 12 lots further down, seen in
+ * the shop and the summary. The other lots keep the houses and flats of the town (back corner, landmarks).
+ */
+const FAR_LOTS = ['7,7', '9,6', '9,7', '10,3', '10,4', '10,6', '4,9', '6,9', '7,9', '3,10', '4,10', '6,10'];
+
+/** Ring and arrow helpers need the lot's column and row: where a building stands now, or null. */
+export function placeOf(id: string, places?: Places): readonly [number, number] | null {
+  const pl = PLOTS[id];
+  if (!pl) return null;
+  if (!places || FIXED_PLOTS.includes(id)) return [pl.c, pl.r];
+  return places[id] ?? null;
+}
+
 /** The woolly hat on its chimney (isolation) covers the chimney of the Lilas house: centre, bottom, width (shares). */
 export const HAT = { on: 'maison-lilas', x: 0.69, bottom: 0.3, size: 0.3 } as const;
 /** Grass tile, also the tile of the plots not bought yet. */
 export const TILE = 'herbe';
-const plotAt = (c: number, r: number): string | undefined => Object.keys(PLOTS).find((id) => PLOTS[id]!.c === c && PLOTS[id]!.r === r);
 
 /** Share of each ground tile's height taken by its top face (measured on the pictures). */
 const FACE: Record<string, number> = { herbe: 0.872, route: 0.876, piste: 0.86, carrefour: 0.817, riviere: 0.817, beton: 0.817 };
@@ -122,6 +147,55 @@ const PLACES: Record<string, Thing> = {
   '6,0': 'immeuble-rose', '9,0': 'usine-2', '10,0': 'usine-3', '9,1': 'immeuble', '10,1': 'maisons',
   '6,6': 'jeux', '9,4': 'gare', '3,9': 'immeuble', '9,3': 'maisons', '6,7': 'immeuble', '7,6': 'arbres',
 };
+/** Lots where the child may build (see FAR_LOTS). */
+export const BUILD_LOTS: readonly (readonly [number, number])[] = (() => {
+  const out: [number, number][] = [];
+  for (let r: number = ROWS[0]; r <= ROWS[1]; r++) {
+    for (let c = 3; c <= COLS[1]; c++) {
+      if (!isLot(c, r) || PLACES[`${c},${r}`]) continue;
+      if ((c + r >= 4 && c + r <= 12) || FAR_LOTS.includes(`${c},${r}`)) out.push([c, r]);
+    }
+  }
+  return out;
+})();
+const BUILD_SET = new Set(BUILD_LOTS.map(([c, r]) => `${c},${r}`));
+export const isBuildLot = (c: number, r: number): boolean => BUILD_SET.has(`${c},${r}`);
+
+/** Lots still free for a new building. */
+export function freeLots(places: Places): (readonly [number, number])[] {
+  const used = new Set(Object.values(places).map(([c, r]) => `${c},${r}`));
+  return BUILD_LOTS.filter(([c, r]) => !used.has(`${c},${r}`));
+}
+
+/**
+ * Gives every building bought a lot (lot L9.4): its own lot if it is a free building lot, else its default plot (progress
+ * saved before L9.4, review addresses) if free, else the first free lot. `pending` (being placed) gets none.
+ */
+export function settle(owned: readonly string[], places: Places, pending: string | null = null): Places {
+  const out: Record<string, readonly [number, number]> = {};
+  const used = new Set<string>();
+  const take = (id: string, at: readonly [number, number]): boolean => {
+    const k = `${at[0]},${at[1]}`;
+    if (!isBuildLot(at[0], at[1]) || used.has(k)) return false;
+    used.add(k);
+    out[id] = [at[0], at[1]];
+    return true;
+  };
+  const todo = owned.filter((id) => PLACEABLE.includes(id) && id !== pending);
+  const left = todo.filter((id) => !(places[id] && take(id, places[id]!)));
+  const still = left.filter((id) => !take(id, [PLOTS[id]!.c, PLOTS[id]!.r]));
+  for (const id of still) {
+    const lot = BUILD_LOTS.find(([c, r]) => !used.has(`${c},${r}`));
+    if (lot) take(id, lot);
+  }
+  return out;
+}
+
+/** The four corners of a ground tile on the screen (lot L9.4: the lots the child can touch). */
+export function tileCorners(c: number, r: number): [number, number][] {
+  return [P(T * c, T * r), P(T * c + T, T * r), P(T * c + T, T * r + T), P(T * c, T * r + T)];
+}
+
 const FILL: Thing[] = [
   'immeuble', 'maisons', 'immeuble-moderne', 'arbres', 'immeuble-brique', 'maison-jardin', 'tour-bureaux', 'immeuble',
   'immeuble-rose', 'boulangerie', 'arbres', 'maisons',
@@ -131,7 +205,7 @@ const thingAt = (c: number, r: number): Thing | null => {
   const k = PLACES[`${c},${r}`];
   if (k) return k;
   if (PLANT_COLS.includes(c)) return (r === 4 || r === 10) ? 'arbres' : null;
-  if (c < 0 || !isLot(c, r)) return null;
+  if (c < 0 || !isLot(c, r) || isBuildLot(c, r)) return null;
   return FILL[hash(c, r) % FILL.length]!;
 };
 /** Size of each thing as a share of a tile. */
@@ -143,14 +217,29 @@ const SIZE: Record<Thing, number> = {
 
 /** Pictures of the town (assets/ville), loaded by the screen with the shop buildings' pictures. */
 export const TOWN_IMAGES = [
-  'herbe', 'route', 'carrefour', 'riviere', 'beton',
+  'arriere-ville', 'herbe', 'route', 'carrefour', 'riviere', 'beton',
   'immeuble-jour', 'immeuble-jour-neige', 'immeuble-nuit', 'immeuble-nuit-neige', 'immeuble-coupure', 'immeuble-coupure-neige',
   'maisons', 'usine-2', 'usine-3', 'gare', 'reacteur', 'salle-machines', 'tour-on', 'tour-off', 'poste', 'pylone', 'pompage',
-  'salle-commande', 'combustible', 'diesel', 'arbre', 'lampadaire', 'panneau-alerte', 'balancoire', 'enfants', 'oiseaux',
+  'salle-commande', 'combustible', 'diesel', 'arbre', 'lampadaire', 'panneau-alerte', 'balancoire', 'enfants',
+  'oiseau-bleu-haut', 'oiseau-bleu-bas', 'oiseau-jaune-haut', 'oiseau-jaune-bas',
   'immeuble-moderne', 'immeuble-brique', 'tour-bureaux', 'boulangerie', 'maison-jardin', 'immeuble-rose', 'piste',
   'voiture-rouge-avant', 'voiture-rouge-arriere', 'voiture-bleue-avant', 'voiture-bleue-arriere', 'bus',
   'habitant-adulte', 'habitant-enfant', 'famille-1', 'famille-2', 'camion-maintenance', 'fumee',
 ] as const;
+
+/**
+ * Countryside picture behind the town (1024 px square): centre of its dark green diamond (pixels) and the scale that
+ * makes that diamond (541 px high) the town's lots, columns and rows 0 to 10 (1 056 drawing units high).
+ */
+const BACKDROP = { size: 1024, cx: 525.5, cy: 551.5, scale: (T * 11 * S) / 541 } as const;
+
+/** The flock of birds (lot L9.3): colour, place in the flock, size, wing beat and wave periods (seconds). */
+const FLOCK: readonly { color: 'bleu' | 'jaune'; dx: number; dy: number; size: number; flap: number; wave: number }[] = [
+  { color: 'bleu', dx: 0, dy: 0, size: 1.1, flap: 0.46, wave: 3.1 },
+  { color: 'jaune', dx: 38, dy: -16, size: 0.95, flap: 0.4, wave: 2.6 },
+  { color: 'jaune', dx: 44, dy: 18, size: 0.9, flap: 0.43, wave: 3.4 },
+  { color: 'bleu', dx: 82, dy: -4, size: 0.85, flap: 0.5, wave: 2.9 },
+];
 
 /**
  * Traffic of each road row: vehicles (front picture going right-down, back picture going left-up, both mirrored) and
@@ -306,6 +395,25 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
 
   // ---------- ground ----------
   const ground: Item[] = [];
+  // Countryside around the town (lot L9.3, Yann's picture asset_67): its dark green diamond lies under the town's lots,
+  // its river goes on from the town's river; its sky is cut out, so the game's sky shows above the hills.
+  if (img['arriere-ville']) {
+    const [cx, cy] = P(T * 5.5, T * 5.5);
+    const size = BACKDROP.size * BACKDROP.scale;
+    const x = cx - BACKDROP.cx * BACKDROP.scale;
+    const y = cy - BACKDROP.cy * BACKDROP.scale;
+    ground.push({ id: 'arriere-ville', box: { x, y, w: size, h: size }, filters: L(['winter']) });
+    // Below it, the same picture upside down: its pale bottom edge goes on, so a tall panel never shows the sky under
+    // the ground (seen at night in the summary).
+    ground.push({ id: 'arriere-ville', box: { x, y: y + 2 * size, w: size, h: -size }, filters: L(['winter']) });
+  }
+  // Lot of each building bought (lot L9.4): where the child put it, or its default plot.
+  const builtAt = new Map<string, string>();
+  for (const id of o.upgrades) {
+    const at = placeOf(id, o.places);
+    if (at) builtAt.set(`${at[0]},${at[1]}`, id);
+  }
+  const heatPlot = (c: number, r: number): boolean => PLOTS['reseau-chaleur']!.c === c && PLOTS['reseau-chaleur']!.r === r;
   const tileOf = (c: number, r: number): { id: string; mirror?: boolean; winter?: boolean } => {
     if (c === -1) return { id: 'riviere' };
     if (c < 0) return { id: 'herbe', winter: true };
@@ -314,12 +422,14 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
     if (isRoadCol(c)) return { id: 'route', mirror: true };
     if (isRoadRow(r)) return o.upgrades.includes('piste') && img.piste ? { id: 'piste' } : { id: 'route' };
     const thing = thingAt(c, r);
-    return thing === 'arbres' || thing === 'jeux' || plotAt(c, r) ? { id: 'herbe', winter: true } : { id: 'beton' };
+    return thing === 'arbres' || thing === 'jeux' || isBuildLot(c, r) || heatPlot(c, r) ? { id: 'herbe', winter: true } : { id: 'beton' };
   };
   for (let s = COLS[0] + ROWS[0]; s <= COLS[1] + ROWS[1]; s++) {
     for (let c: number = COLS[0]; c <= COLS[1]; c++) {
       const r = s - c;
       if (r < ROWS[0] || r > ROWS[1]) continue;
+      // The strip of grass beyond the river: the countryside picture already has it (lot L9.3).
+      if (c < -1 && img['arriere-ville']) continue;
       const t = tileOf(c, r);
       const box = tileBox(t.id, c, r);
       if (box) ground.push({ id: t.id, box, mirror: t.mirror, filters: L(t.winter ? ['winter'] : []) });
@@ -350,11 +460,12 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
   const trees = (c: number, r: number, spots: [number, number][]): void => {
     for (const [dx, dy] of spots) push('arbre', T * c + 4 + dx, T * r + 4 + dy, 0.24 + ((hash(c + dx, r + dy) % 3) * 0.03), L(['winter']));
   };
-  /** The picture of a shop building on its plot. */
+  /** The picture of a shop building on its lot. */
   function pictureBox(id: string): Box | null {
     const pl = PLOTS[id];
-    if (!pl) return null;
-    return boxAt(id, T * pl.c + 4, T * pl.r + 4, pl.size * (view === 'full' ? 1.15 : 1));
+    const at = placeOf(id, o.places);
+    if (!pl || !at) return null;
+    return boxAt(id, T * at[0] + 4, T * at[1] + 4, pl.size * (view === 'full' ? 1.15 : 1));
   }
   function hatBox(): Box | null {
     const b = pictureBox(HAT.on);
@@ -364,7 +475,23 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
     const h = (w * im.h) / im.w;
     return { x: b.x + b.w * HAT.x - w / 2, y: b.y + b.h * HAT.bottom - h, w, h };
   }
-  const fresh: Item[] = [];
+  /** Ring and arrow around the building just bought (R1-08). */
+  function freshMark(): { ring: string; arrow: string } | null {
+    if (!o.fresh) return null;
+    // Cycle track and street lights: the arrow points at a road and at a crossroads of the main street.
+    const spot = o.fresh === 'piste' ? tileCentre(6, 5) : o.fresh === 'eclairage' ? tileCentre(5, 5) : null;
+    const b = o.fresh === 'isolation' ? hatBox() : spot ? { x: spot[0] - 50, y: spot[1] - 40, w: 100, h: 69 } : pictureBox(o.fresh);
+    if (!b) return null;
+    const sx = b.x + b.w / 2;
+    const sy = b.y + b.h - b.w * (o.fresh === 'isolation' ? 0.5 : 0.29);
+    const ty = b.y + 18;
+    const k = view === 'full' ? 2.6 : 1;
+    const a = (v: number): string => f1(v * k);
+    return {
+      ring: `<ellipse class="mark-ring" cx="${f1(sx)}" cy="${f1(sy)}" rx="${a(58)}" ry="${a(30)}" fill="#FFE27A" fill-opacity="0.35" stroke="#FFC83D" stroke-width="${a(5)}"/>`,
+      arrow: `<g class="mark-arrow"><path transform="translate(${f1(sx)} ${f1(ty)})" d="M${a(-18)} ${a(-92)} H${a(18)} V${a(-52)} H${a(34)} L0 ${a(-14)} L${a(-34)} ${a(-52)} H${a(-18)} Z" fill="#FFC83D" stroke="#1C2A4A" stroke-width="${a(5)}" stroke-linejoin="round"/></g>`,
+    };
+  }
   /** Traffic of a road row: what moves along it, drawn between the rows behind and the rows in front. */
   const traffic = (r: number): string => {
     const items: Item[] = [];
@@ -399,18 +526,28 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
       // Everything of a cut quarter goes dark (lot L7.1).
       const first = things.length;
       const dim = (): void => { if (cutCols.includes(c)) for (let k = first; k < things.length; k++) things[k]!.filters = [...things[k]!.filters, 'dark']; };
-      const plot = plotAt(c, r);
+      const plot = builtAt.get(`${c},${r}`);
+      if (!plot && (isBuildLot(c, r) || heatPlot(c, r))) { dim(); continue; }
       if (plot) {
         const box = o.upgrades.includes(plot) && img[plot] ? pictureBox(plot) : null;
         if (box) {
           const item = { id: plot, box, filters: L() };
           const hat = plot === HAT.on && o.upgrades.includes('isolation') ? hatBox() : null;
           const hatItem = hat ? { id: 'isolation', box: hat, filters: L() } : null;
-          if (o.fresh === plot) { fresh.push(item); if (hatItem) fresh.push(hatItem); }
-          else {
-            things.push(item);
-            if (hatItem) (o.fresh === 'isolation' ? fresh : things).push(hatItem);
+          // The building just bought pops in at its own depth, not over the whole town (lot L9.3): the pictures
+          // behind it are flushed first, it gets its own moving layer, and what stands in front is drawn after it.
+          const popping = o.fresh === plot ? [item, ...(hatItem ? [hatItem] : [])] : hatItem && o.fresh === 'isolation' ? [hatItem] : [];
+          if (o.fresh !== plot) things.push(item);
+          if (hatItem && o.fresh !== plot && o.fresh !== 'isolation') things.push(hatItem);
+          dim();
+          if (popping.length) {
+            if (cutCols.includes(c)) for (const it of popping) it.filters = [...it.filters, 'dark'];
+            rowItems.push(...things);
+            things.length = 0;
+            flush();
+            layers.push({ kind: 'moving', svg: `<g class="pop">${o.fresh === plot ? freshMark()?.ring ?? '' : ''}${render(popping)}</g>` });
           }
+          continue;
         }
         dim();
         continue;
@@ -444,8 +581,7 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
   things.length = 0;
   flush();
 
-  // ---------- moving: the building just bought, flows, marks, snow, birds ----------
-  if (fresh.length) top.push(`<g class="pop">${render(fresh)}</g>`);
+  // ---------- moving: flows, marks, snow, birds (the building just bought pops in at its own depth) ----------
   // Power line: thin wires between the pylons' tops; electricity flows along them while the plant produces.
   const tops = PYLONS.map((px) => { const b = boxAt('pylone', px, WIRE_Y, 0.36); return b ? [b.x + b.w / 2, b.y + b.h * 0.08] : null; }).filter((p): p is number[] => p !== null);
   if (tops.length > 1) {
@@ -478,25 +614,29 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
     const b = boxAt('panneau-alerte', T * 8 + 4, T * 2 + 4, 0.5);
     if (b) top.push(`<g class="float">${render([{ id: 'panneau-alerte', box: { ...b, y: b.y - 90 }, filters: [] }])}</g>`);
   }
-  // Building just bought: a bouncing yellow arrow and a glowing ring show where it is (R1-08).
-  if (o.fresh) {
-    // Cycle track and street lights: the arrow points at a road and at a crossroads of the main street.
-    const spot = o.fresh === 'piste' ? tileCentre(6, 5) : o.fresh === 'eclairage' ? tileCentre(5, 5) : null;
-    const b = o.fresh === 'isolation' ? hatBox() : spot ? { x: spot[0] - 50, y: spot[1] - 40, w: 100, h: 69 } : pictureBox(o.fresh);
-    if (b) {
-      const sx = b.x + b.w / 2;
-      const sy = b.y + b.h - b.w * (o.fresh === 'isolation' ? 0.5 : 0.29);
-      const ty = b.y + 18;
-      const k = view === 'full' ? 2.6 : 1;
-      const a = (v: number): string => f1(v * k);
-      top.push(`<g class="pop"><ellipse class="mark-ring" cx="${f1(sx)}" cy="${f1(sy)}" rx="${a(58)}" ry="${a(30)}" fill="#FFE27A" fill-opacity="0.35" stroke="#FFC83D" stroke-width="${a(5)}"/>`
-        + `<g class="mark-arrow"><path transform="translate(${f1(sx)} ${f1(ty)})" d="M${a(-18)} ${a(-92)} H${a(18)} V${a(-52)} H${a(34)} L0 ${a(-14)} L${a(-34)} ${a(-52)} H${a(-18)} Z" fill="#FFC83D" stroke="#1C2A4A" stroke-width="${a(5)}" stroke-linejoin="round"/></g></g>`);
-    }
-  }
-  // Birds crossing the sky by day (Gemini picture).
-  if (night < 0.5 && img.oiseaux) {
-    const y0 = view === 'band' ? 230 : -60;
-    top.push(`<g class="birds">${render([{ id: 'oiseaux', box: { x: -300, y: y0, w: 90, h: 72 }, filters: [] }])}</g>`);
+  // Building just bought: a bouncing yellow arrow shows where it is (R1-08), above everything; its glowing ring lies on
+  // the ground, under the building, except for the cycle track, the street lights and the hat (no plot of their own).
+  const mark = freshMark();
+  if (mark) top.push(`<g class="pop">${PLOTS[o.fresh!] ? '' : mark.ring}${mark.arrow}</g>`);
+  // Birds crossing the sky by day (lot L9.3): a small flock, all heading left (the way they look), each bird beating
+  // its wings (two pictures, wings up and down) and rising and falling on its own wave. Cut from the Gemini picture.
+  if (night < 0.5) {
+    const y0 = view === 'band' ? 262 : -20;
+    const x0 = view === 'band' ? 1500 : 1700;
+    const birds = FLOCK.map((b, k) => {
+      const up = `oiseau-${b.color}-haut`;
+      const down = `oiseau-${b.color}-bas`;
+      const im = img[up];
+      if (!im || !img[down]) return '';
+      const w = 30 * b.size * (view === 'full' ? 1.6 : 1);
+      const box = { x: x0 + b.dx * (view === 'full' ? 1.6 : 1), y: y0 + b.dy * (view === 'full' ? 1.6 : 1), w, h: (w * im.h) / im.w };
+      const flap = `style="--flap:${b.flap}s;--d:${-k * 0.13}s"`;
+      return `<g class="bird-wave" style="--wave:${b.wave}s;--d:${-k * 0.7}s">${render([
+        { id: up, box, filters: [], wrap: `class="flap-up" ${flap}` },
+        { id: down, box, filters: [], wrap: `class="flap-down" ${flap}` },
+      ])}</g>`;
+    }).join('');
+    if (birds) top.push(`<g class="birds">${birds}</g>`);
   }
   if (winter) {
     top.push(Array.from({ length: view === 'band' ? 32 : 50 }, (_, k) => `<circle class="flake" cx="${f1(-400 + ((k * 197) % 2000))}" cy="${f1((view === 'band' ? 220 : -150) + ((k * 53) % 240))}" r="${f1(1.6 + (k % 3))}" fill="#FFFFFF" opacity="0.9" style="--d:${-((k * 13) % 11)}s;animation-duration:${8 + (k % 5)}s"/>`).join(''));

@@ -42,15 +42,15 @@ Ville complète en **19 journées**.
 
 | Bâtiment | Acheté après la journée |
 |---|---|
+| reseau-chaleur | 1 |
 | ferme | 2 |
-| reseau-chaleur | 3 |
-| maison-lilas | 3 |
-| maison-ve | 4 |
-| epicerie | 5 |
-| ecole | 6 |
-| usine-cereales | 7 |
-| maison-medicale | 8 |
-| fontaine | 9 |
+| maison-lilas | 2 |
+| maison-ve | 3 |
+| epicerie | 4 |
+| ecole | 5 |
+| usine-cereales | 6 |
+| maison-medicale | 7 |
+| fontaine | 8 |
 | parc | 9 |
 | piste | 10 |
 | piscine | 11 |
@@ -58,5 +58,5 @@ Ville complète en **19 journées**.
 | batterie | 14 |
 | isolation | 15 |
 | solaire | 16 |
-| hopital | 18 |
+| hopital | 17 |
 | cuve | 19 |

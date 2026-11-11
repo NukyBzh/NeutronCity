@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   DAY_MINUTES, NO_MODS, START_HOUR, dayBonus, dayEffects, dayResult, demandAt, drawSurprises, effectsAt, heatOpen, hourOf, momentWeight,
-  nextDiscovery, shopStatus, simulate, validateShop, type DayDef, type GameState, type ShopItem,
+  nextDiscovery, shopStatus, simulate, validateShop, welcomeGift, type DayDef, type GameState, type ShopItem,
 } from '../src/index';
 import { DAYS, SHOP, TEXTS } from './content';
 
@@ -20,7 +20,7 @@ describe('content/shop (lot L6, D-19)', () => {
   it('has the 18 buildings, 8 of them in the discovery phase, and one that opens heat', () => {
     expect(SHOP).toHaveLength(18);
     expect(SHOP.filter((i) => i.discovery !== undefined).map((i) => i.id)).toEqual([
-      'ferme', 'reseau-chaleur', 'maison-lilas', 'maison-ve', 'epicerie', 'ecole', 'usine-cereales', 'maison-medicale',
+      'reseau-chaleur', 'ferme', 'maison-lilas', 'maison-ve', 'epicerie', 'ecole', 'usine-cereales', 'maison-medicale',
     ]);
     expect(SHOP.filter((i) => i.opensHeat).map((i) => i.id)).toEqual(['reseau-chaleur']);
   });
@@ -32,9 +32,9 @@ describe('content/shop (lot L6, D-19)', () => {
     expect(missing).toEqual([]);
   });
 
-  it('prices from 2 400 to 12 000 €; a building pays itself back in 12 to 20 days of bonus (E3, E6, tuned in L7.2, D-22)', () => {
+  it('prices from 2 400 to 12 000 € (the first building 900 €, L9.3); a building pays itself back in 12 to 20 days of bonus (E3, E6, D-22)', () => {
     for (const i of SHOP) {
-      expect(i.price).toBeGreaterThanOrEqual(2400);
+      expect(i.price).toBeGreaterThanOrEqual(i.discovery === 1 ? 900 : 2400);
       expect(i.price).toBeLessThanOrEqual(12000);
       expect(i.price / i.bonus).toBeGreaterThanOrEqual(12);
       expect(i.price / i.bonus).toBeLessThanOrEqual(20);
@@ -56,7 +56,7 @@ describe('content/shop (lot L6, D-19)', () => {
 describe('order of the shop (E4, E5)', () => {
   it('offers the discovery buildings one at a time, in order, then opens the others as the town grows', () => {
     const owned: string[] = [];
-    for (const step of ['ferme', 'reseau-chaleur', 'maison-lilas', 'maison-ve', 'epicerie', 'ecole', 'usine-cereales', 'maison-medicale']) {
+    for (const step of ['reseau-chaleur', 'ferme', 'maison-lilas', 'maison-ve', 'epicerie', 'ecole', 'usine-cereales', 'maison-medicale']) {
       expect(nextDiscovery(SHOP, owned)?.id).toBe(step);
       const open = SHOP.filter((i) => shopStatus(SHOP, owned, i).kind === 'open').map((i) => i.id);
       expect(open).toEqual([step]);
@@ -73,9 +73,22 @@ describe('order of the shop (E4, E5)', () => {
     expect(heatOpen(SHOP, ['ferme', 'reseau-chaleur'])).toBe(true);
   });
 
+  it('the heat network comes first and costs less than a first summer day pays (L9.3)', () => {
+    const first = nextDiscovery(SHOP, [])!;
+    expect(first.id).toBe('reseau-chaleur');
+    expect(first.price).toBeLessThanOrEqual(900);
+  });
+
+  it('the welcome gift tops the piggy bank up to the first building, only while nothing is bought (L9.3)', () => {
+    expect(welcomeGift(SHOP, [], 40)).toBe(860);
+    expect(welcomeGift(SHOP, [], 900)).toBe(0);
+    expect(welcomeGift(SHOP, [], 1800)).toBe(0);
+    expect(welcomeGift(SHOP, ['reseau-chaleur'], 0)).toBe(0);
+  });
+
   it('pays the bonus of the buildings bought', () => {
     expect(dayBonus(SHOP, [])).toBe(0);
-    expect(dayBonus(SHOP, ['ferme', 'reseau-chaleur'])).toBe(550);
+    expect(dayBonus(SHOP, ['ferme', 'reseau-chaleur'])).toBe(260);
   });
 });
 

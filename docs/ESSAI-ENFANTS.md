@@ -112,5 +112,8 @@ Une ligne par partie (`jour`) et par achat (`achat`). Colonnes :
   - `non` : pas montré ;
 - **evenements** : `storm 9.5>9.9` veut dire que la tempête a commencé à 9 h 30 et que l'enfant a agi à 9 h 54 ;
   `>-` veut dire qu'il n'a jamais agi.
+- **achat**, **prix** : le bâtiment acheté ;
+- **terrain** (depuis la v0.13.0) : la case choisie par l'enfant, « colonne,ligne » ; vide si le bâtiment n'a pas de
+  terrain (réseau de chaleur, piste, éclairage, isolation) ou si l'enfant a quitté la boutique sans choisir.
 
 Dans le journal du jeu, le délai moyen est en minutes de jeu. Le joueur « enfant » simulé agit en 30 minutes de jeu.

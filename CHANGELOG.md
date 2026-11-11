@@ -2,6 +2,18 @@
 
 *Ce qui change pour le joueur, en mots simples. Une section par version (voir `docs/CONFIGURATION.md` §4).*
 
+## v0.13.0 — 2026-11-11 (lots L9.3 et L9.4 : retours des premières minutes de jeu, à valider)
+- **Un achat dès la première journée** : le premier bâtiment de la boutique est maintenant le **réseau de chaleur**, à 900 €. S'il manque des euros à la fin de la première journée, Cassandra offre la différence (« cadeau de bienvenue »). Le printemps se joue donc dès la 2e journée.
+- **Tu choisis où construire** : après un achat, les terrains libres de la ville brillent ; touche celui que tu veux. La ville de départ est plus vide, avec 30 terrains à bâtir. L'hôpital protège le quartier où tu l'as mis. Le réseau de chaleur reste contre la centrale, l'isolation suit la maison des Lilas.
+- Le son des euros ne sonne plus qu'une fois par heure de jeu, avec un petit « tic » plus doux (avant : jusqu'à 108 fois par journée). Les pièces s'affichent comme avant.
+- Dans la boutique, un bouton **Jouer** ramène au choix de la journée en une touche.
+- Un bâtiment non disponible dit ce qui l'ouvre (« Après : la ferme », « Encore 3 bâtiments à acheter avant », « Dès 8 bâtiments dans ta ville ») au lieu de « Bientôt ».
+- Le bâtiment qu'on vient d'acheter reste à sa place dans la perspective, derrière les maisons qui sont devant lui.
+- Les oiseaux volent en petite bande, tous dans le même sens, en battant des ailes et en montant et descendant doucement.
+- Nouveau cochon tirelire avec son casque, et nouveau fond (ciel, collines, centrale au loin) sur tous les écrans sauf l'accueil.
+- La ville n'est plus une île dans le ciel : elle est posée au milieu d'une campagne (champs, fermes, rivière, routes), et le ciel du jeu reste visible au-dessus des collines.
+- La progression est gardée : les bâtiments déjà achetés restent à leur place d'avant.
+
 ## v0.12.0 — 2026-11-11 (lot L9.2a : le jeu s'appelle « Nuki Town », à valider)
 - Le jeu s'appelle maintenant **Nuki Town**, un jeu de l'équipe NukiTeam.
 - Nouveau logo sur l'accueil et nouvelle icône sur la tablette, le PC et l'iPhone : la centrale sur son îlot d'herbe, entourée d'une orbite jaune et orange avec Nuki qui cligne de l'œil et une pièce en euro.

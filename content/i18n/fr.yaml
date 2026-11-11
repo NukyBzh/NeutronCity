@@ -82,6 +82,9 @@ shop.solaire: Des panneaux solaires
 shop.hopital: Un hôpital
 shop.cuve: Une cuve de chaleur
 shop.new: "Nouveau dans ta ville !"
+shop.placeTitle: "Choisis l'endroit !"
+shop.placeHint: "Touche un terrain vert qui brille pour y construire."
+shop.placeHere: "Construire {name} ici"
 shop.where.fontaine: La fontaine fait une jolie place, sous la flèche jaune.
 shop.where.parc: Le parc arboré, avec sa fontaine et ses bancs, est sous la flèche jaune.
 shop.where.piste: Une piste cyclable verte longe les grandes rues.
@@ -121,13 +124,15 @@ shop.effect.solaire: Électricité − le jour
 shop.effect.hopital: Électricité + tout le temps
 shop.effect.cuve: Chaleur − le soir, + la nuit
 shop.bonus: "+{amount} par journée"
-shop.later: Bientôt
-shop.locked: "Dès {n} bâtiments"
+shop.after: "Après : {name}"
+shop.afterMany: "Encore {n} bâtiments à acheter avant"
+shop.locked: "Dès {n} bâtiments dans ta ville"
 shop.discovery: "Découverte : bâtiment {n} sur {total}"
 shop.free: "Ta ville a {n} bâtiments"
 summary.bonus: "Ta ville rapporte {amount}"
 summary.bonus.half: "Avec 2 étoiles, ta ville rapporte la moitié : {amount}"
 summary.bonus.none: "Avec 1 étoile, ta ville ne rapporte rien aujourd'hui. Vise 3 étoiles !"
+summary.gift: "Cadeau de bienvenue de Cassandra : {amount} pour ton premier bâtiment !"
 days.locked.heat: Achète le réseau de chaleur dans la boutique
 
 btn.newPlayer: Nouveau joueur

@@ -5,7 +5,7 @@ import { sound } from '../sound';
 
 /** Decorative icon: the word always sits next to it, so it has no text alternative of its own. */
 export function Icon({ name, size = 2.2, className }: { name: string; size?: number; className?: string }) {
-  return <img className={className} src={iconUrl(name)} alt="" aria-hidden style={{ width: `${size}rem`, height: `${size}rem` }} />;
+  return <img className={className} src={iconUrl(name)} alt="" aria-hidden style={{ width: `${size}rem`, height: `${size}rem`, objectFit: 'contain' }} />;
 }
 
 /** Button = icon + word (ergonomics rule), at least 3.2 rem (64 px at 1280×800) high. */

@@ -22,11 +22,12 @@ avant tout commit, installation, envoi sur GitHub ou action irréversible).*
 | v0.10.0 | L8 Tablette | **L8.1 Formats fait** le 2026-11-11, en attente de validation : tablettes Galaxy Tab A7, A6 (10.1" et 7" de 2016), A11+ et téléphones iPhone 11 / 14, Galaxy S20 / S23 Ultra, en paysage seulement ; scène propre aux téléphones (48 × 22,5 rem), zones sûres (D-23). **L8.2 version web installable (PWA)** faite le 2026-11-11, en attente de validation : manifeste, mise en cache hors ligne, icônes, écran « Tourne ton téléphone » avec pause (D-24, `docs/iphone.md`) ; mise en ligne en HTTPS remise à plus tard. **L8.3 fin du lot** faite le 2026-11-11, en attente de validation : pas d'installeur Windows, ergonomie contrôlée aux 8 formats (`docs/ERGONOMIE.md`), fluidité ≥ 44 images/s au pire moment, APK `livrables/Neutron-City-0.10.0.apk` (D-25) |
 | v0.11.0 | L9.1 Préparation de l'essai | **Fait** le 2026-11-11, en attente de validation : journal de l'essai sur l'appareil, écran caché (5 touches sur la version), numéro d'enfant, export pour Excel ; guide et fiche `docs/ESSAI-ENFANTS.md` ; essai sur Tab A11+, Tab A7 (APK `livrables/Neutron-City-0.11.0.apk`) et iPhone (version web sur Netlify, mise en ligne par Yann) (D-26) |
 | v0.12.0 | L9.2a Nouveau nom | **Fait** le 2026-11-11, en attente de validation : le jeu s'appelle **Nuki Town** (jeu NukiTeam), logo choisi par Yann redessiné en SVG (`tools/branding/nuki-town.mjs`), sur l'accueil et en icône (APK, Windows, iPhone, web) ; identifiant Android et clés d'enregistrement gardés (D-27) ; APK `livrables/Nuki-Town-0.12.0.apk`, zip web `livrables/Nuki-Town-web-0.12.0.zip`
+| v0.13.0 | L9.3 et L9.4 Retours des premières minutes | **Fait** le 2026-11-11, en attente de validation : réseau de chaleur en 1er bâtiment à 900 € et cadeau de bienvenue (printemps dès la 2e journée), son des euros une fois par heure, bouton « Jouer » et conditions de déblocage dans la boutique, bâtiment neuf dans la perspective, oiseaux en bande, cochon tirelire, fond et campagne autour de la ville de Yann (D-28) ; **l'enfant choisit où construire** parmi 30 terrains, ville de départ plus vide (D-29). APK et version web à reconstruire puis à mettre en ligne |
 | v1.0.0 | L9.2 Essai enfants et corrections | À faire : Yann fait l'essai, puis retours R2 et corrections |
 
 ## Documents
 - `docs/CADRAGE.md` — cadrage validé.
-- `docs/DECISIONS.md` — décisions D-01 à D-27.
+- `docs/DECISIONS.md` — décisions D-01 à D-29.
 - `docs/ESSAI-ENFANTS.md` — essai avec des enfants : déroulé, ce qu'il faut observer, questions, fiche à imprimer, lecture du journal exporté.
 - `docs/RETOURS.md` — retours de test (R1 : premier essai sur la tablette).
 - `docs/tablette.md` — installer l’APK sur une tablette Android (Tab A9+ au début ; Tab A11+ et Tab A7 pour l'essai L9).
@@ -46,7 +47,7 @@ avant tout commit, installation, envoi sur GitHub ou action irréversible).*
 ## Version de test (2026-11-08)
 - **Retours du premier test sur la tablette** (R1, 14 points) : `docs/RETOURS.md`, avec les lots proposés L3.1, L3.2, L4, L5 (à valider).
 - **APK pour la Galaxy Tab A9+** (2026-11-08) : `npm.cmd run android` → `livrables/Neutron-City-<version>.apk` ; installation et conseils de test : `docs/tablette.md`.
-- **Version web pour Netlify** (2026-11-11) : `npm.cmd run web` → `livrables/Neutron-City-web-<version>.zip`, à déposer sur Netlify (`docs/iphone.md` §2).
+- **Version web pour Netlify** (2026-11-11, L9.2d) : en ligne sur https://stunning-haupia-9181a8.netlify.app ; `npm.cmd run android` puis `npm.cmd run web` → envoi complet (jeu + APK) `livrables/Nuki-Town-web-<version>.zip` et `livrables/web-<version>/` (`docs/iphone.md` §2). Ne jamais envoyer le dépôt lui-même : `netlify.toml` fait échouer exprès cette construction.
 - Par le Wi-Fi : `npm.cmd run build` puis, dans `apps/game` : `npx.cmd vite preview --host 0.0.0.0 --port 4180` ; sur le même Wi-Fi : http://<adresse du PC>:4180 (192.168.1.24 le 2026-11-08). Progression enregistrée sur l'appareil (D-14) ; « Nouveau joueur » sur l'accueil entre deux enfants. Retours du test avec les enfants à intégrer.
 
 ## Points ouverts

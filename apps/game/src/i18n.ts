@@ -28,5 +28,5 @@ export function t(id: string, values: Record<string, string> = {}): string {
   return text.replace(/\{(\w+)\}/g, (m, k: string) => values[k] ?? m);
 }
 
-/** Whole euros with a French thin space: 1 240 €. */
-export const euros = (n: number): string => `${Math.round(n).toLocaleString('fr-FR')} €`;
+/** Whole euros with a French thin space: 1 240 €; a no-break space before the sign, so « 860 € » never splits (L9.3). */
+export const euros = (n: number): string => `${Math.round(n).toLocaleString('fr-FR')}\u00a0€`;

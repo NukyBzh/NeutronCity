@@ -3,7 +3,8 @@ import type { Mood } from '@neutron/engine';
 import { townUrl } from '../assets';
 import { t } from '../i18n';
 import {
-  BAND_VIEWBOX, FULL_VIEWBOX, PLOTS, TOWN_IMAGES, drawTownLayers, lightKey, seasonOf, type TownImage, type TownLayer, type TownScene,
+  BAND_VIEWBOX, FULL_VIEWBOX, PLOTS, TOWN_IMAGES, drawTownLayers, lightKey, seasonOf, tileCorners, type Places, type TownImage, type TownLayer,
+  type TownScene,
 } from './iso/town';
 import { Sky } from './iso/Sky';
 
@@ -28,6 +29,12 @@ export interface IsoCityProps {
   fresh?: string | null;
   /** What the day's events show in the town (lot L7.1). */
   scene?: TownScene;
+  /** Lot of each building (lot L9.4). */
+  places?: Places;
+  /** Free lots to touch while a building waits for its lot (lot L9.4), what touching one does, and its label. */
+  spots?: readonly (readonly [number, number])[];
+  onSpot?: (c: number, r: number) => void;
+  spotLabel?: string;
 }
 
 
@@ -107,12 +114,13 @@ export const IsoCity = memo(function IsoCity(p: IsoCityProps) {
   }, [images]);
   const upgradesKey = p.upgrades.join(',');
   const sceneKey = JSON.stringify(p.scene ?? {});
+  const placesKey = p.places ? JSON.stringify(p.places) : '';
   const light = lightKey(p.hour);
   const layers = useMemo(
-    () => drawTownLayers({ hour: p.hour, season: seasonOf(p.season), mood: p.mood, elecOn: p.elecOn, heatOn: p.heatOn, upgrades: upgradesKey ? upgradesKey.split(',') : [], fresh: p.fresh ?? null, images: images ?? undefined, scene: JSON.parse(sceneKey) as TownScene }, p.view),
+    () => drawTownLayers({ hour: p.hour, season: seasonOf(p.season), mood: p.mood, elecOn: p.elecOn, heatOn: p.heatOn, upgrades: upgradesKey ? upgradesKey.split(',') : [], fresh: p.fresh ?? null, images: images ?? undefined, scene: JSON.parse(sceneKey) as TownScene, places: placesKey ? JSON.parse(placesKey) as Places : undefined }, p.view),
     // The hour only matters through the light (night and sunset levels).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [light, p.season, p.mood, p.elecOn, p.heatOn, upgradesKey, p.fresh, p.view, images, sceneKey],
+    [light, p.season, p.mood, p.elecOn, p.heatOn, upgradesKey, p.fresh, p.view, images, sceneKey, placesKey],
   );
   // Each moving layer has its own phase, changed only when that layer's drawing changes (React then creates new
   // elements, whose animations must go on where the old ones were, R1-02). A layer whose drawing is the same keeps its
@@ -180,6 +188,16 @@ export const IsoCity = memo(function IsoCity(p: IsoCityProps) {
             <g style={{ '--phase': `${phases.current[k]?.phase ?? '0'}s` } as CSSProperties} dangerouslySetInnerHTML={{ __html: l.svg }} />
           </svg>
         )))}
+      {/* Lot L9.4: the free lots glow and can be touched, above the whole town. */}
+      {p.spots?.length ? (
+        <svg className="city-layer city-spots" viewBox={viewBox} preserveAspectRatio={aspect}>
+          {p.spots.map(([c, r]) => (
+            <polygon key={`${c},${r}`} className="spot" points={tileCorners(c, r).map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ')}
+              role="button" tabIndex={0} aria-label={p.spotLabel}
+              onClick={() => p.onSpot?.(c, r)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') p.onSpot?.(c, r); }} />
+          ))}
+        </svg>
+      ) : null}
     </div>
   );
 });

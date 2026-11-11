@@ -12,10 +12,12 @@ export interface Progress {
   tuto: boolean;
   /** Events Cassandra has already explained (lot L7.1): she explains each one the first time only. */
   seen: string[];
+  /** Lot chosen for each building, column and row (lot L9.4); absent in progress saved before: default plots. */
+  places?: Record<string, [number, number]>;
 }
 
 const KEY = 'neutron-city.progress';
-export const EMPTY: Progress = { version: 1, wallet: 0, owned: [], stars: {}, lastDay: null, tuto: false, seen: [] };
+export const EMPTY: Progress = { version: 1, wallet: 0, owned: [], stars: {}, lastDay: null, tuto: false, seen: [], places: {} };
 
 /** Reads the saved progress; anything missing or unreadable gives a fresh start. */
 export function loadProgress(storage: Pick<Storage, 'getItem'> | undefined = globalThis.localStorage): Progress {
@@ -34,10 +36,21 @@ export function loadProgress(storage: Pick<Storage, 'getItem'> | undefined = glo
       // Saved before v0.7.0 (no tutorial yet): a child who has already finished a day does not need it.
       tuto: typeof p.tuto === 'boolean' ? p.tuto : Object.keys(stars).length > 0,
       seen: Array.isArray(p.seen) ? p.seen.filter((x): x is string => typeof x === 'string') : [],
+      places: readPlaces(p.places),
     };
   } catch {
     return { ...EMPTY };
   }
+}
+
+/** Keeps only well-formed lots: [column, row], whole numbers. */
+function readPlaces(raw: unknown): Record<string, [number, number]> {
+  if (!raw || typeof raw !== 'object') return {};
+  const out: Record<string, [number, number]> = {};
+  for (const [id, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (Array.isArray(v) && v.length === 2 && v.every((n) => Number.isInteger(n))) out[id] = [v[0] as number, v[1] as number];
+  }
+  return out;
 }
 
 export function saveProgress(p: Progress, storage: Pick<Storage, 'setItem'> | undefined = globalThis.localStorage): void {
