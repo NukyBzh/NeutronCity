@@ -267,6 +267,20 @@ const TRAFFIC: Record<number, Mover[]> = {
     { id: 'famille-2', dir: -1, lane: 0.8, size: 32, dur: 72, d: -40, walker: true },
   ],
 };
+/**
+ * Cars of the cross streets (lot L10.2, R2-04), per road column: dir 1 goes down to the left (front picture, not
+ * mirrored), −1 up to the right (back picture); they keep to the right: lane 3 going down, 5 going up.
+ */
+const CROSS_TRAFFIC: Record<number, Mover[]> = {
+  2: [{ id: 'voiture-rouge-avant', dir: 1, lane: 3, size: 0.3, dur: 20, d: -6 }],
+  5: [
+    { id: 'voiture-bleue-avant', dir: 1, lane: 3, size: 0.3, dur: 19, d: -11 },
+    { id: 'voiture-rouge-arriere', dir: -1, lane: 5, size: 0.28, dur: 22, d: -3 },
+  ],
+  8: [{ id: 'voiture-bleue-arriere', dir: -1, lane: 5, size: 0.28, dur: 21, d: -15 }],
+};
+/** Cross streets run along the whole town (world y). */
+const STREET_Y = [0, T * (ROWS[1] + 1)] as const;
 /** Streets run from the road after the plant (never on the river) to the end of the town (world x). */
 const STREET_X = [T * 2, T * (COLS[1] + 1)] as const;
 
@@ -293,13 +307,26 @@ export const nightStep = (h: number): number => Math.round(nightAt(h) * 8) / 8;
 /** Warm light of the setting sun on the town (0 to 1, highest around 19 h 30), in steps of 1/4. */
 export const warmStep = (h: number): number => Math.round(Math.max(0, 1 - Math.abs(h - 19.3) / 1.7) * 4) / 4;
 /** What the drawing depends on in the hour: it is redrawn only when this changes. */
-export const lightKey = (h: number): string => `${nightStep(h)}|${warmStep(h)}`;
+export const lightKey = (h: number): string => `${nightStep(h)}|${warmStep(h)}|${sleeping(h) ? 'z' : ''}`;
+/** The town sleeps from 23 h to 5 h (R2-02): « Z » rise above some houses and flats. */
+export const sleeping = (h: number): boolean => h >= 23 || h < 5;
+/** Homes where someone may sleep (R2-02), and how many « ZzZ » the town shows at most. */
+const HOMES = ['maisons', 'maison-jardin', 'immeuble-rose', 'immeuble-brique', 'immeuble-moderne', 'maison-lilas', 'maison-ve'];
+const MAX_SLEEPERS = 6;
 
 /**
  * The town comes as layers, back to front. `still` layers never move: the screen paints them once into a picture.
  * `moving` layers hold what is animated (the building just bought, the arrow, flows, snow, birds).
  */
-export interface TownLayer { kind: 'still' | 'moving'; svg: string }
+export interface TownLayer {
+  kind: 'still' | 'moving';
+  svg: string;
+  /**
+   * Pictures standing in front of a moving layer that crosses several rows (lot L10.2: cars in the cross streets): the
+   * screen cuts them out of the layer, so they hide it where they should.
+   */
+  cut?: string;
+}
 
 interface Box { x: number; y: number; w: number; h: number }
 /** One picture to place, with the filters it goes through (light, winter). */
@@ -443,6 +470,8 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
 
   // ---------- buildings, trees, plant ----------
   const things: Item[] = [];
+  // Every picture standing on the town with its column (lot L10.2): what hides the cars of the cross streets.
+  const standing: { c: number; item: Item }[] = [];
   const top: string[] = [];
   const scene = o.scene ?? {};
   const cutCols = scene.cut !== undefined && scene.cut !== null ? QUARTER_COLS[scene.cut] ?? [] : [];
@@ -495,7 +524,8 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
   /** Traffic of a road row: what moves along it, drawn between the rows behind and the rows in front. */
   const traffic = (r: number): string => {
     const items: Item[] = [];
-    for (const m of TRAFFIC[r] ?? []) {
+    // Back pavement first, then the lanes, then the front pavement: what is nearer is drawn over (R2-04).
+    for (const m of [...(TRAFFIC[r] ?? [])].sort((a, b) => a.lane - b.lane)) {
       const im = img[m.id];
       if (!im) continue;
       const y = T * r + m.lane;
@@ -525,7 +555,13 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
       const y = T * r + 4;
       // Everything of a cut quarter goes dark (lot L7.1).
       const first = things.length;
-      const dim = (): void => { if (cutCols.includes(c)) for (let k = first; k < things.length; k++) things[k]!.filters = [...things[k]!.filters, 'dark']; };
+      // Called once per tile: darkens a cut quarter, and notes the tile's column for the cross-street traffic.
+      const dim = (): void => {
+        for (let k = first; k < things.length; k++) {
+          if (cutCols.includes(c)) things[k]!.filters = [...things[k]!.filters, 'dark'];
+          standing.push({ c, item: things[k]! });
+        }
+      };
       const plot = builtAt.get(`${c},${r}`);
       if (!plot && (isBuildLot(c, r) || heatPlot(c, r))) { dim(); continue; }
       if (plot) {
@@ -542,6 +578,7 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
           dim();
           if (popping.length) {
             if (cutCols.includes(c)) for (const it of popping) it.filters = [...it.filters, 'dark'];
+            for (const it of popping) standing.push({ c, item: it });
             rowItems.push(...things);
             things.length = 0;
             flush();
@@ -580,6 +617,25 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
   }
   things.length = 0;
   flush();
+
+  // ---------- cars of the cross streets (lot L10.2, R2-04) ----------
+  // They go along a road column over every row: one layer each, from which the pictures standing to the right of the
+  // street (in front of it) are cut out.
+  for (const [key, movers] of Object.entries(CROSS_TRAFFIC)) {
+    const col = Number(key);
+    const items: Item[] = [];
+    for (const m of [...movers].sort((a, b) => b.lane - a.lane)) {
+      if (!img[m.id]) continue;
+      const box = boxAt(m.id, T * col + m.lane, m.dir === 1 ? STREET_Y[0] : STREET_Y[1], m.size);
+      if (!box) continue;
+      const len = (STREET_Y[1] - STREET_Y[0]) * m.dir;
+      const wrap = `class="iso-move" style="--tx:${f1(-len * 0.866 * S)}px;--ty:${f1(len * 0.5 * S)}px;--dur:${m.dur}s;--d:${m.d}s"`;
+      items.push({ id: m.id, box, filters: L(), wrap });
+    }
+    if (!items.length) continue;
+    const front = standing.filter((s) => s.c > col).map((s) => ({ id: s.item.id, box: s.item.box, mirror: s.item.mirror, filters: [] }));
+    layers.push({ kind: 'moving', svg: render(items), cut: front.length ? render(front) : undefined });
+  }
 
   // ---------- moving: flows, marks, snow, birds (the building just bought pops in at its own depth) ----------
   // Power line: thin wires between the pylons' tops; electricity flows along them while the plant produces.
@@ -637,6 +693,21 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
       ])}</g>`;
     }).join('');
     if (birds) top.push(`<g class="birds">${birds}</g>`);
+  }
+  // Night (R2-02): « ZzZ » rising above some homes, one in three, six at most; drawn, not written.
+  if (sleeping(o.hour)) {
+    const homes = standing.filter((st) => HOMES.includes(st.item.id) || st.item.id.startsWith('immeuble-nuit'));
+    const chosen = homes.filter((_, k) => k % 3 === 1).slice(0, MAX_SLEEPERS);
+    const z = (s: number): string => `M0 0H${s}L0 ${s}H${s}`;
+    top.push(chosen.map((st, k) => {
+      const b = st.item.box;
+      const x = b.x + b.w * 0.62;
+      const y = b.y + b.h * 0.12;
+      const letters = [7, 9.5, 12].map((s, j) => `<g class="zzz" style="--d:${-((k * 0.9 + j * 0.8) % 2.4).toFixed(1)}s"><g transform="translate(${f1(x + j * 6)} ${f1(y - j * 9)})">`
+        + `<path d="${z(s)}" fill="none" stroke="#1C2A4A" stroke-width="4.2" stroke-linejoin="round" stroke-linecap="round"/>`
+        + `<path d="${z(s)}" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></g></g>`).join('');
+      return `<g class="sleeper">${letters}</g>`;
+    }).join(''));
   }
   if (winter) {
     top.push(Array.from({ length: view === 'band' ? 32 : 50 }, (_, k) => `<circle class="flake" cx="${f1(-400 + ((k * 197) % 2000))}" cy="${f1((view === 'band' ? 220 : -150) + ((k * 53) % 240))}" r="${f1(1.6 + (k % 3))}" fill="#FFFFFF" opacity="0.9" style="--d:${-((k * 13) % 11)}s;animation-duration:${8 + (k % 5)}s"/>`).join(''));

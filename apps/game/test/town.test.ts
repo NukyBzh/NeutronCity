@@ -65,14 +65,40 @@ describe('the town is made of pictures (lot L6.3)', () => {
 
   it('cars, a bus and inhabitants go along the streets, between the rows of buildings (series 3)', () => {
     const layers = drawTownLayers(opts(), 'band');
-    const traffic = layers.map((l, k) => (l.kind === 'moving' && l.svg.includes('iso-move') ? k : -1)).filter((k) => k >= 0);
+    const traffic = layers.map((l, k) => (l.kind === 'moving' && l.svg.includes('iso-move') && !l.cut ? k : -1)).filter((k) => k >= 0);
     expect(traffic.length).toBe(3);
     // Each street's traffic has still rows after it, which hide it behind the buildings in front.
     expect(layers.slice(traffic[0]! + 1).some((l) => l.kind === 'still')).toBe(true);
-    const all = layers.map((l) => l.svg).join('');
-    for (const id of ['voiture-rouge-avant', 'voiture-bleue-arriere', 'bus', 'habitant-adulte', 'famille-1']) expect(all, id).toContain(`#p-${id}"`);
-    // Every move goes along a street (x of the world: right-down or left-up on the screen).
-    for (const [, tx, ty] of all.matchAll(/--tx:(-?[\d.]+)px;--ty:(-?[\d.]+)px/g)) expect(Number(ty) / Number(tx)).toBeCloseTo(0.5 / 0.866, 2);
+    const rows = traffic.map((k) => layers[k]!.svg).join('');
+    for (const id of ['voiture-rouge-avant', 'voiture-bleue-arriere', 'bus', 'habitant-adulte', 'famille-1']) expect(rows, id).toContain(`#p-${id}"`);
+    // Every move of a street goes along it (x of the world: right-down or left-up on the screen).
+    for (const [, tx, ty] of rows.matchAll(/--tx:(-?[\d.]+)px;--ty:(-?[\d.]+)px/g)) expect(Number(ty) / Number(tx)).toBeCloseTo(0.5 / 0.866, 2);
+  });
+
+  it('in each street, the back pavement is drawn first, then the lanes, then the front pavement (R2-04)', () => {
+    for (const l of drawTownLayers(opts(), 'band').filter((x) => x.kind === 'moving' && x.svg.includes('iso-move') && !x.cut)) {
+      const ys = [...l.svg.matchAll(/<use href="#p-[^"]+" transform="translate\((-?[\d.]+) (-?[\d.]+)\) scale\((-?[\d.]+) (-?[\d.]+)\)"/g)];
+      expect(ys.length).toBeGreaterThan(1);
+    }
+    // Row 5 lists a walker of the back pavement last: it must now come first.
+    const row5 = drawTownLayers(opts(), 'band').filter((x) => x.kind === 'moving' && x.svg.includes('famille-1'))[0]!.svg;
+    const body = row5.slice(row5.indexOf('</defs>'));
+    expect(body.indexOf('#p-habitant-adulte"')).toBeLessThan(body.indexOf('#p-voiture-rouge-avant"'));
+    expect(body.indexOf('#p-famille-1"')).toBeGreaterThan(body.indexOf('#p-bus"'));
+  });
+
+  it('cars also go along the cross streets, with the pictures in front of them cut out (R2-04)', () => {
+    const cross = drawTownLayers(opts(), 'band').filter((l) => l.kind === 'moving' && l.cut !== undefined);
+    expect(cross.length).toBe(3);
+    for (const l of cross) {
+      expect(l.svg).toContain('iso-move');
+      for (const [, tx, ty] of l.svg.matchAll(/--tx:(-?[\d.]+)px;--ty:(-?[\d.]+)px/g)) expect(Number(ty) / Number(tx)).toBeCloseTo(-0.5 / 0.866, 2);
+      expect(l.cut).not.toContain('iso-move');
+    }
+    // The street by the plant: the plant (to its left, behind) is not cut out, the town to its right is.
+    const byPlant = cross[0]!.cut!;
+    expect(byPlant).not.toContain('#p-reacteur"');
+    expect(byPlant).toContain('#p-gare"');
   });
 
   it('the cycle track turns the streets into cycle-track tiles', () => {
@@ -248,5 +274,19 @@ describe('countryside behind the town (lot L9.3)', () => {
     expect(drawTownLayers(opts({ hour: 23 }), 'full')[0]!.svg).toContain('filter="url(#f-light)"');
     const { 'arriere-ville': _a, ...rest } = IMAGES;
     expect(drawTownLayers(opts({ images: rest }), 'full')[0]!.svg).not.toContain('arriere-ville');
+  });
+});
+
+describe('the town sleeps at night (R2-02)', () => {
+  it('« ZzZ » rise above a few homes from 23 h to 5 h only, drawn with paths, never in a still layer', () => {
+    const count = (h: number): number => moving({ hour: h }, 'full').split('class="sleeper"').length - 1;
+    expect(count(23.5)).toBeGreaterThan(0);
+    expect(count(23.5)).toBeLessThanOrEqual(6);
+    expect(count(2)).toBe(count(23.5));
+    expect(count(21)).toBe(0);
+    expect(count(12)).toBe(0);
+    expect(still({ hour: 23.5 }, 'full')).not.toContain('zzz');
+    expect(moving({ hour: 23.5 }, 'full')).not.toMatch(/<text\b/);
+    expect(lightKey(22.9)).not.toBe(lightKey(23.1));
   });
 });

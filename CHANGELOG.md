@@ -2,6 +2,13 @@
 
 *Ce qui change pour le joueur, en mots simples. Une section par version (voir `docs/CONFIGURATION.md` §4).*
 
+## v0.14.0 — 2026-11-20 (lots L10.1 et L10.2 : retours R2, à valider)
+- **Boutons + et −** à côté de chaque curseur : une touche change la production de 5 %, une seule fois (il faut lever le doigt pour recommencer). Le curseur reste pour les grands mouvements.
+- **Voitures et piétons à leur place** : ce qui est devant passe devant (plus de voiture qui roule sur une famille), et des voitures roulent aussi dans les rues perpendiculaires, cachées par les bâtiments qui sont devant elles.
+- **La nuit, la ville dort** : de 23 h à 5 h, des petits « Z » montent au-dessus de quelques maisons et immeubles.
+- **Les bâtiments qui aident coûtent 30 % de plus** (maison médicale, batterie, parc, maisons isolées, panneaux solaires, hôpital, cuve de chaleur) ; la ville se complète en 21 journées au lieu de 19.
+- Maquette du futur écran de jeu avec la ville entière (pas encore dans le jeu, lot L10.3).
+
 ## v0.13.0 — 2026-11-11 (lots L9.3 et L9.4 : retours des premières minutes de jeu, à valider)
 - **Un achat dès la première journée** : le premier bâtiment de la boutique est maintenant le **réseau de chaleur**, à 900 €. S'il manque des euros à la fin de la première journée, Cassandra offre la différence (« cadeau de bienvenue »). Le printemps se joue donc dès la 2e journée.
 - **Tu choisis où construire** : après un achat, les terrains libres de la ville brillent ; touche celui que tu veux. La ville de départ est plus vide, avec 30 terrains à bâtir. L'hôpital protège le quartier où tu l'as mis. Le réseau de chaleur reste contre la centrale, l'isolation suit la maison des Lilas.

@@ -37,7 +37,7 @@ export function Slider(props: {
   const mw = Math.round((setpoint / 100) * (kind === 'elec' ? RATED_ELEC_MW : RATED_HEAT_MW));
   const label = t(kind === 'elec' ? 'output.elec' : 'output.heat');
   return (
-    <div className={`slider slider-${kind}${disabled ? ' slider-off' : ''}`}>
+    <div className={`slider slider-${kind}${disabled ? ' slider-off' : ''}${steps ? ' has-steps' : ''}`}>
       <div className="slider-title"><Icon name={kind === 'elec' ? 'electricite' : 'chaleur'} size={1.6} />{label}</div>
       <div className="slider-demand" aria-label={demand === null ? undefined : t('slider.demandtext', { pct: String(Math.round(demand)) })}>
         {demand === null ? ' ' : t('slider.demand', { pct: String(Math.round(demand)) })}

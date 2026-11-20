@@ -38,7 +38,7 @@ Joueurs simulés (`packages/engine/src/balance.ts`) :
 
 ## Argent (joueur « enfant », journées dans l'ordre)
 
-Ville complète en **19 journées**.
+Ville complète en **21 journées**.
 
 | Bâtiment | Acheté après la journée |
 |---|---|
@@ -49,14 +49,14 @@ Ville complète en **19 journées**.
 | epicerie | 4 |
 | ecole | 5 |
 | usine-cereales | 6 |
-| maison-medicale | 7 |
+| maison-medicale | 8 |
 | fontaine | 8 |
 | parc | 9 |
 | piste | 10 |
 | piscine | 11 |
 | eclairage | 12 |
 | batterie | 14 |
-| isolation | 15 |
-| solaire | 16 |
-| hopital | 17 |
-| cuve | 19 |
+| isolation | 16 |
+| solaire | 17 |
+| hopital | 19 |
+| cuve | 21 |

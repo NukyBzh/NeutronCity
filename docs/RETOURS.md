@@ -36,15 +36,15 @@ l'ordre des notes.
 | N° | Retour | Cause ou piste | Décision et lot prévu |
 |---|---|---|---|
 | R2-01 | Pendant la fête de la ville, rien ne change dans la ville. | Seuls la panne, la fuite, les nouveaux habitants et la visite de classe se voient. | Une animation par événement : fête (feux d'artifice, guirlandes, foule sur la place, sons « ouais » et verres qui trinquent), canicule (filtre rouge-orangé, air qui ondule), vague de froid (filtre bleu, givre au bord de l'écran), redoux, tempête (pluie, nuages, éclairs), écureuil (sur un pylône, loupe en bas à droite), pic (fenêtres qui s'allument), calorifugeage (ouvrier). Images Gemini, sons libres validés avant téléchargement. **L10.4** |
-| R2-02 | La nuit, des « ZzZ » au-dessus des immeubles. | — | De 23 h à 5 h, « Z » qui montent au-dessus de quelques maisons et immeubles. **L10.2** |
-| R2-03 | Boutons + et − en plus des curseurs. | — | + au-dessus, − sous chaque curseur, pas de 5 %, une seule fois par touche (pas de répétition au doigt appuyé). **L10.2** |
-| R2-04 | Les voitures ne roulent pas sur les routes ; une voiture passe sur une famille. | Voitures et piétons dessinés dans l'ordre de la liste, pas de la profondeur ; circulation dans un seul sens de rues. | Tri par profondeur, voitures au milieu de leur voie, circulation dans les rues perpendiculaires. **L10.2** |
+| R2-02 | La nuit, des « ZzZ » au-dessus des immeubles. | — | De 23 h à 5 h, « Z » qui montent au-dessus de quelques maisons et immeubles. **Fait v0.14.0** (L10.2) |
+| R2-03 | Boutons + et − en plus des curseurs. | — | + au-dessus, − sous chaque curseur, pas de 5 %, une seule fois par touche (pas de répétition au doigt appuyé). **Fait v0.14.0** (L10.2) : + et − empilés à gauche du rail pour qu'il garde sa hauteur |
+| R2-04 | Les voitures ne roulent pas sur les routes ; une voiture passe sur une famille. | Voitures et piétons dessinés dans l'ordre de la liste, pas de la profondeur ; circulation dans un seul sens de rues. | Tri par profondeur, voitures au milieu de leur voie, circulation dans les rues perpendiculaires. **Fait v0.14.0** (L10.2) : les bâtiments devant une voiture de rue perpendiculaire la cachent (couche découpée) |
 | R2-05 | Les habitants marchent en ligne droite sans entrer dans les bâtiments. | Une seule vue (3/4 avant) par personnage. | Habitants qui entrent et ressortent des bâtiments, école le matin, maison le soir ; vues de dos et 2e pas (Gemini 68 à 76). **L10.5** |
 | R2-06 | Plus de bâtiments dans la boutique : maisons, immeubles, mairie, hôtel. | — | Petite maison et immeuble achetables plusieurs fois, mairie, hôtel, boulangerie-pâtisserie, caserne (Gemini 77 à 84). **L10.6** |
 | R2-07 | Agrandir la ville en achetant du terrain. | — | 3 quartiers de 6 terrains, à vendre quand les 30 pelouses sont construites ; prix pour 2, 3 puis 5 journées d'une ville complète. **L10.6** |
 | R2-08 | Sauvegarder la progression. | Elle est déjà enregistrée sur l'appareil. | **Annulé** par Yann. |
-| R2-09 | Revoir la valeur des bâtiments. | Tableau des prix donné le 2026-11-16. | Les bâtiments qui aident coûtent 30 % de plus (maison médicale, batterie, parc, isolation, solaire, hôpital, cuve), bonus inchangé. **L10.2** |
-| R2-10 | On ne voit pas bien la ville ; voir la ville entière. | Pendant la partie, seule une bande de la ville est visible. | Ville entière en grand pendant la partie (option A), maquette d'abord. **L10.1** (maquette), **L10.3** |
+| R2-09 | Revoir la valeur des bâtiments. | Tableau des prix donné le 2026-11-16. | Les bâtiments qui aident coûtent 30 % de plus (maison médicale, batterie, parc, isolation, solaire, hôpital, cuve), bonus inchangé. **Fait v0.14.0** (L10.2) : ville complète en 21 journées |
+| R2-10 | On ne voit pas bien la ville ; voir la ville entière. | Pendant la partie, seule une bande de la ville est visible. | Ville entière en grand pendant la partie (option A), maquette d'abord. **Maquette validée** (L10.1, `?maquette=ecran`), écran à construire en **L10.3** |
 
 ### Lots proposés
 - **L10.1** — maquette du nouvel écran de jeu (R2-10).

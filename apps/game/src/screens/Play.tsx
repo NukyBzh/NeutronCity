@@ -422,8 +422,8 @@ export function Play({
       <section className="zone-controls panel" aria-label={t('zone.controls')}>
         <CoreBar elec={g.plant.setElec} heat={g.plant.setHeat} />
         <div className="sliders">
-          <Slider kind="elec" setpoint={g.plant.setElec} production={g.plant.elec} onChange={(v) => setOutput('elec', v)} pulse={pulseElec} demand={view.demand.elec} steps={MAQUETTE} />
-          <Slider kind="heat" setpoint={g.plant.setHeat} production={g.plant.heat} onChange={(v) => setOutput('heat', v)} pulse={pulseHeat} demand={heatDay ? view.demand.heat : null} disabled={!heatDay} steps={MAQUETTE} />
+          <Slider kind="elec" setpoint={g.plant.setElec} production={g.plant.elec} onChange={(v) => setOutput('elec', v)} pulse={pulseElec} demand={view.demand.elec} steps />
+          <Slider kind="heat" setpoint={g.plant.setHeat} production={g.plant.heat} onChange={(v) => setOutput('heat', v)} pulse={pulseHeat} demand={heatDay ? view.demand.heat : null} disabled={!heatDay} steps />
         </div>
       </section>
 

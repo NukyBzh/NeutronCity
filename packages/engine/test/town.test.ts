@@ -32,12 +32,16 @@ describe('content/shop (lot L6, D-19)', () => {
     expect(missing).toEqual([]);
   });
 
-  it('prices from 2 400 to 12 000 € (the first building 900 €, L9.3); a building pays itself back in 12 to 20 days of bonus (E3, E6, D-22)', () => {
+  it('prices from 2 400 to 12 000 € (the first building 900 €, L9.3); a building pays itself back in 12 to 20 days of bonus (E3, E6, D-22), 30 % more for those that help (L10.2)', () => {
+    // A building helps when it lowers or smooths the demand, or protects from the events (D-30).
+    const helps = (i: ShopItem): boolean => !!(i.softens || i.protects || i.heatwaveCap) || (i.effects ?? []).some((e) => e.add < 0);
+    expect(SHOP.filter(helps).map((i) => i.id).sort()).toEqual(['batterie', 'cuve', 'hopital', 'isolation', 'maison-medicale', 'parc', 'solaire']);
     for (const i of SHOP) {
+      const k = helps(i) ? 1.3 : 1;
       expect(i.price).toBeGreaterThanOrEqual(i.discovery === 1 ? 900 : 2400);
-      expect(i.price).toBeLessThanOrEqual(12000);
+      expect(i.price).toBeLessThanOrEqual(12000 * k + 50);
       expect(i.price / i.bonus).toBeGreaterThanOrEqual(12);
-      expect(i.price / i.bonus).toBeLessThanOrEqual(20);
+      expect(i.price / i.bonus).toBeLessThanOrEqual(20 * k + 0.5);
     }
   });
 
