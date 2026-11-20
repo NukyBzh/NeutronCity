@@ -16,8 +16,11 @@ export function Slider(props: {
   /** What the town asks for now, in % (shown as a number and a dashed mark on the track); null when not asked. */
   demand: number | null;
   disabled?: boolean;
+  /** Buttons + and − of 5 % around the track (R2-03): one step per touch, holding the finger does not repeat. */
+  steps?: boolean;
 }) {
-  const { kind, setpoint, production, onChange, pulse, demand, disabled = false } = props;
+  const { kind, setpoint, production, onChange, pulse, demand, disabled = false, steps = false } = props;
+  const step = (d: number): void => onChange(Math.min(100, Math.max(0, setpoint + d)));
   const track = useRef<HTMLDivElement>(null);
   const fromPointer = (e: PointerEvent) => {
     const r = track.current!.getBoundingClientRect();
@@ -39,6 +42,9 @@ export function Slider(props: {
       <div className="slider-demand" aria-label={demand === null ? undefined : t('slider.demandtext', { pct: String(Math.round(demand)) })}>
         {demand === null ? ' ' : t('slider.demand', { pct: String(Math.round(demand)) })}
       </div>
+      {steps ? (
+        <button type="button" className="step-btn step-plus" aria-label={t('slider.plus', { name: label })} disabled={disabled || setpoint >= 100} onClick={() => step(5)}>+</button>
+      ) : null}
       <div
         className="slider-track"
         ref={track}
@@ -59,6 +65,9 @@ export function Slider(props: {
         {demand === null ? null : <span className="target" style={{ bottom: `${demand}%` }} />}
         <div className={`knob${pulse ? ' pulse' : ''}`} style={{ bottom: `${setpoint}%` }}><i /><i /><i /></div>
       </div>
+      {steps ? (
+        <button type="button" className="step-btn step-minus" aria-label={t('slider.minus', { name: label })} disabled={disabled || setpoint <= 0} onClick={() => step(-5)}>−</button>
+      ) : null}
       <div className="slider-value">{t('slider.value', { pct: String(setpoint), mw: String(mw) })}</div>
     </div>
   );

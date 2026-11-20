@@ -207,6 +207,32 @@ strong { font-weight: 800; }
 .slider-demand { font-size: 1rem; font-weight: 800; color: var(--encre); white-space: nowrap; }
 .target { position: absolute; left: 50%; width: 7.4rem; height: 0; border-top: 0.3rem dashed var(--encre); transform: translate(-50%, 50%); pointer-events: none; transition: bottom 0.3s; }
 .slider-off { opacity: 0.4; }
+/* Buttons + and − of 5 % (R2-03): one step per touch. */
+.step-btn {
+  font: inherit; font-size: 1.8rem; font-weight: 900; line-height: 1; width: 4.2rem; min-height: 2.6rem; border-radius: 1.3rem;
+  border: 0.15rem solid currentColor; background: var(--blanc); cursor: pointer; touch-action: manipulation;
+}
+.slider-elec .step-btn { color: var(--elec-fonce); }
+.slider-heat .step-btn { color: var(--chaleur-fonce); }
+.step-btn:active:not(:disabled) { transform: scale(0.94); background: var(--bleu-clair); }
+.step-btn:disabled { opacity: 0.35; cursor: default; }
+.step-btn:focus-visible { outline: 0.2rem solid var(--bleu); outline-offset: 0.1rem; }
+
+/* Mock-up of the new play screen (lot L10.1, R2-10, `?maquette=ecran`): the whole town on the left, two thirds of the
+   screen; on the right the sliders with + and −, then small curves; Cassandra in a corner of the town. */
+.play.play-b { grid-template-columns: 1fr 20rem; grid-template-rows: 3.4rem 1fr 11.4rem; }
+.play-b .zone-city { grid-column: 1; grid-row: 2 / 4; }
+.play-b .zone-controls { grid-column: 2; grid-row: 2; padding: 0.4rem 0.6rem; gap: 0.3rem; min-height: 0; }
+.play-b .zone-curves { grid-column: 2; grid-row: 3; padding: 0.3rem 0.5rem; }
+.play-b .curves-head { gap: 0.5rem; font-size: 0.8rem; flex-wrap: wrap; }
+.play-b .curves-body { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+.play-b .curves-gauges { display: flex; justify-content: space-around; padding-top: 0; }
+.play-b .play-guide { grid-column: 1; grid-row: 2 / 4; pointer-events: none; z-index: 3; }
+.play-b .play-cassandra { left: 0.4rem; right: auto; bottom: 0; height: 12rem; transform: none; }
+.play-b .play-cassandra .bubble { left: 85%; right: auto; bottom: 6rem; top: auto; width: 20rem; }
+.play-b .sliders { justify-content: space-around; }
+.play-b .slider { width: 8.4rem; gap: 0.25rem; }
+.play-b .slider-track { width: 5.6rem; margin: 0.4rem 0; }
 .slider-off .slider-track { cursor: default; }
 
 /* Pause. */
@@ -557,6 +583,31 @@ svg .pop, svg .float { transform-box: fill-box; transform-origin: center; }
   .shop-item .btn { font-size: 1rem; padding: 0 0.7rem 0 0.4rem; }
   .shop-news { left: 0.4rem; right: 0.4rem; bottom: 0.4rem; font-size: 1rem; }
   .shop-news img { width: 2.4rem; height: 2.4rem; }
+
+  /* Mock-up L10.1 on phones: the whole town on the left above a strip of curves, the sliders with + and − on the whole
+     height on the right (as the current phone layout). */
+  .play.play-b { grid-template-columns: 1fr 17rem; grid-template-rows: 3rem 1fr 6.6rem; }
+  .play-b .zone-city { grid-column: 1; grid-row: 2; }
+  .play-b .zone-curves { grid-column: 1; grid-row: 3; padding: 0.2rem 0.5rem; }
+  .play-b .curves-head { display: none; }
+  .play-b .curves-body { grid-template-columns: 1fr 7.6rem; grid-template-rows: none; }
+  .play-b .curves-gauges { display: grid; grid-template-rows: 1fr 1fr; justify-items: start; }
+  .play-b .zone-controls { grid-column: 2; grid-row: 2 / 4; }
+  .play-b .play-guide { grid-column: 1; grid-row: 2; }
+  .play-b .play-cassandra { height: 7.5rem; }
+  .play-b .play-cassandra .bubble { width: 16rem; bottom: 3rem; }
+  .play-b .slider { width: 7.8rem; }
+  .play-b .slider-track { width: 4.6rem; margin: 0.2rem 0; }
+  .play.play-b { grid-template-rows: 3rem 1fr 5.2rem; }
+  /* The rail keeps its height: − and + side by side under it. */
+  .play-b .slider { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto 1fr auto auto; justify-items: center;
+    column-gap: 0.3rem; row-gap: 0.15rem; width: 7.8rem; }
+  .play-b .slider-title, .play-b .slider-demand, .play-b .slider-track, .play-b .slider-value { grid-column: 1 / -1; }
+  .play-b .slider-track { grid-row: 3; height: auto; align-self: stretch; }
+  .play-b .step-minus { grid-row: 4; grid-column: 1; }
+  .play-b .step-plus { grid-row: 4; grid-column: 2; }
+  .play-b .slider-value { grid-row: 5; }
+  .play-b .step-btn { width: 3.6rem; min-height: 2.8rem; font-size: 1.6rem; }
 }
 
 /* Lot L8.2 — held upright: the game asks to be turned (landscape only, D-23). */

@@ -86,6 +86,12 @@ const REVIEW_STEP = Math.max(1, Number(PARAMS.get('etape')) || 1) - 1;
 export const SPEEDS = [1, 2, 4] as const;
 export type Speed = (typeof SPEEDS)[number];
 
+/**
+ * Mock-up of the new play screen (lot L10.1, R2-10): the whole town in large, the sliders with + and − on the right,
+ * small curves, Cassandra in a bubble. Only with `?maquette=ecran` in the address, never for the players.
+ */
+const MAQUETTE = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('maquette') === 'ecran';
+
 export function Play({
   day, seed, upgrades, places, effects = [], mods = NO_MODS, seen = [], onSeen, speed, onSpeed, onFinish, onRestart, onHome, tutorial = false, onTutorialDone, onRecord,
 }: {
@@ -326,7 +332,7 @@ export function Play({
   };
 
   return (
-    <main className={`screen play${step ? ' tuto-on' : ''}`} data-tuto={step?.target}>
+    <main className={`screen play${MAQUETTE ? ' play-b' : ''}${step ? ' tuto-on' : ''}`} data-tuto={step?.target}>
       <header className="play-top">
         <Button icon="pause" label={t('btn.pause')} onClick={() => setPaused(true)} />
         <div className="play-day">
@@ -353,7 +359,7 @@ export function Play({
 
       <section className="zone-city" aria-label={t('zone.city')}>
         <IsoCity
-          view="band"
+          view={MAQUETTE ? 'full' : 'band'}
           hour={Math.floor(hour * lightGrid) / lightGrid}
           season={day.id}
           mood={moodOf(view.elec, view.heat, elecShort, heatShort)}
@@ -416,8 +422,8 @@ export function Play({
       <section className="zone-controls panel" aria-label={t('zone.controls')}>
         <CoreBar elec={g.plant.setElec} heat={g.plant.setHeat} />
         <div className="sliders">
-          <Slider kind="elec" setpoint={g.plant.setElec} production={g.plant.elec} onChange={(v) => setOutput('elec', v)} pulse={pulseElec} demand={view.demand.elec} />
-          <Slider kind="heat" setpoint={g.plant.setHeat} production={g.plant.heat} onChange={(v) => setOutput('heat', v)} pulse={pulseHeat} demand={heatDay ? view.demand.heat : null} disabled={!heatDay} />
+          <Slider kind="elec" setpoint={g.plant.setElec} production={g.plant.elec} onChange={(v) => setOutput('elec', v)} pulse={pulseElec} demand={view.demand.elec} steps={MAQUETTE} />
+          <Slider kind="heat" setpoint={g.plant.setHeat} production={g.plant.heat} onChange={(v) => setOutput('heat', v)} pulse={pulseHeat} demand={heatDay ? view.demand.heat : null} disabled={!heatDay} steps={MAQUETTE} />
         </div>
       </section>
 

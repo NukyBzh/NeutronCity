@@ -39,6 +39,8 @@ piggy.label: "Ta tirelire : {amount}"
 output.elec: Électricité
 output.heat: Chaleur
 slider.value: "{pct} % · {mw} MW"
+slider.plus: "Plus 5 % : {name}"
+slider.minus: "Moins 5 % : {name}"
 slider.valuetext: "{pct} pour cent, {mw} mégawatts"
 core.word: Cœur
 core.label: Cœur de la centrale, partagé entre électricité et chaleur
