@@ -1,4 +1,4 @@
-# Ergonomie (lot L8.3)
+# Ergonomie (lots L8.3 et L10.3)
 
 Fichier écrit par `tools/mesures/ergonomie.mjs` : boutons et textes plus petits que les cibles de D-23 (tablette ≥ 48 px et texte ≥ 18 px, 15 px sous 680 px de haut ; téléphone ≥ 44 px et ≥ 15 px), écran par écran, au format de chaque appareil.
 
@@ -75,19 +75,3 @@ Fichier écrit par `tools/mesures/ergonomie.mjs` : boutons et textes plus petits
 - **boutique** (1 rem = 15.5 px) : rien à signaler
 
 **Total : 0 points.**
-
-## Fluidité (2026-11-11, lot L8.3)
-Mesurée par `tools/mesures/fps.mjs` sur la version construite (`npm.cmd run build`, aperçu `game-pwa-4181`), processeur
-ralenti 3 fois (proche d'une tablette d'entrée de gamme), Edge sans fenêtre et sans carte graphique (cas pessimiste),
-journée d'hiver en ×4. Images par seconde sur 8 secondes ; objectif ≥ 30.
-
-| Format | Crépuscule (17 h → 20 h) | Journée avec événement (11 h) |
-|---|---|---|
-| 1920 × 1200 | 44 (27 avant l'allègement) | 54 |
-| 1280 × 800 | 47 (30 avant) | 56 |
-| 960 × 600 | 47 (41 avant) | 56 |
-| 844 × 390 | 50 (46 avant) | 58 |
-| 800 × 360 | 51 (44 avant) | 57 |
-
-Allègement : en ×4, la lumière de la ville ne change plus qu'une fois par heure de jeu (au lieu de toutes les 5 minutes),
-donc la ville est repeinte 3 fois moins souvent au crépuscule.

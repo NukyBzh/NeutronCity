@@ -321,11 +321,10 @@ const MAX_SLEEPERS = 6;
 export interface TownLayer {
   kind: 'still' | 'moving';
   svg: string;
-  /**
-   * Pictures standing in front of a moving layer that crosses several rows (lot L10.2: cars in the cross streets): the
-   * screen cuts them out of the layer, so they hide it where they should.
-   */
-  cut?: string;
+  /** Part of the drawing the layer covers (drawing units), when it is much smaller than the town (lot L10.3). */
+  frame?: { x: number; y: number; w: number; h: number };
+  /** A still layer that draws again, over a cross street's cars, the pictures standing in front of them (lot L10.3). */
+  over?: boolean;
 }
 
 interface Box { x: number; y: number; w: number; h: number }
@@ -578,7 +577,6 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
           dim();
           if (popping.length) {
             if (cutCols.includes(c)) for (const it of popping) it.filters = [...it.filters, 'dark'];
-            for (const it of popping) standing.push({ c, item: it });
             rowItems.push(...things);
             things.length = 0;
             flush();
@@ -619,22 +617,32 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
   flush();
 
   // ---------- cars of the cross streets (lot L10.2, R2-04) ----------
-  // They go along a road column over every row: one layer each, from which the pictures standing to the right of the
-  // street (in front of it) are cut out.
+  // They go along a road column over every row: one small moving layer each, framed on the street, then a still layer
+  // framed the same way that draws again the pictures standing to the right of the street (in front of the cars), so
+  // that they hide them (lot L10.3: a still picture costs nothing per frame, unlike a mask).
   for (const [key, movers] of Object.entries(CROSS_TRAFFIC)) {
     const col = Number(key);
     const items: Item[] = [];
+    // The layer only covers the street (start and end of every car): the screen cuts and moves a small picture.
+    let x0 = Infinity; let y0 = Infinity; let x1 = -Infinity; let y1 = -Infinity;
     for (const m of [...movers].sort((a, b) => b.lane - a.lane)) {
       if (!img[m.id]) continue;
       const box = boxAt(m.id, T * col + m.lane, m.dir === 1 ? STREET_Y[0] : STREET_Y[1], m.size);
       if (!box) continue;
       const len = (STREET_Y[1] - STREET_Y[0]) * m.dir;
-      const wrap = `class="iso-move" style="--tx:${f1(-len * 0.866 * S)}px;--ty:${f1(len * 0.5 * S)}px;--dur:${m.dur}s;--d:${m.d}s"`;
+      const tx = -len * 0.866 * S;
+      const ty = len * 0.5 * S;
+      const wrap = `class="iso-move" style="--tx:${f1(tx)}px;--ty:${f1(ty)}px;--dur:${m.dur}s;--d:${m.d}s"`;
       items.push({ id: m.id, box, filters: L(), wrap });
+      x0 = Math.min(x0, box.x, box.x + tx); y0 = Math.min(y0, box.y, box.y + ty);
+      x1 = Math.max(x1, box.x + box.w, box.x + box.w + tx); y1 = Math.max(y1, box.y + box.h, box.y + box.h + ty);
     }
     if (!items.length) continue;
-    const front = standing.filter((s) => s.c > col).map((s) => ({ id: s.item.id, box: s.item.box, mirror: s.item.mirror, filters: [] }));
-    layers.push({ kind: 'moving', svg: render(items), cut: front.length ? render(front) : undefined });
+    const frame = { x: Math.floor(x0 - 4), y: Math.floor(y0 - 4), w: Math.ceil(x1 - x0 + 8), h: Math.ceil(y1 - y0 + 8) };
+    const meets = (b: Box): boolean => b.x < frame.x + frame.w && b.x + b.w > frame.x && b.y < frame.y + frame.h && b.y + b.h > frame.y;
+    const front = standing.filter((s) => s.c > col && meets(s.item.box)).map((s) => s.item);
+    layers.push({ kind: 'moving', svg: render(items), frame });
+    if (front.length) layers.push({ kind: 'still', svg: render(front), frame, over: true });
   }
 
   // ---------- moving: flows, marks, snow, birds (the building just bought pops in at its own depth) ----------
@@ -718,3 +726,14 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
 
 /** Where a tile's centre is on the screen (tests: what the band shows). */
 export const tileCentre = (c: number, r: number): [number, number] => P(T * c + 4, T * r + 4);
+/**
+ * Where an event button stands over a quarter in the whole town (lot L10.3): above the middle of its lots, where the
+ * warning sign of a cut quarter hangs (just above it), as shares (%) of the full view's width and height.
+ */
+export function quarterAnchor(q: number): [number, number] | null {
+  const cols = QUARTER_COLS[q];
+  if (!cols) return null;
+  const [x, y] = P(T * (cols[0]! + 1), T * 4);
+  const [vx, vy, vw, vh] = FULL_VIEWBOX.split(' ').map(Number) as [number, number, number, number];
+  return [((x - vx) / vw) * 100, ((y - 190 - vy) / vh) * 100];
+}

@@ -65,7 +65,7 @@ describe('the town is made of pictures (lot L6.3)', () => {
 
   it('cars, a bus and inhabitants go along the streets, between the rows of buildings (series 3)', () => {
     const layers = drawTownLayers(opts(), 'band');
-    const traffic = layers.map((l, k) => (l.kind === 'moving' && l.svg.includes('iso-move') && !l.cut ? k : -1)).filter((k) => k >= 0);
+    const traffic = layers.map((l, k) => (l.kind === 'moving' && l.svg.includes('iso-move') && !l.frame ? k : -1)).filter((k) => k >= 0);
     expect(traffic.length).toBe(3);
     // Each street's traffic has still rows after it, which hide it behind the buildings in front.
     expect(layers.slice(traffic[0]! + 1).some((l) => l.kind === 'still')).toBe(true);
@@ -76,7 +76,7 @@ describe('the town is made of pictures (lot L6.3)', () => {
   });
 
   it('in each street, the back pavement is drawn first, then the lanes, then the front pavement (R2-04)', () => {
-    for (const l of drawTownLayers(opts(), 'band').filter((x) => x.kind === 'moving' && x.svg.includes('iso-move') && !x.cut)) {
+    for (const l of drawTownLayers(opts(), 'band').filter((x) => x.kind === 'moving' && x.svg.includes('iso-move') && !x.frame)) {
       const ys = [...l.svg.matchAll(/<use href="#p-[^"]+" transform="translate\((-?[\d.]+) (-?[\d.]+)\) scale\((-?[\d.]+) (-?[\d.]+)\)"/g)];
       expect(ys.length).toBeGreaterThan(1);
     }
@@ -87,18 +87,26 @@ describe('the town is made of pictures (lot L6.3)', () => {
     expect(body.indexOf('#p-famille-1"')).toBeGreaterThan(body.indexOf('#p-bus"'));
   });
 
-  it('cars also go along the cross streets, with the pictures in front of them cut out (R2-04)', () => {
-    const cross = drawTownLayers(opts(), 'band').filter((l) => l.kind === 'moving' && l.cut !== undefined);
+  it('cars also go along the cross streets, with the pictures in front of them drawn again over them (R2-04, L10.3)', () => {
+    const layers = drawTownLayers(opts(), 'band');
+    const cross = layers.map((l, k) => ({ l, k })).filter(({ l }) => l.kind === 'moving' && l.frame !== undefined);
     expect(cross.length).toBe(3);
-    for (const l of cross) {
+    for (const { l, k } of cross) {
       expect(l.svg).toContain('iso-move');
       for (const [, tx, ty] of l.svg.matchAll(/--tx:(-?[\d.]+)px;--ty:(-?[\d.]+)px/g)) expect(Number(ty) / Number(tx)).toBeCloseTo(-0.5 / 0.866, 2);
-      expect(l.cut).not.toContain('iso-move');
+      // Right after it: a still layer on the same frame, the pictures in front of the street.
+      const over = layers[k + 1]!;
+      expect(over.kind).toBe('still');
+      expect(over.over).toBe(true);
+      expect(over.frame).toEqual(l.frame);
+      expect(over.svg).not.toContain('iso-move');
+      // Framed on the street: much smaller than the whole drawing.
+      expect(l.frame!.w * l.frame!.h).toBeLessThan(1960 * 1300 * 0.4);
     }
-    // The street by the plant: the plant (to its left, behind) is not cut out, the town to its right is.
-    const byPlant = cross[0]!.cut!;
+    // The street by the plant: the plant (to its left, behind) is not drawn again, the town to its right is.
+    const byPlant = layers[cross[0]!.k + 1]!.svg;
     expect(byPlant).not.toContain('#p-reacteur"');
-    expect(byPlant).toContain('#p-gare"');
+    expect(byPlant).toMatch(/#p-(immeuble|maisons|arbre|gare)/);
   });
 
   it('the cycle track turns the streets into cycle-track tiles', () => {

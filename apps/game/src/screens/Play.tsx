@@ -6,7 +6,7 @@ import {
 import { townUrl } from '../assets';
 import { euros, t } from '../i18n';
 import { IsoCity } from '../play/IsoCity';
-import type { Places } from '../play/iso/town';
+import { quarterAnchor, type Places } from '../play/iso/town';
 import { Clock, CoreBar, Slider } from '../play/Controls';
 import { Curves } from '../play/Curves';
 import { REAL_SECONDS_PER_GAME_MINUTE, START_HOUR, advance, playUntil, startOf, timelineOf, type Sample } from '../play/session';
@@ -43,9 +43,6 @@ const EVENT_PICTURE: Partial<Record<SurpriseKind, string>> = {
 /** Long press on the valve (milliseconds of real time) and taps to clean the exchanger. */
 const HOLD_MS = 1200;
 const TAPS = 5;
-/** Where a button stands over the town band (% from the left): over its quarter, or in the middle. */
-const QUARTER_X = [38, 58, 78];
-
 /** A big button on the town to act on an event: a tap, a long press, or several taps. */
 function EventButton({ kind, quarter, onAct }: { kind: SurpriseKind; quarter?: number; onAct: () => void }) {
   const how = SURPRISE_SPEC[kind].fix;
@@ -58,7 +55,8 @@ function EventButton({ kind, quarter, onAct }: { kind: SurpriseKind; quarter?: n
     setHolding(false);
   };
   useEffect(() => stop, []);
-  const left = quarter !== undefined ? QUARTER_X[quarter] ?? 50 : 50;
+  // Over its quarter in the whole town (lot L10.3); an event of the whole town stands at the top, in the middle.
+  const [left, top] = (quarter !== undefined ? quarterAnchor(quarter) : null) ?? [50, 22];
   const label = how === 'taps' ? `${t(`event.${kind}.action`)} · ${t('event.scale.left', { n: String(TAPS - taps) })}` : t(`event.${kind}.action`);
   const handlers = how === 'hold'
     ? {
@@ -67,7 +65,7 @@ function EventButton({ kind, quarter, onAct }: { kind: SurpriseKind; quarter?: n
     }
     : { onClick: () => { sound.play('click'); if (how === 'taps' && taps + 1 < TAPS) setTaps(taps + 1); else onAct(); } };
   return (
-    <button type="button" className={`event-btn pulse${holding ? ' holding' : ''}`} style={{ left: `${left}%` }} aria-label={label} {...handlers}>
+    <button type="button" className={`event-btn pulse${holding ? ' holding' : ''}`} style={{ left: `${left}%`, top: `${top}%` }} aria-label={label} {...handlers}>
       {EVENT_PICTURE[kind] ? <img src={townUrl(EVENT_PICTURE[kind]!)} alt="" draggable={false} /> : null}
       <span>{label}</span>
       {how === 'hold' ? <i className="event-hold" style={{ animationDuration: `${HOLD_MS}ms` }} /> : null}
@@ -85,12 +83,6 @@ const REVIEW_STEP = Math.max(1, Number(PARAMS.get('etape')) || 1) - 1;
 /** Speeds offered to the player (R1-06): the game time runs 1, 2 or 4 times faster. */
 export const SPEEDS = [1, 2, 4] as const;
 export type Speed = (typeof SPEEDS)[number];
-
-/**
- * Mock-up of the new play screen (lot L10.1, R2-10): the whole town in large, the sliders with + and − on the right,
- * small curves, Cassandra in a bubble. Only with `?maquette=ecran` in the address, never for the players.
- */
-const MAQUETTE = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('maquette') === 'ecran';
 
 export function Play({
   day, seed, upgrades, places, effects = [], mods = NO_MODS, seen = [], onSeen, speed, onSpeed, onFinish, onRestart, onHome, tutorial = false, onTutorialDone, onRecord,
@@ -332,7 +324,7 @@ export function Play({
   };
 
   return (
-    <main className={`screen play${MAQUETTE ? ' play-b' : ''}${step ? ' tuto-on' : ''}`} data-tuto={step?.target}>
+    <main className={`screen play play-full${step ? ' tuto-on' : ''}`} data-tuto={step?.target}>
       <header className="play-top">
         <Button icon="pause" label={t('btn.pause')} onClick={() => setPaused(true)} />
         <div className="play-day">
@@ -359,7 +351,7 @@ export function Play({
 
       <section className="zone-city" aria-label={t('zone.city')}>
         <IsoCity
-          view={MAQUETTE ? 'full' : 'band'}
+          view="full"
           hour={Math.floor(hour * lightGrid) / lightGrid}
           season={day.id}
           mood={moodOf(view.elec, view.heat, elecShort, heatShort)}

@@ -44,7 +44,7 @@ l'ordre des notes.
 | R2-07 | Agrandir la ville en achetant du terrain. | — | 3 quartiers de 6 terrains, à vendre quand les 30 pelouses sont construites ; prix pour 2, 3 puis 5 journées d'une ville complète. **L10.6** |
 | R2-08 | Sauvegarder la progression. | Elle est déjà enregistrée sur l'appareil. | **Annulé** par Yann. |
 | R2-09 | Revoir la valeur des bâtiments. | Tableau des prix donné le 2026-11-16. | Les bâtiments qui aident coûtent 30 % de plus (maison médicale, batterie, parc, isolation, solaire, hôpital, cuve), bonus inchangé. **Fait v0.14.0** (L10.2) : ville complète en 21 journées |
-| R2-10 | On ne voit pas bien la ville ; voir la ville entière. | Pendant la partie, seule une bande de la ville est visible. | Ville entière en grand pendant la partie (option A), maquette d'abord. **Maquette validée** (L10.1, `?maquette=ecran`), écran à construire en **L10.3** |
+| R2-10 | On ne voit pas bien la ville ; voir la ville entière. | Pendant la partie, seule une bande de la ville est visible. | Ville entière en grand pendant la partie (option A), maquette d'abord. **Fait v0.14.0** (maquette L10.1 validée, écran L10.3) : boutons d'événement au-dessus de leur quartier, ergonomie sans défaut aux 8 formats |
 
 ### Lots proposés
 - **L10.1** — maquette du nouvel écran de jeu (R2-10).

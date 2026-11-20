@@ -82,38 +82,19 @@ function loadPicture(src: string): Promise<HTMLImageElement> {
 }
 
 /**
- * Mask of a moving layer whose cars cross several rows (lot L10.2): opaque everywhere but where the pictures in front
- * stand. Painted once at screen size (density 1 is enough for a mask) and given as a picture URL.
+ * Where a layer covering only part of the drawing (`frame`, lot L10.3) stands in the town's box of w × h pixels, framed
+ * like the whole drawing (viewBox and aspect of the view).
  */
-async function cutMask(svg: string, viewBox: string, aspect: string, w: number, h: number): Promise<string> {
-  const pw = Math.round(w);
-  const ph = Math.round(h);
-  const doc = `<svg xmlns="http://www.w3.org/2000/svg" width="${pw}" height="${ph}" viewBox="${viewBox}" preserveAspectRatio="${aspect}">${svg}</svg>`;
-  const url = URL.createObjectURL(new Blob([doc], { type: 'image/svg+xml' }));
-  try {
-    const img = await loadPicture(url);
-    const c = document.createElement('canvas');
-    c.width = pw;
-    c.height = ph;
-    const ctx = c.getContext('2d')!;
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, pw, ph);
-    ctx.globalCompositeOperation = 'destination-out';
-    ctx.drawImage(img, 0, 0);
-    const blob = await new Promise<Blob | null>((ok) => c.toBlob(ok));
-    if (!blob) throw new Error('mask not made');
-    return URL.createObjectURL(blob);
-  } finally {
-    URL.revokeObjectURL(url);
-  }
+function frameRect(frame: { x: number; y: number; w: number; h: number }, viewBox: string, aspect: string, w: number, h: number): { left: number; top: number; width: number; height: number } {
+  const [vx, vy, vw, vh] = viewBox.split(' ').map(Number) as [number, number, number, number];
+  const k = aspect.includes('slice') ? Math.max(w / vw, h / vh) : Math.min(w / vw, h / vh);
+  const ox = (w - vw * k) / 2;
+  const oy = (h - vh * k) / 2;
+  return { left: ox + (frame.x - vx) * k, top: oy + (frame.y - vy) * k, width: frame.w * k, height: frame.h * k };
 }
-
-/** CSS of a masked layer: hidden until its mask is ready. */
-function maskStyle(url: string | undefined): CSSProperties {
-  if (!url) return { visibility: 'hidden' };
-  const m = `url("${url}")`;
-  return { maskImage: m, WebkitMaskImage: m, maskSize: '100% 100%', WebkitMaskSize: '100% 100%', maskRepeat: 'no-repeat', WebkitMaskRepeat: 'no-repeat' };
-}
+const framedStyle = (r: { left: number; top: number; width: number; height: number }): CSSProperties =>
+  ({ inset: 'auto', left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px` });
+const frameBox = (f: { x: number; y: number; w: number; h: number }): string => `${f.x} ${f.y} ${f.w} ${f.h}`;
 
 /** Paints one still layer (an SVG string) into a canvas, at the screen's pixel density, with the view's framing. */
 async function paint(canvas: HTMLCanvasElement, svg: string, viewBox: string, aspect: string, w: number, h: number): Promise<void> {
@@ -172,8 +153,6 @@ export const IsoCity = memo(function IsoCity(p: IsoCityProps) {
   /** What each canvas shows now (drawing and size): a still layer is repainted only when it really changed. */
   const painted = useRef<string[]>([]);
   const [size, setSize] = useState<{ w: number; h: number } | null>(null);
-  /** Masks of the cross-street layers (lot L10.2), by layer index; the layer is hidden until its mask is ready. */
-  const [masks, setMasks] = useState<Record<number, { key: string; url: string }>>({});
 
   useLayoutEffect(() => {
     const el = box.current;
@@ -194,7 +173,10 @@ export const IsoCity = memo(function IsoCity(p: IsoCityProps) {
     // One picture per animation frame, so a change of light never freezes the game for long on the tablet.
     const todo = layers.flatMap((l, k) => {
       const key = `${size.w}x${size.h}|${l.svg}`;
-      return l.kind === 'still' && painted.current[k] !== key ? [{ k, svg: l.svg, key }] : [];
+      if (l.kind !== 'still' || painted.current[k] === key) return [];
+      // A framed still layer (lot L10.3) is painted at the size of its frame on the screen.
+      const r = l.frame ? frameRect(l.frame, viewBox, aspect, size.w, size.h) : null;
+      return [{ k, svg: l.svg, key, vb: l.frame ? frameBox(l.frame) : viewBox, asp: l.frame ? 'none' : aspect, w: r ? r.width : size.w, h: r ? r.height : size.h }];
     });
     void (async () => {
       for (const job of todo) {
@@ -202,7 +184,7 @@ export const IsoCity = memo(function IsoCity(p: IsoCityProps) {
         const c = canvases.current[job.k];
         if (!c) continue;
         try {
-          await paint(c, job.svg, viewBox, aspect, size.w, size.h);
+          await paint(c, job.svg, job.vb, job.asp, job.w, job.h);
           painted.current[job.k] = job.key;
         } catch {
           // A picture that fails to paint keeps the previous one.
@@ -213,44 +195,15 @@ export const IsoCity = memo(function IsoCity(p: IsoCityProps) {
     return () => { stop = true; };
   }, [layers, size, viewBox, aspect]);
 
-  useEffect(() => {
-    if (!size) return undefined;
-    let stop = false;
-    const made: string[] = [];
-    const jobs = layers.flatMap((l, k) => {
-      const key = `${size.w}x${size.h}|${l.cut ?? ''}`;
-      return l.kind === 'moving' && l.cut && masks[k]?.key !== key ? [{ k, cut: l.cut, key }] : [];
-    });
-    if (!jobs.length) return undefined;
-    void (async () => {
-      const next: Record<number, { key: string; url: string }> = {};
-      for (const job of jobs) {
-        try {
-          const url = await cutMask(job.cut, viewBox, aspect, size.w, size.h);
-          made.push(url);
-          next[job.k] = { key: job.key, url };
-        } catch {
-          // No mask: the layer stays hidden rather than drawing cars over the buildings.
-        }
-        if (stop) return;
-      }
-      if (!stop) setMasks((m) => {
-        for (const k of Object.keys(next)) if (m[Number(k)]) URL.revokeObjectURL(m[Number(k)]!.url);
-        return { ...m, ...next };
-      });
-    })();
-    return () => { stop = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [layers, size, viewBox, aspect]);
-
   return (
     <div ref={box} className={`city iso-${p.view}`} role="img" aria-label={t('app.title')}>
       {/* The sky moves by quarters of an hour: enough for the sun, and cheap on the tablet. */}
       <Sky view={p.view} hour={Math.floor(p.hour * 4) / 4} viewBox={viewBox} aspect={aspect} />
       {layers.map((l, k) => (l.kind === 'still'
-        ? <canvas key={k} className="city-layer" ref={(c) => { canvases.current[k] = c; }} />
+        ? <canvas key={k} className="city-layer" ref={(c) => { canvases.current[k] = c; }} style={l.frame && size ? framedStyle(frameRect(l.frame, viewBox, aspect, size.w, size.h)) : undefined} />
         : (
-          <svg key={k} className="city-layer" viewBox={viewBox} preserveAspectRatio={aspect} aria-hidden style={l.cut ? maskStyle(masks[k]?.url) : undefined}>
+          <svg key={k} className="city-layer" viewBox={l.frame ? frameBox(l.frame) : viewBox} preserveAspectRatio={l.frame ? 'none' : aspect} aria-hidden
+            style={l.frame && size ? framedStyle(frameRect(l.frame, viewBox, aspect, size.w, size.h)) : undefined}>
             <g style={{ '--phase': `${phases.current[k]?.phase ?? '0'}s` } as CSSProperties} dangerouslySetInnerHTML={{ __html: l.svg }} />
           </svg>
         )))}

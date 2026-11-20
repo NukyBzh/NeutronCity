@@ -5,7 +5,7 @@ accueil.bonjour: "Salut ! Moi, c'est Cassandra. Viens piloter la **centrale** av
 # Tutoriel de la première partie (lot L5) : le temps est arrêté, une chose à la fois.
 tuto.ville: "Voici ta ville. Pour vivre, elle a besoin de ta **centrale** !"
 tuto.demande: "La ligne en pointillés, c'est la **demande** : ce que la ville veut."
-tuto.curseur: "À toi ! Fais glisser le **curseur** jaune vers le haut."
+tuto.curseur: "À toi ! Fais glisser le **curseur** jaune vers le haut, ou touche son bouton +."
 tuto.centrale: "La centrale suit **doucement**. Bouge le curseur un peu en avance !"
 tuto.tirelire: "Reste près de la demande : ta **tirelire** se remplit. C'est parti !"
 

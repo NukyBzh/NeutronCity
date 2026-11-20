@@ -59,7 +59,7 @@ const probe = (btn, txt) => `(() => {
   return JSON.stringify({ small, tiny: [...tiny.keys()], rem: parseFloat(getComputedStyle(document.documentElement).fontSize) });
 })()`;
 
-const out = ['# Ergonomie (lot L8.3)', '', `Fichier écrit par \`tools/mesures/ergonomie.mjs\` : boutons et textes plus petits que les cibles de D-23 (tablette ≥ 48 px et texte ≥ 18 px, 15 px sous 680 px de haut ; téléphone ≥ 44 px et ≥ 15 px), écran par écran, au format de chaque appareil.`, ''];
+const out = ['# Ergonomie (lots L8.3 et L10.3)', '', `Fichier écrit par \`tools/mesures/ergonomie.mjs\` : boutons et textes plus petits que les cibles de D-23 (tablette ≥ 48 px et texte ≥ 18 px, 15 px sous 680 px de haut ; téléphone ≥ 44 px et ≥ 15 px), écran par écran, au format de chaque appareil.`, ''];
 let faults = 0;
 for (const f of FORMATS) {
   await send('Emulation.setDeviceMetricsOverride', { width: f.w, height: f.h, deviceScaleFactor: 1, mobile: f.phone });
