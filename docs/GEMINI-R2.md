@@ -7,20 +7,44 @@ session modifiait à ce moment-là ; à fusionner dans `docs/GEMINI.md` quand ce
 **Livrées par Yann les 2026-11-20 et 2026-11-21** dans `assets/Jeu centrale – assets/` : les 17 images, 68 à 84 (JPG
 nommés `*.png.jpg`, sauf `asset_73_habitant_enfant_face_pas2.png.jpeg`).
 
-**À refaire : les images 71 à 74 (« 2e pas »).** Gemini a dessiné à chaque fois **un autre personnage** (le 71 : t-shirt
-vert clair et pantalon beige au lieu du pull vert, du pantalon gris et du sac en bandoulière du 53 ; le 72 : manteau
-marron et sac à dos ; le 73 : un décor de ville entier en fond au lieu du vert uni). Alterner les deux pas ferait donc
-changer de vêtements le passant deux fois par seconde. En attendant, la marche est animée en code (lot L10.5a). Pour
-réessayer, joindre **l'image d'origine du personnage** et insister :
+**À refaire : les images 71 à 74 (« 2e pas »).** Gemini a dessiné à chaque fois **un autre personnage** (le 71 :
+t-shirt vert clair et pantalon beige au lieu du pull vert, du pantalon gris et du sac en bandoulière du 53 ; le 72 :
+manteau marron et sac à dos ; le 73 : un décor de ville entier en fond au lieu du vert uni). Alterner les deux pas
+ferait donc changer de vêtements le passant deux fois par seconde. En attendant, la marche est animée en code (lot
+L10.5a : le passant monte et descend de 8 % de sa hauteur à chaque pas).
 
+Prompts corrigés ci-dessous (2026-11-21). Trois changements par rapport au premier essai :
+
+1. on demande de **modifier l'image jointe**, pas de dessiner une nouvelle image : Gemini garde alors le personnage ;
+2. les vêtements sont **décrits en toutes lettres**, pour que le modèle ait la description et l'image ;
+3. on répète que **le fond doit rester vert uni, sans décor** (c'est ce qui a raté sur le 73).
+
+Joindre **une seule image** : celle du 1er pas du même personnage. Faire chaque paire dans une conversation à part.
+
+**asset_71_habitant_adulte_face_pas2.png** — joindre `asset_53_habitant_adulte.png.jpg`
 ```
-Dans exactement le même style que la première image jointe (illustration vectorielle isométrique 2:1, aplats propres, contours fins, ombrage doux, lumière haut-gauche, palette pastel), dessine EXACTEMENT LA MÊME PERSONNE que la deuxième image jointe : mêmes vêtements, mêmes couleurs exactes, mêmes cheveux, même sac, même taille, même cadrage, même vue. Ne change rien d'autre que la position des jambes et des bras : c'est le pas suivant de la même marche, l'autre jambe en avant et l'autre bras en avant. Ce n'est pas une nouvelle personne : c'est la même, une demi-seconde plus tard. Sans sol ni socle sous l'objet. Fond uni vert #00FF00. Format PNG carré 1024x1024, fichier .png obligatoire (pas de JPG), objet centré sur 70 % de la hauteur, exactement comme la deuxième image jointe. Aucun texte, aucune lettre, aucun chiffre.
+Reprends l'image jointe et modifie-la : garde EXACTEMENT la même personne, le même dessin et le même cadrage, et ne change que la position des jambes et des bras. C'est le même adulte une demi-seconde plus tard dans sa marche : l'autre jambe en avant, l'autre bras en avant. Garde strictement : le pull vert clair, le pantalon gris, le sac en bandoulière bleu clair porté en travers, les cheveux courts châtain clair, les chaussures grises, les contours fins, la vue de trois quarts avant, la direction de marche vers le bas à gauche, la même taille et la même place dans l'image. Ce n'est pas une nouvelle personne ni un nouveau style : c'est la même image au pas suivant. Le fond reste un vert uni #00FF00, sans décor, sans ville, sans sol, sans ombre portée. Format PNG carré 1024x1024, fichier .png obligatoire (pas de JPG). Aucun texte, aucune lettre, aucun chiffre.
 ```
 
-Conseils donnés à Yann : joindre `docs/gemini/reference-style-ville.jpg` à chaque prompt (et l'image d'origine du
-personnage pour 68 à 74) ; générer les images d'un même personnage ou d'une même paire de couleurs dans la même
-conversation. Habitants sur fond **vert** #00FF00 ; bâtiments sur fond **magenta** #FF00FF (leur socle d'herbe serait
-confondu avec un fond vert au détourage).
+**asset_72_habitant_adulte_dos_pas2.png** — joindre `asset_68_habitant_adulte_dos.png.jpg`
+```
+Reprends l'image jointe et modifie-la : garde EXACTEMENT la même personne, le même dessin et le même cadrage, et ne change que la position des jambes et des bras. C'est le même adulte une demi-seconde plus tard dans sa marche : l'autre jambe en avant, l'autre bras en avant. Garde strictement : le pull vert avec le col blanc qui dépasse, le pantalon gris foncé, le sac en bandoulière noir, les cheveux bruns courts, les chaussures noires, la vue de trois quarts arrière (on le voit de dos), la direction de marche vers le haut à gauche, la même taille et la même place dans l'image. Ce n'est pas une nouvelle personne ni un nouveau style : c'est la même image au pas suivant. Le fond reste un vert uni #00FF00, sans décor, sans ville, sans sol, sans ombre portée. Format PNG carré 1024x1024, fichier .png obligatoire (pas de JPG). Aucun texte, aucune lettre, aucun chiffre.
+```
+
+**asset_73_habitant_enfant_face_pas2.png** — joindre `asset_54_habitant_enfant.png.jpg`
+```
+Reprends l'image jointe et modifie-la : garde EXACTEMENT le même enfant, le même dessin et le même cadrage, et ne change que la position des jambes et des bras. C'est le même enfant une demi-seconde plus tard dans sa marche : l'autre jambe en avant, l'autre bras en avant. Garde strictement : la casquette bleue, le t-shirt orange à manches courtes, le short bleu, les baskets grises, les cheveux bruns, les contours fins, la vue de trois quarts avant, la direction de marche vers le bas à gauche, la même taille et la même place dans l'image. Ce n'est pas un autre enfant ni un nouveau style : c'est la même image au pas suivant. Le fond reste un vert uni #00FF00 sur toute l'image, sans décor, sans ville, sans bâtiment, sans sol, sans ombre portée. Format PNG carré 1024x1024, fichier .png obligatoire (pas de JPG). Aucun texte, aucune lettre, aucun chiffre.
+```
+
+**asset_74_habitant_enfant_dos_pas2.png** — joindre `asset_69_habitant_enfant_dos.png.jpg`
+```
+Reprends l'image jointe et modifie-la : garde EXACTEMENT le même enfant, le même dessin et le même cadrage, et ne change que la position des jambes et des bras. C'est le même enfant une demi-seconde plus tard dans sa marche : l'autre jambe en avant, l'autre bras en avant. Garde strictement : la casquette bleue portée à l'envers, le t-shirt orange à manches courtes, le short bleu foncé, les chaussettes blanches, les cheveux bruns, la vue de trois quarts arrière (on le voit de dos), la direction de marche vers le haut à gauche, la même taille et la même place dans l'image. Ce n'est pas un autre enfant ni un nouveau style : c'est la même image au pas suivant. Le fond reste un vert uni #00FF00 sur toute l'image, sans décor, sans ville, sans bâtiment, sans sol, sans ombre portée. Format PNG carré 1024x1024, fichier .png obligatoire (pas de JPG). Aucun texte, aucune lettre, aucun chiffre.
+```
+
+**Le code est déjà prêt** (2026-11-21) : dès que les fichiers `habitant-adulte-2.webp` et `habitant-enfant-2.webp`
+seront dans `assets/ville/` et ajoutés à `TOWN_IMAGES`, le jeu montrera les deux pas l'un après l'autre (toutes les
+0,26 s) en gardant le rebond, et les jambes bougeront pour de bon. Sans ces fichiers, le piéton garde le rebond seul :
+rien ne casse.
 
 ## 1. Habitants : vues de dos et 2e pas (R2-05, lot L10.5)
 
@@ -55,25 +79,8 @@ Dans exactement le même style que la première image jointe (illustration vecto
 Dans exactement le même style que la première image jointe (illustration vectorielle isométrique 2:1, aplats propres, ombrage doux, lumière haut-gauche, palette pastel), dessine un seul objet : exactement la même famille que la deuxième image jointe (deux adultes et un enfant, mêmes vêtements, mêmes couleurs), mais vue de trois quarts arrière, de dos, marchant ensemble en s'éloignant vers le haut à gauche de l'image, l'enfant tenant la main d'un adulte. Sans sol ni socle sous l'objet. Fond uni vert #00FF00. Format PNG carré 1024x1024, fichier .png obligatoire (pas de JPG), objet centré sur 75 % de la largeur. Aucun texte, aucune lettre, aucun chiffre.
 ```
 
-**asset_71_habitant_adulte_face_pas2.png**
-```
-Dans exactement le même style que la première image jointe (illustration vectorielle isométrique 2:1, aplats propres, ombrage doux, lumière haut-gauche, palette pastel), dessine un seul objet : exactement le même adulte que la deuxième image jointe, même vue de trois quarts avant, même direction de marche, mais au pas suivant de la marche : l'autre jambe en avant et l'autre bras en avant. Même taille, mêmes proportions, mêmes couleurs, même cadrage. Sans sol ni socle sous l'objet. Fond uni vert #00FF00. Format PNG carré 1024x1024, fichier .png obligatoire (pas de JPG), objet centré sur 70 % de la hauteur. Aucun texte, aucune lettre, aucun chiffre.
-```
-
-**asset_72_habitant_adulte_dos_pas2.png**
-```
-Dans exactement le même style que la première image jointe (illustration vectorielle isométrique 2:1, aplats propres, ombrage doux, lumière haut-gauche, palette pastel), dessine un seul objet : exactement le même adulte de dos que la deuxième image jointe, même vue de trois quarts arrière, même direction, mais au pas suivant de la marche : l'autre jambe en avant et l'autre bras en avant. Même taille, mêmes proportions, mêmes couleurs, même cadrage. Sans sol ni socle sous l'objet. Fond uni vert #00FF00. Format PNG carré 1024x1024, fichier .png obligatoire (pas de JPG), objet centré sur 70 % de la hauteur. Aucun texte, aucune lettre, aucun chiffre.
-```
-
-**asset_73_habitant_enfant_face_pas2.png**
-```
-Dans exactement le même style que la première image jointe (illustration vectorielle isométrique 2:1, aplats propres, ombrage doux, lumière haut-gauche, palette pastel), dessine un seul objet : exactement le même enfant que la deuxième image jointe, même vue de trois quarts avant, même direction de marche, mais au pas suivant de la marche : l'autre jambe en avant et l'autre bras en avant. Même taille, mêmes proportions, mêmes couleurs, même cadrage. Sans sol ni socle sous l'objet. Fond uni vert #00FF00. Format PNG carré 1024x1024, fichier .png obligatoire (pas de JPG), objet centré sur 60 % de la hauteur. Aucun texte, aucune lettre, aucun chiffre.
-```
-
-**asset_74_habitant_enfant_dos_pas2.png**
-```
-Dans exactement le même style que la première image jointe (illustration vectorielle isométrique 2:1, aplats propres, ombrage doux, lumière haut-gauche, palette pastel), dessine un seul objet : exactement le même enfant de dos que la deuxième image jointe, même vue de trois quarts arrière, même direction, mais au pas suivant de la marche : l'autre jambe en avant et l'autre bras en avant. Même taille, mêmes proportions, mêmes couleurs, même cadrage. Sans sol ni socle sous l'objet. Fond uni vert #00FF00. Format PNG carré 1024x1024, fichier .png obligatoire (pas de JPG), objet centré sur 60 % de la hauteur. Aucun texte, aucune lettre, aucun chiffre.
-```
+*Les quatre prompts du 2e pas écrits le 2026-11-16 (71 à 74) ont donné un autre personnage à chaque fois : ils
+sont remplacés par les prompts corrigés en tête de ce fichier. Ne pas réutiliser ceux-là.*
 
 **asset_75_habitante_agee_face.png**
 ```

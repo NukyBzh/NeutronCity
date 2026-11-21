@@ -261,12 +261,19 @@ const FLOCK: readonly { color: 'bleu' | 'jaune'; dx: number; dy: number; size: n
  * inhabitants on the pavements (the pictures walk to the left: mirrored to walk right-down). Seconds per crossing and
  * offset, so they never start together. Walkers' size is their height on the screen.
  */
-interface Mover { id: string; dir: 1 | -1; lane: number; size: number; dur: number; d: number; walker?: boolean }
+interface Mover {
+  id: string; dir: 1 | -1; lane: number; size: number; dur: number; d: number; walker?: boolean;
+  /**
+   * Second step of the same walker (lot L10.5a): the two pictures are shown in turn, so the legs really move. Drawn
+   * only once the picture is there — it must also be added to TOWN_IMAGES. Until then the walker just bobs.
+   */
+  step2?: string;
+}
 const TRAFFIC: Record<number, Mover[]> = {
   2: [
     { id: 'voiture-bleue-avant', dir: 1, lane: 5, size: 0.3, dur: 18, d: -4 },
     { id: 'voiture-rouge-arriere', dir: -1, lane: 3, size: 0.28, dur: 21, d: -12 },
-    { id: 'habitant-adulte', dir: 1, lane: 7.3, size: 34, dur: 60, d: -20, walker: true },
+    { id: 'habitant-adulte', dir: 1, lane: 7.3, size: 34, dur: 60, d: -20, walker: true, step2: 'habitant-adulte-2' },
     // The old lady walks slowly, her shopping bag in her hand (lot L10.5a, Gemini picture 75).
     { id: 'dame-agee', dir: -1, lane: 0.8, size: 33, dur: 88, d: -48, walker: true },
   ],
@@ -275,12 +282,12 @@ const TRAFFIC: Record<number, Mover[]> = {
     { id: 'voiture-bleue-arriere', dir: -1, lane: 3, size: 0.28, dur: 19, d: -7 },
     { id: 'bus', dir: 1, lane: 5, size: 0.42, dur: 24, d: -13 },
     { id: 'famille-1', dir: 1, lane: 7.3, size: 34, dur: 70, d: -30, walker: true },
-    { id: 'habitant-adulte', dir: -1, lane: 0.8, size: 32, dur: 64, d: -9, walker: true },
+    { id: 'habitant-adulte', dir: -1, lane: 0.8, size: 32, dur: 64, d: -9, walker: true, step2: 'habitant-adulte-2' },
   ],
   8: [
     { id: 'voiture-rouge-avant', dir: 1, lane: 5, size: 0.3, dur: 17, d: -9 },
     { id: 'voiture-bleue-arriere', dir: -1, lane: 3, size: 0.28, dur: 20, d: -2 },
-    { id: 'habitant-enfant', dir: 1, lane: 7.3, size: 26, dur: 58, d: -15, walker: true },
+    { id: 'habitant-enfant', dir: 1, lane: 7.3, size: 26, dur: 58, d: -15, walker: true, step2: 'habitant-enfant-2' },
     { id: 'famille-2', dir: -1, lane: 0.8, size: 32, dur: 72, d: -40, walker: true },
     { id: 'dame-agee', dir: 1, lane: 7.3, size: 33, dur: 95, d: -22, walker: true },
   ],
@@ -557,19 +564,32 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
       if (!im) continue;
       const y = T * r + m.lane;
       const x0 = m.dir === 1 ? STREET_X[0] : STREET_X[1];
-      let box: Box | null;
-      if (m.walker) {
+      // A walker's height is his `size`; his width follows his own picture, so the two steps are never stretched.
+      const boxOf = (id: string): Box | null => {
+        const p = img[id];
+        if (!p) return null;
+        if (!m.walker) return boxAt(id, x0, y, m.size);
         const [cx, cy] = P(x0, y);
-        const w = (m.size * im.w) / im.h;
-        box = { x: cx - w / 2, y: cy - m.size, w, h: m.size };
-      } else box = boxAt(m.id, x0, y, m.size);
+        const w = (m.size * p.w) / p.h;
+        return { x: cx - w / 2, y: cy - m.size, w, h: m.size };
+      };
+      const box = boxOf(m.id);
       if (!box) continue;
       const len = (STREET_X[1] - STREET_X[0]) * m.dir;
       const wrap = `class="iso-move" style="--tx:${f1(len * 0.866 * S)}px;--ty:${f1(len * 0.5 * S)}px;--dur:${m.dur}s;--d:${m.d}s"`;
       // A walker bobs up and down as he goes (lot L10.5a): without it he slides along the pavement. Each one has his
       // own phase, so they never bob together.
-      const inner = m.walker ? `class="walk" style="--d:${((m.d * 0.37) % 0.52).toFixed(2)}s"` : undefined;
-      items.push({ id: m.id, box, mirror: m.walker ? m.dir === 1 : true, filters: L(), wrap, inner });
+      const mirror = m.walker ? m.dir === 1 : true;
+      const phase = ((m.d * 0.37) % 0.52).toFixed(2);
+      const inner = (step = ''): string => `class="walk${step}" style="--d:${phase}s"`;
+      // Both steps of the walk, when the second picture is there: they are shown in turn, half a step apart.
+      const second = m.walker && m.step2 ? boxOf(m.step2) : null;
+      if (m.step2 && second) {
+        items.push({ id: m.id, box, mirror, filters: L(), wrap, inner: inner(' step-a') });
+        items.push({ id: m.step2, box: second, mirror, filters: L(), wrap, inner: inner(' step-b') });
+        continue;
+      }
+      items.push({ id: m.id, box, mirror, filters: L(), wrap, inner: m.walker ? inner() : undefined });
     }
     return items.length ? render(items) : '';
   };

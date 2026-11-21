@@ -389,3 +389,38 @@ describe('the inhabitants walk (lot L10.5a, R2-05)', () => {
     expect(TOWN_IMAGES).toContain('dame-agee');
   });
 });
+
+describe('the two steps of a walk (lot L10.5a, images 71 à 74)', () => {
+  /** The town with the pictures of the second step, as it will be once Yann has made them again. */
+  const withSteps = (): string => {
+    const images = { ...IMAGES, 'habitant-adulte-2': pic('habitant-adulte-2'), 'habitant-enfant-2': pic('habitant-enfant-2') };
+    return drawTownLayers(opts({ images }), 'full').filter((l) => l.kind === 'moving').map((l) => l.svg).join('');
+  };
+
+  it('are shown in turn, each keeping the bob, as soon as the second picture is there', () => {
+    const before = moving({}, 'full');
+    expect(before).not.toContain('step-a');
+    expect(before).not.toContain('#p-habitant-adulte-2');
+    const after = withSteps();
+    expect(after.split('class="walk step-a"').length - 1).toBe(3);
+    expect(after.split('class="walk step-b"').length - 1).toBe(3);
+    expect(after).toContain('#p-habitant-adulte-2');
+    expect(after).toContain('#p-habitant-enfant-2');
+  });
+
+  it('a walker with no second picture keeps the simple bob', () => {
+    const after = withSteps();
+    // The old lady has only one picture: she is drawn once, without a step class.
+    expect(after.split('href="#p-dame-agee"').length - 1).toBe(2);
+    expect(after).toMatch(/class="walk" style="--d:[-\d.]+s"/);
+  });
+
+  it('both steps stand at the same place and the same height', () => {
+    const after = withSteps();
+    const boxes = [...after.matchAll(/class="walk step-([ab])"[^>]*><use href="#p-habitant-adulte(-2)?" transform="translate\(([-\d.]+) ([-\d.]+)\) scale\(([-\d.]+) ([-\d.]+)\)/g)];
+    expect(boxes.length).toBeGreaterThanOrEqual(2);
+    const [a, b] = boxes;
+    // Same ground line (the pictures are the same size here, so the same translation).
+    expect(Number(a![4])).toBeCloseTo(Number(b![4]), 1);
+  });
+});

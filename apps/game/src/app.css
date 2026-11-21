@@ -374,7 +374,13 @@ svg .pop, svg .float { transform-box: fill-box; transform-origin: center; }
    sans cela il glisse sur le trottoir. Le déplacement est en unités du dessin, donc il suit la taille de l'écran. */
 .walk { animation: walk-bob 0.52s ease-in-out var(--d, 0s) infinite alternate; }
 @keyframes walk-bob { from { transform: translateY(0); } to { transform: translateY(-3px); } }
-@media (prefers-reduced-motion: reduce) { .city-spots .spot { animation: none; } .iso-car, .walker-iso, .iso-move, .birds, .bird-wave, .flap-up, .flap-down, .walk { animation: none; } .flap-down { opacity: 0; } }
+/* Quand les deux pas d'un personnage existent (images 71 à 74), ils se montrent à tour de rôle, une demi-foulée
+   d'écart, en gardant le rebond. Tant qu'il n'y a qu'une image, le piéton garde le rebond seul. */
+.walk.step-a { animation: walk-bob 0.52s ease-in-out var(--d, 0s) infinite alternate, step-a 0.52s steps(1, end) var(--d, 0s) infinite; }
+.walk.step-b { animation: walk-bob 0.52s ease-in-out var(--d, 0s) infinite alternate, step-b 0.52s steps(1, end) var(--d, 0s) infinite; }
+@keyframes step-a { 0% { opacity: 1; } 50% { opacity: 0; } }
+@keyframes step-b { 0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .city-spots .spot { animation: none; } .iso-car, .walker-iso, .iso-move, .birds, .bird-wave, .flap-up, .flap-down, .walk { animation: none; } .flap-down, .walk.step-b { opacity: 0; } }
 
 /* Whole town (isometric) in the summary and the shop. */
 .town-panel { border: 0.15rem solid var(--encre); border-radius: 1.2rem; overflow: hidden; background: var(--ciel); }

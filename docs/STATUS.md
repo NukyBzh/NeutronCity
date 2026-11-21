@@ -32,7 +32,8 @@ avant tout commit, installation, envoi sur GitHub ou action irréversible).*
 - `docs/CADRAGE.md` — cadrage validé.
 - `docs/DECISIONS.md` — décisions D-01 à D-31.
 - `docs/ESSAI-ENFANTS.md` — essai avec des enfants : déroulé, ce qu'il faut observer, questions, fiche à imprimer, lecture du journal exporté.
-- `docs/RETOURS.md` — retours de test (R1 : premier essai sur la tablette).
+- `docs/RETOURS.md` — retours de test (R1 : premier essai sur la tablette ; R2 : essai du neveu de Yann).
+- `docs/SUJETS.md` — registre des sujets à traiter (S-xx) : bogues, améliorations, vérifications et tâches en attente.
 - `docs/tablette.md` — installer l’APK sur une tablette Android (Tab A9+ au début ; Tab A11+ et Tab A7 pour l'essai L9).
 - `docs/iphone.md` — version web installable (iPhone, téléphones Android) : mise en ligne et installation.
 - `docs/ERGONOMIE.md` — boutons, textes et fluidité aux formats des tablettes et des téléphones (lot L8.3).
@@ -54,6 +55,6 @@ avant tout commit, installation, envoi sur GitHub ou action irréversible).*
 - Par le Wi-Fi : `npm.cmd run build` puis, dans `apps/game` : `npx.cmd vite preview --host 0.0.0.0 --port 4180` ; sur le même Wi-Fi : http://<adresse du PC>:4180 (192.168.1.24 le 2026-11-08). Progression enregistrée sur l'appareil (D-14) ; « Nouveau joueur » sur l'accueil entre deux enfants. Retours du test avec les enfants à intégrer.
 
 ## Points ouverts
+**Tout est dans le registre des sujets à traiter : `docs/SUJETS.md`** (bogues, améliorations, vérifications et tâches
+en attente, numérotés S-xx). À relire au début d'un lot et avant chaque livrable.
 - Fichier Figma créé le 2026-11-08 : https://www.figma.com/design/K1BdqYcOLPZ4vCc7bomwdC (lien dans `assets/SOURCES.md`).
-- Conditions d'usage des images générées par IA (dont Cassandra) à vérifier avant une diffusion publique.
-- Nom « Nuki Town » (D-27, remplace « Neutron City ») et logo issu de Gemini : à vérifier avant diffusion (marque, autre jeu du même nom). Dépôt GitHub et dossier du projet gardent l'ancien nom.

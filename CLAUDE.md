@@ -2,7 +2,8 @@
 
 **Start every session by reading `docs/STATUS.md`.** Working rules of the project owner: `PROMPT-neutron-city.md`
 (work in lots; propose → approval → build → verify (tests + visual check) → short report → stop; ask before any
-commit, installation, push to GitHub or irreversible action). Decisions: `docs/DECISIONS.md` (D-xx); configuration
+commit, installation, push to GitHub or irreversible action). Decisions: `docs/DECISIONS.md` (D-xx); open bugs, improvements and
+checks: `docs/SUJETS.md` (S-xx), to be read at the start of a lot and before a deliverable; configuration
 management: `docs/CONFIGURATION.md`.
 
 - Docs and game texts in French; commit messages in English (`<lot>: <what changes>`).
