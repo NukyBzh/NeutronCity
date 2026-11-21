@@ -364,7 +364,7 @@ svg .pop, svg .float { transform-box: fill-box; transform-origin: center; }
 .flap-down { opacity: 0; animation: flap-down var(--flap, 0.45s) steps(1, end) var(--d, 0s) infinite; }
 @keyframes flap-up { 0% { opacity: 1; } 50% { opacity: 0; } }
 @keyframes flap-down { 0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; } }
-.city .iso-move, .city .birds,
+.city .iso-move, .city .birds, .city .visit, .city .v-go, .city .v-enter, .city .v-leave,
 .city .iso-car, .city .walker-iso, .city .flake, .city .steam, .city .plume, .city .flow, .city .float {
   animation-delay: calc(var(--d, 0s) - var(--phase, 0s));
 }
@@ -380,7 +380,26 @@ svg .pop, svg .float { transform-box: fill-box; transform-origin: center; }
 .walk.step-b { animation: walk-bob 0.52s ease-in-out var(--d, 0s) infinite alternate, step-b 0.52s steps(1, end) var(--d, 0s) infinite; }
 @keyframes step-a { 0% { opacity: 1; } 50% { opacity: 0; } }
 @keyframes step-b { 0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .city-spots .spot { animation: none; } .iso-car, .walker-iso, .iso-move, .birds, .bird-wave, .flap-up, .flap-down, .walk { animation: none; } .flap-down, .walk.step-b { opacity: 0; } }
+
+/* Lot L10.5b — les visites (R2-05) : l'habitant longe le trottoir (a), monte jusqu'à la porte (b), entre, ressort
+   plus tard et repart de l'autre côté (c). Les trois images (aller, entrée, sortie) suivent le même trajet et ne se
+   montrent qu'au bon moment ; chacune garde le rebond de la marche. Tout est dans la feuille de style : rien n'est
+   calculé image par image. */
+.visit { animation: visit var(--vdur, 56s) linear var(--d, 0s) infinite; }
+@keyframes visit {
+  0% { transform: translate(0, 0); }
+  40% { transform: translate(var(--ax), var(--ay)); }
+  50%, 74% { transform: translate(var(--bx), var(--by)); }
+  84% { transform: translate(var(--ax), var(--ay)); }
+  100% { transform: translate(var(--cx), var(--cy)); }
+}
+.v-go { animation: walk-bob 0.52s ease-in-out infinite alternate, v-go var(--vdur, 56s) linear var(--d, 0s) infinite; }
+.v-enter { animation: walk-bob 0.52s ease-in-out infinite alternate, v-enter var(--vdur, 56s) linear var(--d, 0s) infinite; }
+.v-leave { animation: walk-bob 0.52s ease-in-out infinite alternate, v-leave var(--vdur, 56s) linear var(--d, 0s) infinite; }
+@keyframes v-go { 0%, 39.5% { opacity: 1; } 40%, 100% { opacity: 0; } }
+@keyframes v-enter { 0%, 39.5% { opacity: 0; } 40%, 49.5% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes v-leave { 0%, 73.5% { opacity: 0; } 74%, 96% { opacity: 1; } 99%, 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .city-spots .spot { animation: none; } .iso-car, .walker-iso, .iso-move, .birds, .bird-wave, .flap-up, .flap-down, .walk, .visit { animation: none; } .flap-down, .walk.step-b, .v-enter, .v-leave { opacity: 0; } }
 
 /* Whole town (isometric) in the summary and the shop. */
 .town-panel { border: 0.15rem solid var(--encre); border-radius: 1.2rem; overflow: hidden; background: var(--ciel); }

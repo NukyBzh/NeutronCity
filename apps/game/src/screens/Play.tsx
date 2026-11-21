@@ -8,6 +8,7 @@ import { euros, t } from '../i18n';
 import { IsoCity } from '../play/IsoCity';
 import { quarterAnchor, type Places } from '../play/iso/town';
 import { FIREWORK_SECONDS, LIGHTNING_SECONDS, PARTY_FROM, weatherOf } from '../play/iso/weather';
+import { visitsAt } from '../play/iso/visits';
 import { Clock, CoreBar, Slider } from '../play/Controls';
 import { Curves } from '../play/Curves';
 import { REAL_SECONDS_PER_GAME_MINUTE, START_HOUR, advance, playUntil, startOf, timelineOf, type Sample } from '../play/session';
@@ -352,6 +353,8 @@ export function Play({
     party: weather.party >= PARTY_FROM,
     squirrel: on.find((e) => e.kind === 'squirrel' && e.fixedAt === undefined)?.quarter ?? null,
     worker: on.some((e) => e.kind === 'heatLeak' && e.fixedAt !== undefined),
+    // Lot L10.5b: the inhabitants who go into the buildings, following the hour of the day.
+    visits: visitsAt(hour, upgrades),
   };
   // The squirrel is still in the transformer: the magnifier shows it in close-up (R2-01).
   const squirrel = on.some((e) => e.kind === 'squirrel' && e.fixedAt === undefined) && townUrl('ecureuil-gros') !== '';

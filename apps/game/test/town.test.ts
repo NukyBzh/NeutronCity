@@ -5,7 +5,7 @@ import { parse } from 'yaml';
 import { validateShop } from '@neutron/engine';
 import {
   BAND_VIEWBOX, BUILD_LOTS, HAT, PLACEABLE, PLOTS, TOWN_IMAGES, drawTown, drawTownLayers, freeLots, isBuildLot, isLot, lightKey, quarterOf,
-  settle, tileCentre, tileCorners, type TownImage, type TownOptions,
+  settle, tileCentre, tileCorners, type Places, type TownImage, type TownOptions,
 } from '../src/play/iso/town';
 import { skyColours } from '../src/play/iso/Sky';
 
@@ -422,5 +422,61 @@ describe('the two steps of a walk (lot L10.5a, images 71 à 74)', () => {
     const [a, b] = boxes;
     // Same ground line (the pictures are the same size here, so the same translation).
     expect(Number(a![4])).toBeCloseTo(Number(b![4]), 1);
+  });
+});
+
+describe('the inhabitants go into the buildings (lot L10.5b, R2-05)', () => {
+  /** The school on a lot in front of a street (row 4), as the child may place it. */
+  const schoolPlaces = { ecole: [6, 4] as const };
+  const visit = (mode: 'in' | 'out' | 'round', places: Places = schoolPlaces) =>
+    moving({ places, upgrades: ['ecole'], scene: { visits: [{ id: 'ecole', who: 'enfant', mode }] } }, 'full');
+
+  it('a child walks along the pavement, goes in, and comes out of the school', () => {
+    const round = visit('round');
+    expect(round).toContain('class="v-go"');
+    expect(round).toContain('class="v-enter"');
+    expect(round).toContain('class="v-leave"');
+    // Seen from the back to walk up to the door, from the front along the pavement.
+    expect(round).toContain('#p-habitant-enfant-dos');
+    expect(round).toContain('#p-habitant-enfant');
+    // One single path for the three pictures.
+    expect(round.split('class="visit"').length - 1).toBe(3);
+  });
+
+  it('in the morning he goes in and stays; at the end of the day he only comes out', () => {
+    const goes = visit('in');
+    expect(goes).toContain('class="v-enter"');
+    expect(goes).not.toContain('class="v-leave"');
+    const comes = visit('out');
+    expect(comes).toContain('class="v-leave"');
+    expect(comes).not.toContain('class="v-enter"');
+    expect(comes).not.toContain('class="v-go"');
+  });
+
+  it('the path goes along the pavement, then up to the door', () => {
+    const m = visit('round').match(/class="visit" style="--ax:([-\d.]+)px;--ay:([-\d.]+)px;--bx:([-\d.]+)px;--by:([-\d.]+)px;--cx:([-\d.]+)px;--cy:([-\d.]+)px/);
+    expect(m).not.toBeNull();
+    const [ax, ay, bx, by, cx] = m!.slice(1).map(Number);
+    // Along the pavement: to the right and down the screen (he comes towards us).
+    expect(ax!).toBeGreaterThan(0);
+    expect(ay!).toBeGreaterThan(0);
+    // Then the door: a little to the right and up.
+    expect(bx!).toBeGreaterThan(ax!);
+    expect(by!).toBeLessThan(ay!);
+    // Then away, further right.
+    expect(cx!).toBeGreaterThan(ax!);
+  });
+
+  it('a building that is not in front of a street gets no visit (the depth would break)', () => {
+    // Row 3 is a back-row lot: the walker would have to cross the lot of row 4.
+    expect(visit('round', { ecole: [6, 3] })).not.toContain('class="visit"');
+    // Nor a building that is not built, whatever the scene says.
+    expect(moving({ places: schoolPlaces, upgrades: [], scene: { visits: [{ id: 'ecole', who: 'enfant', mode: 'round' }] } }, 'full'))
+      .not.toContain('class="visit"');
+  });
+
+  it('a visit is never painted into the still pictures of the town', () => {
+    expect(still({ places: schoolPlaces, upgrades: ['ecole'], scene: { visits: [{ id: 'ecole', who: 'enfant', mode: 'round' }] } }, 'full'))
+      .not.toContain('class="visit"');
   });
 });

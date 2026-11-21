@@ -13,6 +13,7 @@
  * painted quickly on the tablet.
  */
 import type { Mood } from '@neutron/engine';
+import { WHO_PICTURES, type Visit } from './visits';
 
 export type Season = 'ete' | 'printemps' | 'hiver';
 export const seasonOf = (dayId: string): Season => (dayId === 'hiver' ? 'hiver' : dayId === 'printemps' ? 'printemps' : 'ete');
@@ -62,6 +63,8 @@ export interface TownScene {
   squirrel?: number | null;
   /** Heat leak (lot L10.4): once the valve is closed, a worker lags the pipe. */
   worker?: boolean;
+  /** Inhabitants walking up to the door of a building and going in (lot L10.5b, `visits.ts`). */
+  visits?: readonly Visit[];
 }
 
 /** Quarters of the town (engine's QUARTERS): the lots' columns of the left, centre and right blocks. */
@@ -238,6 +241,8 @@ export const TOWN_IMAGES = [
   'immeuble-moderne', 'immeuble-brique', 'tour-bureaux', 'boulangerie', 'maison-jardin', 'immeuble-rose', 'piste',
   'voiture-rouge-avant', 'voiture-rouge-arriere', 'voiture-bleue-avant', 'voiture-bleue-arriere', 'bus',
   'habitant-adulte', 'habitant-enfant', 'famille-1', 'famille-2', 'dame-agee', 'camion-maintenance', 'fumee',
+  // Seen from the back, to walk up to a door (lot L10.5b).
+  'habitant-adulte-dos', 'habitant-enfant-dos', 'famille-dos', 'dame-agee-dos',
   // Events seen in the town (lot L10.4): the party, the squirrel on its pylon, the worker on the pipe.
   'guirlandes', 'foule-fete', 'ecureuil', 'ouvrier',
 ] as const;
@@ -313,6 +318,9 @@ const STREET_X = [T * 2, T * (COLS[1] + 1)] as const;
 const PYLONS = [14, 23, 47, 71];
 /** The square of the town (lot L10.4): the crossroads in the middle, where the party gathers. */
 const PARTY = { c: 5, r: 5 } as const;
+/** A visit (lot L10.5b): how far the walker comes along the pavement before the door, and how long the whole visit lasts. */
+const WALK_IN = 16;
+const VISIT_SECONDS = 56;
 const WIRE_Y = 5 * T + 1;
 
 // ---------- light ----------
@@ -591,8 +599,51 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
       }
       items.push({ id: m.id, box, mirror, filters: L(), wrap, inner: m.walker ? inner() : undefined });
     }
-    return items.length ? render(items) : '';
+    // The inhabitants who go into a building (lot L10.5b): they walk along the back pavement of this street, step up
+    // to the door of the building just above it, go in, and come out later. Drawn first, since that pavement is the
+    // farthest thing in the street.
+    const all = [...visitItems(r), ...items];
+    return all.length ? render(all) : '';
   };
+
+  /**
+   * One visit on the back pavement of road row `r`, for each building standing on the lot row just above it. Only
+   * those lots are used: from anywhere else the walker would have to cross a lot and would be drawn over the
+   * buildings there (the drawing has one layer per row, lot L10.3).
+   */
+  function visitItems(r: number): Item[] {
+    const out: Item[] = [];
+    (scene.visits ?? []).forEach((v, n) => {
+      const at = placeOf(v.id, o.places);
+      if (!at || at[1] !== r - 1 || !o.upgrades.includes(v.id)) return;
+      const who = WHO_PICTURES[v.who];
+      const front = img[who.front];
+      const back = img[who.back];
+      if (!front || !back) return;
+      const [c, lotRow] = at;
+      const y = T * r + 0.8;
+      const x = T * c + 4;
+      // Along the pavement from two tiles to the left, then one step up to the door, then away to the right.
+      const start = P(x - WALK_IN, y);
+      const door = P(x, T * lotRow + 7.4);
+      const ahead = P(x, y);
+      const away = P(x + WALK_IN, y);
+      /** Each step of the path, as a shift from where he starts: the style sheet moves him from one to the next. */
+      const step = (name: string, p: [number, number]): string => `--${name}x:${f1(p[0] - start[0]!)}px;--${name}y:${f1(p[1] - start[1]!)}px;`;
+      const wrap = `class="visit" style="${step('a', ahead)}${step('b', door)}${step('c', away)}`
+        + `--vdur:${VISIT_SECONDS}s;--d:${-(n * 13 + 5)}s"`;
+      const boxFor = (im: TownImage): Box => {
+        const w = (who.size * im.w) / im.h;
+        return { x: start[0]! - w / 2, y: start[1]! - who.size, w, h: who.size };
+      };
+      // He walks to the right along the pavement, then up to the right into the door: both pictures are mirrored.
+      const steps: [string, TownImage, string][] = [];
+      if (v.mode !== 'out') steps.push(['v-go', front, who.front], ['v-enter', back, who.back]);
+      if (v.mode !== 'in') steps.push(['v-leave', front, who.front]);
+      for (const [cls, im, id] of steps) out.push({ id, box: boxFor(im), mirror: true, filters: L(), wrap, inner: `class="${cls}"` });
+    });
+    return out;
+  }
   let rowItems: Item[] = [];
   const flush = (): void => {
     if (rowItems.length) layers.push({ kind: 'still', svg: render(rowItems) });

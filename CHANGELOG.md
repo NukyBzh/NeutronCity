@@ -4,6 +4,12 @@
 
 ## v0.15.0 (en cours) — lots L10.4 et L10.5a : les événements se voient, les habitants marchent
 
+### Lot L10.5b — les habitants entrent dans les bâtiments (R2-05)
+- **Les habitants rendent visite aux bâtiments que tu as construits** : ils longent le trottoir, montent jusqu'à la porte, entrent, et ressortent un moment plus tard.
+- **Les enfants vont à l'école le matin** (de 7 h à 9 h 30) et en ressortent en fin d'après-midi (de 16 h à 18 h).
+- La dame âgée fait ses courses à l'épicerie, une famille va à la piscine l'après-midi, des adultes passent à la maison médicale et à l'hôpital — chacun à ses heures.
+- Seuls les bâtiments posés **le long d'une rue** reçoivent des visites : ailleurs, l'habitant devrait traverser un autre terrain et passerait par-dessus les maisons.
+
 ### Lot L10.5a — la marche (R2-05)
 - **Les passants marchent au lieu de glisser** : chacun monte et descend un peu à chaque pas, à son propre rythme.
 - **Une dame âgée** avec son panier de légumes se promène dans deux rues de la ville.
