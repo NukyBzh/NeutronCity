@@ -8,8 +8,9 @@
 - **Redoux** : le ciel s'éclaircit, le soleil perce et il tombe deux fois moins de neige.
 - **Tempête** : le ciel s'assombrit, il pleut en biais et des éclairs traversent la ville de temps en temps. La pluie se calme dès que le camion est envoyé.
 - **Pic de demande** : toutes les fenêtres des immeubles s'allument d'un coup, même en plein jour, avec un éclat jaune.
-- **Fête de la ville** : des feux d'artifice montent dans le ciel.
-- **Loupe de l'écureuil** : tant que l'écureuil est dans le transformateur, une loupe ronde en bas à droite le montrera en gros (dessin à venir).
+- **Fête de la ville** : les habitants se rassemblent sur la place sous des guirlandes, et des feux d'artifice montent dans le ciel.
+- **L'écureuil se voit** : il est assis sur le pylône du quartier coupé, et une loupe ronde en bas à droite le montre en gros tant qu'il est là.
+- **Fuite de chaleur** : une fois la vanne fermée, un ouvrier vient entourer le tuyau d'isolant.
 - La bulle « Réparation en cours… » est passée en haut de la ville : elle ne peut plus cacher ce que dit Cassandra.
 - **Les événements s'entendent** : la foule, un « ouais ! » et des verres qui trinquent pendant la fête, avec le bruit de chaque gerbe ; la pluie et le tonnerre pendant la tempête ; le vent pendant la vague de froid. Tous les sons sont libres de droits (CC0).
 

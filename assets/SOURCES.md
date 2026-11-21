@@ -93,4 +93,25 @@ sans coupure audible. Format WAV comme la musique : l'Ogg des sources n'est pas 
 | `ouais.wav` | « ouais ! » | [Au yeah!](https://opengameart.org/content/au-yeah) | IgnasD | CC0 | auye.zip (43 869 o) → auye/Auye1.ogg | 16 000 Hz, 1,50 s | `2f955f1e1a22a007…` |
 | `vent.wav` | vent de la vague de froid (boucle) | [wind whoosh loop](https://opengameart.org/content/wind-whoosh-loop) | SketchMan3 | CC0 | wind woosh loop.ogg (251 584 o) | 16 000 Hz, 4,00 s | `552683d904c406f8…` |
 
-Les bruitages de l’interface (clic, pièce, alerte, petite musique du bilan) restent des notes calculées dans le code.
+Les bruitages de l’interface (clic, pièce, alerte, petite musique du bilan) restent des notes calculées dans le code.
+
+## Images des événements (`ville/`) — 2026-11-21 (lot L10.4, R2-01)
+Neuf images fournies par Yann (Gemini, prompts de `docs/GEMINI-R2.md` § 3 ; mêmes conditions d'usage à vérifier que
+Cassandra), détourées par Claude (`tools/detourage/detoure.py`) puis réduites en WebP : **410 Ko en tout**.
+Le cadre de givre a été détouré à part : son bord est du givre et non du fond, donc le script, qui devine la couleur
+du fond sur le bord de l'image, se trompait ; le magenta a été enlevé explicitement.
+
+| Fichier | Image d’origine | Rôle dans le jeu | Fond | Taille |
+|---|---|---|---|---|
+| `ville/guirlandes.webp` | `asset_85_*.png.jpg` | guirlandes de la fête, au-dessus de la place | magenta | 15 Ko |
+| `ville/foule-fete.webp` | `asset_86_*.png.jpg` | habitants rassemblés sur la place | vert | 51 Ko |
+| `ville/feu-artifice.webp` | `asset_87_*.png.jpg` | gerbes dans le ciel (trois, l’une après l’autre) | magenta | 114 Ko |
+| `ville/ecureuil.webp` | `asset_88_*.png.jpg` | écureuil assis sur le pylône du quartier coupé | vert | 12 Ko |
+| `ville/ecureuil-gros.webp` | `asset_89_*.png.jpg` | le même en gros, dans la loupe en bas à droite | vert | 20 Ko |
+| `ville/givre.webp` | `asset_90_*.png.jpg` | cadre de givre sur le pourtour (vague de froid) | magenta | 151 Ko |
+| `ville/ouvrier.webp` | `asset_91_*.png.jpg` | ouvrier qui calorifuge le tuyau (après la vanne fermée) | vert | 20 Ko |
+| `ville/eclair.webp` | `asset_92_*.png.jpg` | éclair de la tempête | magenta | 13 Ko |
+| `ville/nuage-orage.webp` | `asset_93_*.png.jpg` | nuages sombres au-dessus de la ville (tempête) | magenta | 11 Ko |
+
+Pluie, air qui ondule, voiles de couleur, soleil du redoux et fenêtres allumées du pic restent faits en code
+(`apps/game/src/play/iso/weather.ts`, `WeatherLayer.tsx`), sans image.

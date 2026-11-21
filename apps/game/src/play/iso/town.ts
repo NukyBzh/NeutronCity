@@ -56,6 +56,12 @@ export interface TownScene {
   lit?: boolean;
   /** Mild spell (lot L10.4): the snow melts, half as many flakes fall. */
   melt?: boolean;
+  /** Town party (lot L10.4): garlands and a crowd of inhabitants on the square. */
+  party?: boolean;
+  /** Squirrel (lot L10.4): it sits on a pylon by the quarter it has cut. */
+  squirrel?: number | null;
+  /** Heat leak (lot L10.4): once the valve is closed, a worker lags the pipe. */
+  worker?: boolean;
 }
 
 /** Quarters of the town (engine's QUARTERS): the lots' columns of the left, centre and right blocks. */
@@ -232,6 +238,8 @@ export const TOWN_IMAGES = [
   'immeuble-moderne', 'immeuble-brique', 'tour-bureaux', 'boulangerie', 'maison-jardin', 'immeuble-rose', 'piste',
   'voiture-rouge-avant', 'voiture-rouge-arriere', 'voiture-bleue-avant', 'voiture-bleue-arriere', 'bus',
   'habitant-adulte', 'habitant-enfant', 'famille-1', 'famille-2', 'camion-maintenance', 'fumee',
+  // Events seen in the town (lot L10.4): the party, the squirrel on its pylon, the worker on the pipe.
+  'guirlandes', 'foule-fete', 'ecureuil', 'ouvrier',
 ] as const;
 
 /**
@@ -293,6 +301,8 @@ const STREET_X = [T * 2, T * (COLS[1] + 1)] as const;
 
 /** Pylons of the power line, on the road in front of row 5, from the plant to the town (world x). */
 const PYLONS = [14, 23, 47, 71];
+/** The square of the town (lot L10.4): the crossroads in the middle, where the party gathers. */
+const PARTY = { c: 5, r: 5 } as const;
 const WIRE_Y = 5 * T + 1;
 
 // ---------- light ----------
@@ -680,6 +690,23 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
   }
   if (scene.family) at('famille-1', T * 5 + 6, T * 4 + 7, 0.26);
   if (scene.visit) at('enfants', T * 2 + 3, T * 7 + 4, 0.3);
+  // Town party (lot L10.4, R2-01): the inhabitants gather on the square (the crossroads in the middle of the town),
+  // with garlands hung above them.
+  if (scene.party) {
+    at('foule-fete', T * PARTY.c + 4, T * PARTY.r + 4, 0.85);
+    at('guirlandes', T * PARTY.c + 4, T * PARTY.r + 4, 1.8, 78);
+  }
+  // The squirrel sits on the pylon nearest the quarter it has cut, with the warning sign.
+  if (scene.squirrel !== undefined && scene.squirrel !== null) {
+    const px = PYLONS[Math.min(scene.squirrel + 1, PYLONS.length - 1)]!;
+    const pylon = boxAt('pylone', px, WIRE_Y, 0.36);
+    if (pylon) at('ecureuil', px, WIRE_Y, 0.16, pylon.h * 0.78);
+  }
+  // Heat leak: once the child has closed the valve, a worker lags the pipe by the heat station.
+  if (scene.worker) {
+    const pl = o.upgrades.includes('reseau-chaleur') ? PLOTS['reseau-chaleur']! : { c: 1, r: 8 };
+    at('ouvrier', T * pl.c + 6, T * pl.r + 7, 0.5);
+  }
   if (sceneItems.length) top.push(`<g class="float">${render(sceneItems)}</g>`);
   // A quarter without electricity: the Gemini warning sign above it.
   if (o.mood === 'noir' && !cutCols.length) {

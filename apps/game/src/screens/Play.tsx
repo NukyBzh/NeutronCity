@@ -348,6 +348,10 @@ export function Play({
     visit: visit !== undefined,
     lit: weather.lit,
     melt: weather.mild >= 0.5,
+    // Lot L10.4: the party on the square, the squirrel on its pylon, the worker once the valve is closed.
+    party: weather.party >= PARTY_FROM,
+    squirrel: on.find((e) => e.kind === 'squirrel' && e.fixedAt === undefined)?.quarter ?? null,
+    worker: on.some((e) => e.kind === 'heatLeak' && e.fixedAt !== undefined),
   };
   // The squirrel is still in the transformer: the magnifier shows it in close-up (R2-01).
   const squirrel = on.some((e) => e.kind === 'squirrel' && e.fixedAt === undefined) && townUrl('ecureuil-gros') !== '';

@@ -327,3 +327,45 @@ describe('the town during an event (lot L10.4, R2-01)', () => {
     }
   });
 });
+
+describe('the pictures of the events in the town (lot L10.4, R2-01)', () => {
+  it('the party gathers a crowd on the square, under the garlands', () => {
+    const quiet = moving({}, 'full');
+    const party = moving({ scene: { party: true } }, 'full');
+    expect(quiet).not.toContain('#p-foule-fete');
+    expect(party).toContain('#p-foule-fete');
+    expect(party).toContain('#p-guirlandes');
+    // On the crossroads in the middle of the town, where no building ever stands.
+    const [cx, cy] = tileCentre(5, 5);
+    const place = party.match(/#p-foule-fete" transform="translate\(([-\d.]+) ([-\d.]+)\)/);
+    expect(place).not.toBeNull();
+    expect(Number(place![1])).toBeGreaterThan(cx - 200);
+    expect(Number(place![1])).toBeLessThan(cx + 200);
+    expect(Number(place![2])).toBeLessThan(cy);
+  });
+
+  it('the squirrel sits on a pylon, a different one for each quarter', () => {
+    const where = (q: number): number => {
+      const m = moving({ scene: { squirrel: q, cut: q } }, 'full').match(/#p-ecureuil" transform="translate\(([-\d.]+)/);
+      expect(m, `quartier ${q}`).not.toBeNull();
+      return Number(m![1]);
+    };
+    const xs = [where(0), where(1), where(2)];
+    expect(new Set(xs).size).toBe(3);
+    // Further right for a quarter further right.
+    expect(xs[0]!).toBeLessThan(xs[1]!);
+    expect(xs[1]!).toBeLessThan(xs[2]!);
+    expect(moving({}, 'full')).not.toContain('#p-ecureuil');
+  });
+
+  it('the worker only comes once the valve is closed, by the heat station', () => {
+    expect(moving({ scene: { leak: true } }, 'full')).not.toContain('#p-ouvrier');
+    const fixing = moving({ scene: { worker: true } }, 'full');
+    expect(fixing).toContain('#p-ouvrier');
+  });
+
+  it('none of them is painted into the still pictures of the town', () => {
+    const s = still({ scene: { party: true, squirrel: 1, worker: true } }, 'full');
+    for (const id of ['foule-fete', 'guirlandes', 'ecureuil', 'ouvrier']) expect(s, id).not.toContain(`#p-${id}`);
+  });
+});

@@ -142,10 +142,9 @@ l'objet : le détourage l'enlèverait aussi.
 Faits **en code, sans image** : pluie, air qui ondule (canicule), filtres de couleur (canicule, vague de froid), soleil
 qui perce et neige qui fond (redoux), fenêtres qui s'allument d'un coup (pic de demande), « ZzZ » (déjà fait en v0.14.0).
 
-**Après le lot L10.4 (2026-11-21), seules 4 images restent à générer : 85, 86, 88 et 91** (et 89 si tu veux la loupe).
-Le cadre de givre (90), l'éclair (92) et les nuages de tempête (93) sont finalement dessinés en code : c'est net à
-toutes les tailles et ça ne coûte rien en fluidité ; leurs prompts restent ci-dessous au cas où tu préfères les images.
-Les gerbes de feu d'artifice (87) sont dessinées en code en attendant l'image, qui sera plus jolie.
+**Livrées par Yann le 2026-11-21** : les 9 images, 85 à 93, détourées, réduites en WebP (410 Ko) et intégrées au jeu
+le même jour (`assets/SOURCES.md`). Les versions dessinées en code du givre, de l'éclair, des nuages et des gerbes,
+faites en attendant, ont toutes cédé la place aux images.
 
 **asset_85_guirlandes_fete.png**
 ```
