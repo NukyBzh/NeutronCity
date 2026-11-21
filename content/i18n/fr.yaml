@@ -164,6 +164,8 @@ event.newcomers.action: Accueillir la famille
 event.classVisit.progress: Visite de la classe
 event.repair: Réparation en cours…
 event.label: Événement
+# Lot L10.4 : la loupe qui montre l'écureuil en gros, en bas à droite de la ville.
+event.squirrel.zoom: L'écureuil vu de près
 # Journal de l'essai avec des enfants (lot L9.1, D-26) : écran caché, pour l'adulte (5 touches sur le numéro de version).
 journal.title: Journal de l'essai
 journal.intro: "Gardé sur cet appareil seulement, sans nom. « Nouveau joueur » sur l'accueil passe à l'enfant suivant ; le journal reste."

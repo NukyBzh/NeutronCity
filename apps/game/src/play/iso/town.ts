@@ -49,6 +49,13 @@ export interface TownScene {
   leak?: boolean;
   family?: boolean;
   visit?: boolean;
+  /**
+   * Demand peak (lot L10.4, R2-01): every window lights up at once, even by day. Switched once on and once off, since
+   * it changes the flats' picture (the rest of an event is painted over the town: see `weather.ts`).
+   */
+  lit?: boolean;
+  /** Mild spell (lot L10.4): the snow melts, half as many flakes fall. */
+  melt?: boolean;
 }
 
 /** Quarters of the town (engine's QUARTERS): the lots' columns of the left, centre and right blocks. */
@@ -478,7 +485,8 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
   const flats = (c: number, r: number): { id: string; filters: string[] } => {
     const snow = winter ? '-neige' : '';
     if (darkQuarter(c, r)) return { id: `immeuble-coupure${snow}`, filters: ['light-n'] };
-    if (darkNight) return { id: `immeuble-nuit${snow}`, filters: ['light-n'] };
+    // Demand peak (lot L10.4): the lit-window picture, whatever the hour.
+    if (darkNight || scene.lit) return { id: `immeuble-nuit${snow}`, filters: ['light-n'] };
     return { id: `immeuble-jour${snow}`, filters: L() };
   };
   const push = (id: string, x: number, y: number, size: number, filters: string[]): void => {
@@ -718,7 +726,8 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
     }).join(''));
   }
   if (winter) {
-    top.push(Array.from({ length: view === 'band' ? 32 : 50 }, (_, k) => `<circle class="flake" cx="${f1(-400 + ((k * 197) % 2000))}" cy="${f1((view === 'band' ? 220 : -150) + ((k * 53) % 240))}" r="${f1(1.6 + (k % 3))}" fill="#FFFFFF" opacity="0.9" style="--d:${-((k * 13) % 11)}s;animation-duration:${8 + (k % 5)}s"/>`).join(''));
+    // Mild spell (lot L10.4): the snow melts, half as many flakes.
+    top.push(Array.from({ length: Math.round((view === 'band' ? 32 : 50) / (scene.melt ? 2 : 1)) }, (_, k) => `<circle class="flake" cx="${f1(-400 + ((k * 197) % 2000))}" cy="${f1((view === 'band' ? 220 : -150) + ((k * 53) % 240))}" r="${f1(1.6 + (k % 3))}" fill="#FFFFFF" opacity="0.9" style="--d:${-((k * 13) % 11)}s;animation-duration:${8 + (k % 5)}s"/>`).join(''));
   }
   if (top.length) layers.push({ kind: 'moving', svg: top.join('') });
   return layers;

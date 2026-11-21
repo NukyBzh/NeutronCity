@@ -7,6 +7,8 @@ import {
   type TownScene,
 } from './iso/town';
 import { Sky } from './iso/Sky';
+import { CityWeather } from './iso/WeatherLayer';
+import { NO_WEATHER, type Weather } from './iso/weather';
 
 /**
  * The town in isometric view (style B, D-13). `band`: the slice shown in the play screen (river, plant, then the
@@ -29,6 +31,8 @@ export interface IsoCityProps {
   fresh?: string | null;
   /** What the day's events show in the town (lot L7.1). */
   scene?: TownScene;
+  /** What the day's events paint over the town (lot L10.4): veils, rain, frost, fireworks. */
+  weather?: Weather;
   /** Lot of each building (lot L9.4). */
   places?: Places;
   /** Free lots to touch while a building waits for its lot (lot L9.4), what touching one does, and its label. */
@@ -198,7 +202,7 @@ export const IsoCity = memo(function IsoCity(p: IsoCityProps) {
   return (
     <div ref={box} className={`city iso-${p.view}`} role="img" aria-label={t('app.title')}>
       {/* The sky moves by quarters of an hour: enough for the sun, and cheap on the tablet. */}
-      <Sky view={p.view} hour={Math.floor(p.hour * 4) / 4} viewBox={viewBox} aspect={aspect} />
+      <Sky view={p.view} hour={Math.floor(p.hour * 4) / 4} viewBox={viewBox} aspect={aspect} storm={p.weather?.storm ?? 0} mild={p.weather?.mild ?? 0} heat={p.weather?.heat ?? 0} cold={p.weather?.cold ?? 0} />
       {layers.map((l, k) => (l.kind === 'still'
         ? <canvas key={k} className="city-layer" ref={(c) => { canvases.current[k] = c; }} style={l.frame && size ? framedStyle(frameRect(l.frame, viewBox, aspect, size.w, size.h)) : undefined} />
         : (
@@ -207,6 +211,8 @@ export const IsoCity = memo(function IsoCity(p: IsoCityProps) {
             <g style={{ '--phase': `${phases.current[k]?.phase ?? '0'}s` } as CSSProperties} dangerouslySetInnerHTML={{ __html: l.svg }} />
           </svg>
         )))}
+      {/* Lot L10.4: what the events paint over the town (veils, rain, frost, fireworks), above the pictures. */}
+      <CityWeather w={p.weather ?? NO_WEATHER} />
       {/* Lot L9.4: the free lots glow and can be touched, above the whole town. */}
       {p.spots?.length ? (
         <svg className="city-layer city-spots" viewBox={viewBox} preserveAspectRatio={aspect}>

@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   NO_MODS, SURPRISE_SPEC, canFix, clampSetpoints, fixSurprise, gaugesOf, hourOf, isActive, isHeatingDay, isOver, isSurplus, moodOf, setSetpoints,
-  type DayDef, type EventMods, type GameState, type Pose, type SurpriseKind, type TownEffect,
+  surpriseEnd, type DayDef, type EventMods, type GameState, type Pose, type Surprise, type SurpriseKind, type TownEffect,
 } from '@neutron/engine';
 import { townUrl } from '../assets';
 import { euros, t } from '../i18n';
 import { IsoCity } from '../play/IsoCity';
 import { quarterAnchor, type Places } from '../play/iso/town';
+import { FIREWORK_SECONDS, LIGHTNING_SECONDS, PARTY_FROM, weatherOf } from '../play/iso/weather';
 import { Clock, CoreBar, Slider } from '../play/Controls';
 import { Curves } from '../play/Curves';
 import { REAL_SECONDS_PER_GAME_MINUTE, START_HOUR, advance, playUntil, startOf, timelineOf, type Sample } from '../play/session';
@@ -80,6 +81,24 @@ const REVIEW_START = Math.min(23.9, Math.max(START_HOUR, Number(PARAMS.get('heur
 const REVIEW_FOLLOW = PARAMS.get('suivi') !== 'non';
 /** Review: `&tuto=oui&etape=3` opens the tutorial at its third step. */
 const REVIEW_STEP = Math.max(1, Number(PARAMS.get('etape')) || 1) - 1;
+/**
+ * Review of the events (lot L10.4): `&evenement=fete` puts that one event on the town from the first minute, instead
+ * of the day's draw, so each animation can be looked at without waiting. Never used while really playing.
+ */
+const REVIEW_EVENTS: Record<string, SurpriseKind> = {
+  fete: 'party', canicule: 'heatwave', froid: 'coldWave', redoux: 'mildSpell', tempete: 'storm',
+  ecureuil: 'squirrel', pic: 'peak', fuite: 'heatLeak', calcaire: 'scale', arrivee: 'newcomers', classe: 'classVisit',
+};
+const REVIEW_EVENT = REVIEW_EVENTS[PARAMS.get('evenement') ?? ''];
+/** The event asked for in the address: already risen when the review begins, so its animation shows at once. */
+function reviewSurprise(hour: number): Surprise[] {
+  if (!REVIEW_EVENT) return [];
+  const spec = SURPRISE_SPEC[REVIEW_EVENT];
+  const start = hour - spec.rise;
+  const s: Surprise = { kind: REVIEW_EVENT, start, end: surpriseEnd(REVIEW_EVENT, start) };
+  if (spec.cut) s.quarter = 1;
+  return [s];
+}
 /** Speeds offered to the player (R1-06): the game time runs 1, 2 or 4 times faster. */
 export const SPEEDS = [1, 2, 4] as const;
 export type Speed = (typeof SPEEDS)[number];
@@ -109,7 +128,11 @@ export function Play({
   /** Play log of the trial (lot L9.1): the game as it stands, written at the start, every game hour and when it ends. */
   onRecord?: (game: GameState, stats: PlayStats, end: GameEnd) => void;
 }) {
-  const [run, setRun] = useState(() => (REVIEW_START > START_HOUR ? playUntil(day, seed, REVIEW_START, REVIEW_FOLLOW, effects, mods) : startOf(day, seed, effects, mods)));
+  const [run, setRun] = useState(() => {
+    const r = REVIEW_START > START_HOUR ? playUntil(day, seed, REVIEW_START, REVIEW_FOLLOW, effects, mods) : startOf(day, seed, effects, mods);
+    // Review of one event (lot L10.4): it replaces the day's draw, from the hour the review begins.
+    return REVIEW_EVENT ? { ...r, game: { ...r.game, surprises: reviewSurprise(hourOf(r.game)) } } : r;
+  });
   const [timeline] = useState(() => timelineOf(day, run.game, seen));
   const [paused, setPaused] = useState(false);
   // Held upright (web version, lot L8.2): the game is hidden behind « Tourne ton téléphone », so time stops.
@@ -315,13 +338,46 @@ export function Play({
   const cutEv = on.find((e) => SURPRISE_SPEC[e.kind].cut);
   const repairing = on.find((e) => e.fixedAt !== undefined && SURPRISE_SPEC[e.kind].fix && !SURPRISE_SPEC[e.kind].reward);
   const visit = on.find((e) => SURPRISE_SPEC[e.kind].visit !== undefined && e.fixedAt === undefined);
+  // What the events paint over the town (lot L10.4): veils, air that ripples, rain, frost, fireworks.
+  const weather = weatherOf(g.surprises, hour);
   const scene = {
     cut: cutEv?.quarter ?? null,
     truck: cutEv && cutEv.fixedAt !== undefined ? cutEv.quarter ?? null : null,
     leak: on.some((e) => e.kind === 'heatLeak'),
     family: on.some((e) => e.kind === 'newcomers' && e.fixedAt === undefined),
     visit: visit !== undefined,
+    lit: weather.lit,
+    melt: weather.mild >= 0.5,
   };
+  // The squirrel is still in the transformer: the magnifier shows it in close-up (R2-01).
+  const squirrel = on.some((e) => e.kind === 'squirrel' && e.fixedAt === undefined) && townUrl('ecureuil-gros') !== '';
+
+  // Sounds of the events (lot L10.4, R2-01): the loops fade in and out; the bangs follow the beat of the drawing (the
+  // thunder a moment after the lightning, as in a real storm). Nothing plays while the game is paused.
+  const stormOn = weather.storm >= 0.5 && !paused;
+  const partyOn = weather.party >= PARTY_FROM && !paused;
+  const coldOn = weather.cold >= 0.5 && !paused;
+  useEffect(() => () => sound.stopLoops(), []);
+  useEffect(() => {
+    sound.loop('pluie', stormOn, 0.45);
+    if (!stormOn) return undefined;
+    const thunder = () => sound.clip('tonnerre', 0.5);
+    const first = window.setTimeout(thunder, 500);
+    const id = window.setInterval(thunder, LIGHTNING_SECONDS * 1000);
+    return () => { window.clearTimeout(first); window.clearInterval(id); };
+  }, [stormOn]);
+  useEffect(() => {
+    sound.loop('foule', partyOn, 0.3);
+    if (!partyOn) return undefined;
+    sound.clip('ouais', 0.45);
+    const glasses = window.setTimeout(() => sound.clip('verres', 0.5), 1400);
+    let n = 0;
+    const firework = () => { n += 1; sound.clip(n % 2 === 1 ? 'feu-artifice-1' : 'feu-artifice-2', 0.4); };
+    const first = window.setTimeout(firework, 300);
+    const id = window.setInterval(firework, FIREWORK_SECONDS * 1000);
+    return () => { window.clearTimeout(glasses); window.clearTimeout(first); window.clearInterval(id); };
+  }, [partyOn]);
+  useEffect(() => { sound.loop('vent', coldOn, 0.3); }, [coldOn]);
 
   return (
     <main className={`screen play play-full${step ? ' tuto-on' : ''}`} data-tuto={step?.target}>
@@ -360,7 +416,13 @@ export function Play({
           upgrades={upgrades}
           places={places}
           scene={scene}
+          weather={weather}
         />
+        {squirrel ? (
+          <span className="event-zoom" role="img" aria-label={t('event.squirrel.zoom')}>
+            <img src={townUrl('ecureuil-gros')} alt="" draggable={false} />
+          </span>
+        ) : null}
         {acts.length || repairing || visit ? (
           <div className="event-layer">
             {acts.map(({ e, i }) => <EventButton key={`${e.kind}${i}`} kind={e.kind} quarter={e.quarter} onAct={() => act(i)} />)}

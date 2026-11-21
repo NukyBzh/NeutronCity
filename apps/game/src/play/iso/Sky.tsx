@@ -57,15 +57,28 @@ function onArc(view: 'band' | 'full', t: number): [number, number] {
 const SUNRISE = 6;
 const SUNSET = 20.5;
 
-export const Sky = memo(function Sky({ view, hour, viewBox, aspect }: { view: 'band' | 'full'; hour: number; viewBox: string; aspect: string }) {
+export const Sky = memo(function Sky({ view, hour, viewBox, aspect, storm = 0, mild = 0, heat = 0, cold = 0 }: {
+  view: 'band' | 'full'; hour: number; viewBox: string; aspect: string;
+  /** Storm (lot L10.4): the sky turns to slate and fills with low dark clouds, the sun goes behind them. */
+  storm?: number;
+  /** Mild spell (lot L10.4): the sky clears and the sun shines wider. */
+  mild?: number;
+  /** Heatwave (lot L10.4): the sky turns hot and hazy. */
+  heat?: number;
+  /** Cold wave (lot L10.4): the sky turns to cold pale blue. */
+  cold?: number;
+}) {
   const h = ((hour % 24) + 24) % 24;
-  const [top, bottom] = skyColours(h);
+  const [day0, day1] = skyColours(h);
+  const tint = (c: string, hot: string, icy: string): string => mix(mix(c, hot, heat * 0.55), icy, cold * 0.5);
+  const top = mix(mix(tint(day0, '#E8A05C', '#A7C8E8'), '#2A3354', storm * 0.8), '#9FD0F7', mild * 0.3);
+  const bottom = mix(mix(tint(day1, '#FFD9A0', '#DCEBFA'), '#5A6485', storm * 0.75), '#FFF3C4', mild * 0.3);
   const [, vy, , vh] = viewBox.split(' ').map(Number) as [number, number, number, number];
   const night = nightAt(h);
   const big = view === 'full' ? 1.9 : 1;
   const id = `sky-${view}`;
 
-  const sunUp = h >= SUNRISE && h <= SUNSET;
+  const sunUp = h >= SUNRISE && h <= SUNSET && storm < 0.5;
   const sunT = (h - SUNRISE) / (SUNSET - SUNRISE);
   const [sx, sy] = onArc(view, Math.min(1, Math.max(0, sunT)));
   // Low sun: bigger and orange.
@@ -83,11 +96,16 @@ export const Sky = memo(function Sky({ view, hour, viewBox, aspect }: { view: 'b
 
   // Clouds: white by day, pink at sunset, dim blue at night.
   const warm = Math.max(0, 1 - Math.abs(h - 19.6) / 1.6);
-  const cloudCol = mix(mix('#FFFFFF', '#FFC2B0', warm), '#39437E', night);
-  const cloudOp = 0.9 - 0.45 * night;
+  const cloudCol = mix(mix(mix('#FFFFFF', '#FFC2B0', warm), '#39437E', night), '#4A5878', storm * 0.85);
+  const cloudOp = Math.min(1, 0.9 - 0.45 * night + 0.4 * storm) * (1 - mild * 0.45);
   const clouds = view === 'band'
     ? [[760, 250, 1, 0], [1180, 300, 0.8, -30], [980, 230, 0.7, -60]]
     : [[0, -40, 1.6, 0], [700, 10, 1.3, -40], [1200, -70, 1.5, -80], [300, 90, 1.1, -20]];
+  // Storm (lot L10.4): a second row of bigger clouds, lower and drifting faster.
+  // They hang in the strip of sky above the hills (lower down, the countryside picture hides them).
+  const stormClouds = storm > 0 && view === 'full'
+    ? [[-150, -150, 2.1, -10], [420, -100, 1.8, -55], [1020, -145, 2.3, -95], [1520, -105, 1.9, -25]]
+    : storm > 0 ? [[700, 250, 1.3, -15], [1080, 226, 1.1, -45]] : [];
 
   return (
     <svg className="city-layer sky" viewBox={viewBox} preserveAspectRatio={aspect} aria-hidden>
@@ -130,6 +148,17 @@ export const Sky = memo(function Sky({ view, hour, viewBox, aspect }: { view: 'b
             <ellipse cx="0" cy="0" rx="46" ry="16" />
             <ellipse cx="-18" cy="-10" rx="22" ry="16" />
             <ellipse cx="14" cy="-16" rx="26" ry="20" />
+          </g>
+        </g>
+      ))}
+      {stormClouds.map(([cx, cy, k, d], n) => (
+        <g key={`s${n}`} className="sky-cloud storm-cloud" style={{ animationDelay: `${d}s` }} opacity={0.92 * storm}>
+          {/* Lighter than the sky of a storm, so they stand out against it. */}
+          <g transform={`translate(${cx} ${cy}) scale(${k! * big * 0.8})`} fill={mix('#9AA6C4', '#6E7898', storm)}>
+            <ellipse cx="0" cy="0" rx="54" ry="17" />
+            <ellipse cx="-24" cy="-11" rx="26" ry="17" />
+            <ellipse cx="16" cy="-18" rx="30" ry="22" />
+            <ellipse cx="44" cy="-6" rx="22" ry="14" />
           </g>
         </g>
       ))}

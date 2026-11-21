@@ -298,3 +298,32 @@ describe('the town sleeps at night (R2-02)', () => {
     expect(lightKey(22.9)).not.toBe(lightKey(23.1));
   });
 });
+
+describe('the town during an event (lot L10.4, R2-01)', () => {
+  it('a demand peak lights every window of the flats, even by day, without touching the houses', () => {
+    const day = still({ hour: 18 }, 'full');
+    const peak = still({ hour: 18, scene: { lit: true } }, 'full');
+    expect(day).toContain('#p-immeuble-jour"');
+    expect(peak).toContain('#p-immeuble-nuit"');
+    expect(peak).not.toContain('#p-immeuble-jour"');
+    expect(uses(peak, 'maisons')).toBe(uses(day, 'maisons'));
+    // In winter, the lit picture with snow; in a quarter without electricity, the dark one wins.
+    expect(still({ hour: 18, season: 'hiver', scene: { lit: true } }, 'full')).toContain('#p-immeuble-nuit-neige"');
+    expect(still({ hour: 18, scene: { lit: true, cut: 0 } }, 'full')).toContain('#p-immeuble-coupure"');
+  });
+
+  it('a mild spell melts the snow: half as many flakes, and only in winter', () => {
+    const flakes = (o: Partial<TownOptions>): number => moving({ season: 'hiver', ...o }, 'full').split('class="flake"').length - 1;
+    expect(flakes({})).toBe(50);
+    expect(flakes({ scene: { melt: true } })).toBe(25);
+    expect(moving({ season: 'ete', scene: { melt: true } }, 'full')).not.toContain('class="flake"');
+  });
+
+  it('the pictures of the town are not redrawn by an event painted over them (lot L10.3, fluidity)', () => {
+    // Only `lit` and `melt` change a picture: the veils, the rain and the fireworks are layers over the town.
+    const quiet = still({ hour: 11 }, 'full');
+    for (const scene of [{ leak: true }, { family: true }, { visit: true }]) {
+      expect(still({ hour: 11, scene }, 'full')).toBe(quiet);
+    }
+  });
+});

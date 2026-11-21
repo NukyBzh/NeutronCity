@@ -1,3 +1,6 @@
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_SETTINGS, coinShows, loadSettings, saveSettings, tickSounds } from '../src/sound';
 
@@ -28,5 +31,33 @@ describe('euros earned while playing (lot L9.3)', () => {
     expect(minutes.filter(tickSounds)).toHaveLength(18);
     expect(minutes.filter(tickSounds).every(coinShows)).toBe(true);
     expect(tickSounds(0)).toBe(false);
+  });
+});
+
+describe('sounds of the events (lot L10.4, R2-01)', () => {
+  const dir = fileURLToPath(new URL('../../../assets/audio/evenements/', import.meta.url));
+  /** Every sound the game asks for, as `Clip` in src/sound.ts. */
+  const CLIPS = ['pluie', 'tonnerre', 'foule', 'feu-artifice-1', 'feu-artifice-2', 'verres', 'ouais', 'vent'];
+
+  it('each one has its file, light and in a format every device reads', () => {
+    const files = readdirSync(dir);
+    expect(files.filter((f) => !f.endsWith('.wav'))).toEqual([]);
+    for (const name of CLIPS) {
+      const p = join(dir, `${name}.wav`);
+      expect(existsSync(p), name).toBe(true);
+      const head = readFileSync(p).subarray(0, 44);
+      expect(head.toString('ascii', 0, 4), name).toBe('RIFF');
+      expect(head.toString('ascii', 8, 12), name).toBe('WAVE');
+      // Mono, 16 bits, at most 22 050 Hz: a WAV is read everywhere (the Ogg of the sources is not, on iPhone).
+      expect(head.readUInt16LE(22), name).toBe(1);
+      expect(head.readUInt16LE(34), name).toBe(16);
+      expect(head.readUInt32LE(24), name).toBeLessThanOrEqual(22050);
+      expect(statSync(p).size, name).toBeLessThan(200 * 1024);
+    }
+  });
+
+  it('all of them together stay lighter than the music', () => {
+    const total = readdirSync(dir).reduce((n, f) => n + statSync(join(dir, f)).size, 0);
+    expect(total).toBeLessThan(1_000_000);
   });
 });

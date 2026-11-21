@@ -2,6 +2,17 @@
 
 *Ce qui change pour le joueur, en mots simples. Une section par version (voir `docs/CONFIGURATION.md` §4).*
 
+## v0.15.0 (en cours) — lot L10.4 : les événements se voient dans la ville (R2-01)
+- **Canicule** : la ville prend une lumière rouge-orangé, le ciel devient chaud et l'air ondule au-dessus des toits.
+- **Vague de froid** : tout devient bleu et du givre pousse sur le pourtour de l'écran.
+- **Redoux** : le ciel s'éclaircit, le soleil perce et il tombe deux fois moins de neige.
+- **Tempête** : le ciel s'assombrit, il pleut en biais et des éclairs traversent la ville de temps en temps. La pluie se calme dès que le camion est envoyé.
+- **Pic de demande** : toutes les fenêtres des immeubles s'allument d'un coup, même en plein jour, avec un éclat jaune.
+- **Fête de la ville** : des feux d'artifice montent dans le ciel.
+- **Loupe de l'écureuil** : tant que l'écureuil est dans le transformateur, une loupe ronde en bas à droite le montrera en gros (dessin à venir).
+- La bulle « Réparation en cours… » est passée en haut de la ville : elle ne peut plus cacher ce que dit Cassandra.
+- **Les événements s'entendent** : la foule, un « ouais ! » et des verres qui trinquent pendant la fête, avec le bruit de chaque gerbe ; la pluie et le tonnerre pendant la tempête ; le vent pendant la vague de froid. Tous les sons sont libres de droits (CC0).
+
 ## v0.14.0 — 2026-11-20 (lots L10.1 à L10.3 : retours R2, à valider)
 - **Boutons + et −** à côté de chaque curseur : une touche change la production de 5 %, une seule fois (il faut lever le doigt pour recommencer). Le curseur reste pour les grands mouvements.
 - **Voitures et piétons à leur place** : ce qui est devant passe devant (plus de voiture qui roule sur une famille), et des voitures roulent aussi dans les rues perpendiculaires, cachées par les bâtiments qui sont devant elles.

@@ -464,13 +464,15 @@ svg .pop, svg .float { transform-box: fill-box; transform-origin: center; }
 .event-hold { position: absolute; left: 0; bottom: 0; height: 0.45rem; width: 0; background: #2E9E5B; }
 .event-btn.holding .event-hold { animation: hold-fill linear forwards; }
 @keyframes hold-fill { to { width: 100%; } }
+/* Both chips stand at the top of the town (lot L10.4): at the bottom, « Réparation en cours… » could cover
+   Cassandra's bubble, which opens from the corner of the town. */
 .event-chip {
-  position: absolute; left: 50%; bottom: 0.8rem; transform: translateX(-50%); display: flex; align-items: center; gap: 0.5rem;
+  position: absolute; right: 0.8rem; top: 0.8rem; display: flex; align-items: center; gap: 0.5rem;
   padding: 0.35rem 0.9rem 0.35rem 0.5rem; border-radius: 1rem; background: rgba(255, 255, 255, 0.92); border: 0.12rem solid var(--encre);
   font-weight: 700; font-size: 1rem; color: var(--encre);
 }
 .event-chip img { height: 2.2rem; width: auto; }
-.event-chip.visit { bottom: auto; top: 0.8rem; }
+.event-chip.visit { right: auto; left: 50%; transform: translateX(-50%); }
 .visit-bar { display: inline-block; width: 7rem; height: 0.7rem; border-radius: 0.4rem; background: #E4E7EF; border: 0.1rem solid var(--encre); overflow: hidden; }
 .visit-bar b { display: block; height: 100%; background: #2E9E5B; transition: width 0.3s; }
 
@@ -560,8 +562,7 @@ svg .pop, svg .float { transform-box: fill-box; transform-origin: center; }
   .slider-value { padding: 0.05rem 0.4rem; }
   .event-btn { min-height: 3.2rem; font-size: 1.05rem; padding: 0.3rem 0.8rem 0.3rem 0.4rem; top: 10%; }
   .event-btn img { height: 2.5rem; }
-  .event-chip { bottom: 0.4rem; font-size: 1rem; }
-  .event-chip.visit { top: 0.4rem; }
+  .event-chip { top: 0.4rem; right: 0.4rem; font-size: 1rem; }
   .event-chip img { height: 1.8rem; }
 
   /* Summary: the town, the card, then Cassandra with her advice above her. */
@@ -654,3 +655,89 @@ svg .pop, svg .float { transform-box: fill-box; transform-origin: center; }
 .journal-table { border-collapse: collapse; width: 100%; background: var(--blanc); }
 .journal-table th, .journal-table td { border: 0.08rem solid var(--ligne); padding: 0.25rem 0.5rem; text-align: left; font-size: 1rem; }
 .journal-table th { background: var(--bleu-clair); }
+
+/* ───────────── Lot L10.4 — événements visibles (R2-01) ─────────────
+   Chaque événement peint une petite couche au-dessus de la ville : rien n'est redessiné dans les images de la ville
+   (voir `play/iso/weather.ts`), tout est animé par la feuille de style. `--k` est la force de l'événement (0 à 1). */
+.city-weather { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 2; }
+.city-weather > i { position: absolute; inset: 0; display: block; }
+
+/* Canicule : voile rouge-orangé et air qui ondule au-dessus des toits. */
+.w-heat { background: linear-gradient(180deg, rgba(255, 122, 40, 0.75), rgba(255, 186, 76, 0.35)); opacity: calc(var(--k) * 0.4); mix-blend-mode: multiply; }
+.w-haze {
+  inset: 38% 0 16%; background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.11) 0 2px, rgba(255, 255, 255, 0) 2px 8px);
+  opacity: calc(var(--k) * 0.55); animation: haze 2.6s ease-in-out infinite alternate; will-change: transform;
+}
+@keyframes haze { from { transform: translateY(0) scaleY(1) skewX(0deg); } to { transform: translateY(-0.6%) scaleY(1.05) skewX(0.5deg); } }
+
+/* Redoux : le soleil perce par le haut. */
+.w-mild { background: radial-gradient(65% 55% at 50% 0%, rgba(255, 246, 200, 0.95), rgba(255, 246, 200, 0) 72%); opacity: calc(var(--k) * 0.55); mix-blend-mode: screen; }
+
+/* Vague de froid : voile bleu et givre sur le pourtour. */
+.w-cold { background: linear-gradient(180deg, rgba(86, 166, 255, 0.8), rgba(176, 218, 255, 0.4)); opacity: calc(var(--k) * 0.34); mix-blend-mode: multiply; }
+.w-frost { position: absolute; inset: 0; width: 100%; height: 100%; opacity: calc(var(--k) * 0.7); }
+/* Le givre des quatre angles se rejoint le long des bords par un halo clair. */
+.w-frost-glow { box-shadow: inset 0 0 2.6rem 0.2rem rgba(228, 245, 255, 0.95); opacity: calc(var(--k) * 0.8); }
+
+/* Tempête : ciel assombri, pluie en biais (deux couches), éclairs. */
+.w-dark { background: linear-gradient(180deg, rgba(18, 28, 58, 0.8), rgba(32, 48, 86, 0.45)); opacity: calc(var(--k) * 0.52); mix-blend-mode: multiply; }
+/* La pluie glisse le long de ses propres traits : la boucle est sans raccord quelle que soit la distance. Trois
+   écartements premiers entre eux par couche : les traits ne forment pas une grille régulière. */
+.w-rain {
+  inset: -30% -20%; opacity: calc(var(--k) * 0.5); animation: rain 0.45s linear infinite; will-change: transform;
+  background:
+    repeating-linear-gradient(117deg, rgba(235, 246, 255, 0.5) 0 0.8px, rgba(235, 246, 255, 0) 0.8px 7px),
+    repeating-linear-gradient(117deg, rgba(235, 246, 255, 0.34) 0 0.8px, rgba(235, 246, 255, 0) 0.8px 13px),
+    repeating-linear-gradient(117deg, rgba(235, 246, 255, 0.22) 0 1.2px, rgba(235, 246, 255, 0) 1.2px 23px);
+}
+.w-rain-2 {
+  opacity: calc(var(--k) * 0.3); animation-duration: 0.72s;
+  background:
+    repeating-linear-gradient(117deg, rgba(235, 246, 255, 0.4) 0 0.7px, rgba(235, 246, 255, 0) 0.7px 9px),
+    repeating-linear-gradient(117deg, rgba(235, 246, 255, 0.26) 0 0.7px, rgba(235, 246, 255, 0) 0.7px 17px),
+    repeating-linear-gradient(117deg, rgba(235, 246, 255, 0.18) 0 1px, rgba(235, 246, 255, 0) 1px 29px);
+}
+@keyframes rain { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-120px, 240px, 0); } }
+.w-bolt { background: radial-gradient(60% 45% at 50% 0%, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0) 70%); opacity: 0; animation: bolt 6s linear infinite; }
+.w-bolt::after {
+  content: ''; position: absolute; left: 34%; top: 1%; width: 6%; height: 27%; background: linear-gradient(180deg, #FFFFFF, #FFE27A);
+  clip-path: polygon(52% 0, 100% 34%, 64% 38%, 96% 62%, 52% 68%, 78% 100%, 18% 56%, 46% 50%, 8% 40%, 40% 34%, 0 24%);
+  opacity: 0; animation: bolt 6s linear infinite;
+}
+@keyframes bolt { 0%, 1.2% { opacity: 0; } 1.6% { opacity: 0.9; } 2.4% { opacity: 0.15; } 3% { opacity: 0.8; } 4.5%, 100% { opacity: 0; } }
+
+/* Pic de demande : toutes les fenêtres s'allument d'un coup, avec un bref éclat jaune. */
+.w-flash { background: radial-gradient(70% 60% at 50% 62%, rgba(255, 226, 122, 0.85), rgba(255, 226, 122, 0) 70%); animation: peak-flash 1.1s ease-out forwards; }
+@keyframes peak-flash { 0% { opacity: 0; } 12% { opacity: 1; } 100% { opacity: 0; } }
+
+/* Fête de la ville : gerbes de feu d'artifice dans le ciel, l'une après l'autre. */
+.w-fireworks { position: absolute; inset: 0; }
+.w-fireworks > span { position: absolute; width: 20%; aspect-ratio: 1; transform: translate(-50%, -50%); }
+.w-burst { width: 100%; height: 100%; animation-name: burst; animation-timing-function: linear; animation-iteration-count: infinite; will-change: transform, opacity; }
+@keyframes burst {
+  0% { transform: scale(0.15); opacity: 0; }
+  5% { opacity: 1; }
+  13% { transform: scale(1); opacity: 0.95; }
+  26% { transform: scale(1.2); opacity: 0; }
+  100% { transform: scale(1.2); opacity: 0; }
+}
+
+/* Loupe de l'écureuil (R2-01) : en bas à droite de la ville, elle le montre en gros tant qu'il est là. */
+.event-zoom {
+  position: absolute; right: 1rem; bottom: 1rem; width: 11rem; height: 11rem; border-radius: 50%; overflow: hidden;
+  border: 0.3rem solid var(--encre); background: radial-gradient(circle at 35% 30%, #FFFFFF, #D9ECFF);
+  box-shadow: 0 0.4rem 0 rgba(28, 42, 74, 0.35); display: flex; align-items: center; justify-content: center;
+}
+.event-zoom img { width: 88%; height: 88%; object-fit: contain; animation: zoom-bob 1.9s ease-in-out infinite alternate; }
+@keyframes zoom-bob { from { transform: translateY(2%) scale(1); } to { transform: translateY(-3%) scale(1.04); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .w-haze, .w-rain, .w-bolt, .w-bolt::after, .w-burst, .w-flash, .event-zoom img { animation: none; }
+  .w-bolt, .w-bolt::after { opacity: 0; }
+}
+
+/* Petites tablettes : la loupe et les gerbes prennent moins de place. */
+@media (max-height: 680px) {
+  .event-zoom { width: 8.4rem; height: 8.4rem; right: 0.6rem; bottom: 0.6rem; }
+  .w-fireworks > span { width: 24%; }
+}

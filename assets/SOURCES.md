@@ -75,3 +75,22 @@ puis détourés par Claude (`tools/detourage/detoure.py`). Liste, empreintes et 
 Copie locale des originaux du Drive : `Jeu centrale – assets/`. **Pas encore utilisés dans le jeu ; gardés sur le PC de Yann, hors de Git pour le moment.** Même point ouvert que Cassandra : conditions d'usage des images IA avant diffusion.
 Image de référence de style `docs/gemini/reference-style-ville.jpg` : fournie par Yann, origine à préciser, **ne pas
 utiliser dans le jeu**.
+
+## Sons des événements (`audio/evenements/`) — 2026-11-21 (lot L10.4, R2-01)
+Huit extraits **CC0** (domaine public, aucune citation obligatoire) pris sur **OpenGameArt**, choisis par Yann le
+2026-11-21 parmi les paquets ci-dessous. Chaque extrait a été coupé, passé en **mono 16 000 ou 22 050 Hz, 16 bits**
+et normalisé à 0,89 de crête ; les trois boucles (pluie, foule, vent) sont raccordées par un fondu enchaîné, donc
+sans coupure audible. Format WAV comme la musique : l'Ogg des sources n'est pas lu partout (iPhone). 772 Ko en tout.
+
+| Fichier | Rôle | Source (paquet d’origine) | Auteur | Licence | Extrait | Sortie | SHA-256 (début) |
+|---|---|---|---|---|---|---|---|
+| `pluie.wav` | pluie (boucle) | [30 CC0 SFX loops](https://opengameart.org/content/30-cc0-sfx-loops) | rubberduck | CC0 | sfx_loops.zip (3 526 706 o) → rain.ogg | 22 050 Hz, 3,59 s | `5eb76b5b06a6d9e2…` |
+| `tonnerre.wav` | tonnerre | [100 CC0 SFX #2](https://opengameart.org/content/100-cc0-sfx-2) | rubberduck | CC0 | sfx_100_v2.zip (2 367 871 o) → sfx100v2_thunder_01.ogg | 16 000 Hz, 4,60 s | `5e6e81fff2053cf3…` |
+| `verres.wav` | verres qui trinquent | [100 CC0 SFX #2](https://opengameart.org/content/100-cc0-sfx-2) | rubberduck | CC0 | sfx_100_v2.zip → sfx100v2_glass_04.ogg | 22 050 Hz, 0,23 s | `1230b1f29eb3029e…` |
+| `feu-artifice-1.wav` | feu d’artifice 1 | [25 CC0 bang / firework SFX](https://opengameart.org/content/25-cc0-bang-firework-sfx) | rubberduck | CC0 | 25-CC0-bang-sfx.zip (1 390 498 o) → fw_02.ogg | 22 050 Hz, 1,11 s | `f8ba045041b21055…` |
+| `feu-artifice-2.wav` | feu d’artifice 2 | [25 CC0 bang / firework SFX](https://opengameart.org/content/25-cc0-bang-firework-sfx) | rubberduck | CC0 | 25-CC0-bang-sfx.zip → fw_03.ogg | 22 050 Hz, 1,32 s | `6a391ae3cdd6ab42…` |
+| `foule.wav` | foule de la fête (boucle) | [Crowd Shouting/Speaking Ambience](https://opengameart.org/content/crowd-shoutingspeaking-ambience) | StarNinjas | CC0 | crowd_shouting_0.ogg (335 526 o), extrait 2 s → 8,5 s | 16 000 Hz, 6,00 s | `c26ee2c4675bf137…` |
+| `ouais.wav` | « ouais ! » | [Au yeah!](https://opengameart.org/content/au-yeah) | IgnasD | CC0 | auye.zip (43 869 o) → auye/Auye1.ogg | 16 000 Hz, 1,50 s | `2f955f1e1a22a007…` |
+| `vent.wav` | vent de la vague de froid (boucle) | [wind whoosh loop](https://opengameart.org/content/wind-whoosh-loop) | SketchMan3 | CC0 | wind woosh loop.ogg (251 584 o) | 16 000 Hz, 4,00 s | `552683d904c406f8…` |
+
+Les bruitages de l’interface (clic, pièce, alerte, petite musique du bilan) restent des notes calculées dans le code.
