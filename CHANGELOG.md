@@ -2,7 +2,13 @@
 
 *Ce qui change pour le joueur, en mots simples. Une section par version (voir `docs/CONFIGURATION.md` §4).*
 
-## v0.15.0 (en cours) — lot L10.4 : les événements se voient dans la ville (R2-01)
+## v0.15.0 (en cours) — lots L10.4 et L10.5a : les événements se voient, les habitants marchent
+
+### Lot L10.5a — la marche (R2-05)
+- **Les passants marchent au lieu de glisser** : chacun monte et descend un peu à chaque pas, à son propre rythme.
+- **Une dame âgée** avec son panier de légumes se promène dans deux rues de la ville.
+
+### Lot L10.4 — les événements se voient dans la ville (R2-01)
 - **Canicule** : la ville prend une lumière rouge-orangé, le ciel devient chaud et l'air ondule au-dessus des toits.
 - **Vague de froid** : tout devient bleu et du givre pousse sur le pourtour de l'écran.
 - **Redoux** : le ciel s'éclaircit, le soleil perce et il tombe deux fois moins de neige.

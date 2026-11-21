@@ -237,7 +237,7 @@ export const TOWN_IMAGES = [
   'oiseau-bleu-haut', 'oiseau-bleu-bas', 'oiseau-jaune-haut', 'oiseau-jaune-bas',
   'immeuble-moderne', 'immeuble-brique', 'tour-bureaux', 'boulangerie', 'maison-jardin', 'immeuble-rose', 'piste',
   'voiture-rouge-avant', 'voiture-rouge-arriere', 'voiture-bleue-avant', 'voiture-bleue-arriere', 'bus',
-  'habitant-adulte', 'habitant-enfant', 'famille-1', 'famille-2', 'camion-maintenance', 'fumee',
+  'habitant-adulte', 'habitant-enfant', 'famille-1', 'famille-2', 'dame-agee', 'camion-maintenance', 'fumee',
   // Events seen in the town (lot L10.4): the party, the squirrel on its pylon, the worker on the pipe.
   'guirlandes', 'foule-fete', 'ecureuil', 'ouvrier',
 ] as const;
@@ -267,6 +267,8 @@ const TRAFFIC: Record<number, Mover[]> = {
     { id: 'voiture-bleue-avant', dir: 1, lane: 5, size: 0.3, dur: 18, d: -4 },
     { id: 'voiture-rouge-arriere', dir: -1, lane: 3, size: 0.28, dur: 21, d: -12 },
     { id: 'habitant-adulte', dir: 1, lane: 7.3, size: 34, dur: 60, d: -20, walker: true },
+    // The old lady walks slowly, her shopping bag in her hand (lot L10.5a, Gemini picture 75).
+    { id: 'dame-agee', dir: -1, lane: 0.8, size: 33, dur: 88, d: -48, walker: true },
   ],
   5: [
     { id: 'voiture-rouge-avant', dir: 1, lane: 5, size: 0.3, dur: 16, d: 0 },
@@ -280,6 +282,7 @@ const TRAFFIC: Record<number, Mover[]> = {
     { id: 'voiture-bleue-arriere', dir: -1, lane: 3, size: 0.28, dur: 20, d: -2 },
     { id: 'habitant-enfant', dir: 1, lane: 7.3, size: 26, dur: 58, d: -15, walker: true },
     { id: 'famille-2', dir: -1, lane: 0.8, size: 32, dur: 72, d: -40, walker: true },
+    { id: 'dame-agee', dir: 1, lane: 7.3, size: 33, dur: 95, d: -22, walker: true },
   ],
 };
 /**
@@ -346,7 +349,13 @@ export interface TownLayer {
 
 interface Box { x: number; y: number; w: number; h: number }
 /** One picture to place, with the filters it goes through (light, winter). */
-interface Item { id: string; box: Box; mirror?: boolean; filters: string[]; /** Attributes of a <g> around it (animation). */ wrap?: string }
+interface Item {
+  id: string; box: Box; mirror?: boolean; filters: string[];
+  /** Attributes of a <g> around it (animation). */
+  wrap?: string;
+  /** Attributes of a second <g>, inside the first one: a second animation on the same picture (lot L10.5a). */
+  inner?: string;
+}
 
 /** The whole town as one SVG string (tests, tools). */
 export function drawTown(o: TownOptions, view: 'band' | 'full'): string {
@@ -427,7 +436,8 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
         ? `translate(${f1(it.box.x + it.box.w)} ${f1(it.box.y)}) scale(${(-kx).toFixed(4)} ${ky.toFixed(4)})`
         : `translate(${f1(it.box.x)} ${f1(it.box.y)}) scale(${kx.toFixed(4)} ${ky.toFixed(4)})`;
       const use = `<use href="#p-${it.id}" transform="${t}"/>`;
-      body += it.wrap ? `<g ${it.wrap}>${use}</g>` : use;
+      const core = it.inner ? `<g ${it.inner}>${use}</g>` : use;
+      body += it.wrap ? `<g ${it.wrap}>${core}</g>` : core;
     }
     if (open) body += '</g>'.repeat(open.split(',').length);
     const defs = [...used].map((id) => `<image id="p-${id}" href="${img[id]!.href}" width="${img[id]!.w}" height="${img[id]!.h}" preserveAspectRatio="none"/>`).join('');
@@ -556,7 +566,10 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
       if (!box) continue;
       const len = (STREET_X[1] - STREET_X[0]) * m.dir;
       const wrap = `class="iso-move" style="--tx:${f1(len * 0.866 * S)}px;--ty:${f1(len * 0.5 * S)}px;--dur:${m.dur}s;--d:${m.d}s"`;
-      items.push({ id: m.id, box, mirror: m.walker ? m.dir === 1 : true, filters: L(), wrap });
+      // A walker bobs up and down as he goes (lot L10.5a): without it he slides along the pavement. Each one has his
+      // own phase, so they never bob together.
+      const inner = m.walker ? `class="walk" style="--d:${((m.d * 0.37) % 0.52).toFixed(2)}s"` : undefined;
+      items.push({ id: m.id, box, mirror: m.walker ? m.dir === 1 : true, filters: L(), wrap, inner });
     }
     return items.length ? render(items) : '';
   };

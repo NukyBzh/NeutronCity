@@ -114,4 +114,23 @@ du fond sur le bord de l'image, se trompait ; le magenta a été enlevé explici
 | `ville/nuage-orage.webp` | `asset_93_*.png.jpg` | nuages sombres au-dessus de la ville (tempête) | magenta | 11 Ko |
 
 Pluie, air qui ondule, voiles de couleur, soleil du redoux et fenêtres allumées du pic restent faits en code
-(`apps/game/src/play/iso/weather.ts`, `WeatherLayer.tsx`), sans image.
+(`apps/game/src/play/iso/weather.ts`, `WeatherLayer.tsx`), sans image.
+
+## Habitants (`ville/`) — 2026-11-21 (lot L10.5a, R2-05)
+Images fournies par Yann (Gemini, prompts de `docs/GEMINI-R2.md` § 1), détourées et réduites à 96 px de haut
+(128 pour une famille), comme les habitants déjà là. 20 Ko en tout.
+
+| Fichier | Image d’origine | Rôle |
+|---|---|---|
+| `ville/habitant-adulte-dos.webp` | `asset_68_*.png.jpg` | adulte vu de dos (pour entrer dans un bâtiment, lot L10.5b) |
+| `ville/habitant-enfant-dos.webp` | `asset_69_*.png.jpg` | enfant vu de dos (lot L10.5b) |
+| `ville/famille-dos.webp` | `asset_70_*.png.jpg` | famille vue de dos (lot L10.5b) |
+| `ville/dame-agee.webp` | `asset_75_*.png.jpg` | dame âgée avec son panier : nouvelle passante, rues 2 et 8 |
+| `ville/dame-agee-dos.webp` | `asset_76_*.png.jpg` | la même de dos (lot L10.5b) |
+
+**Non retenues** : les images 71 à 74 (« 2e pas » des personnages) montrent chaque fois **un autre**
+**personnage** (vêtements, sac et style différents du 1er pas), et la 73 a un décor de ville entier en fond
+au lieu d'un fond vert uni. Alterner les deux pas ferait changer de vêtements le passant deux fois par seconde :
+elles ne sont pas dans le dépôt. La marche est donc animée en code (le passant monte et descend de 8 % de sa
+hauteur à chaque pas). À regénérer si on veut de vraies jambes qui bougent (prompt corrigé dans
+`docs/GEMINI-R2.md` § 1).

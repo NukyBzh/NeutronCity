@@ -5,7 +5,17 @@ bâtiments), le 2026-11-21 pour R2-01 (événements visibles, § 3). Fichier à 
 session modifiait à ce moment-là ; à fusionner dans `docs/GEMINI.md` quand celle-ci aura fini.*
 
 **Livrées par Yann les 2026-11-20 et 2026-11-21** dans `assets/Jeu centrale – assets/` : les 17 images, 68 à 84 (JPG
-nommés `*.png.jpg`, sauf `asset_73_habitant_enfant_face_pas2.png.jpeg`). Pas encore détourées ni intégrées.
+nommés `*.png.jpg`, sauf `asset_73_habitant_enfant_face_pas2.png.jpeg`).
+
+**À refaire : les images 71 à 74 (« 2e pas »).** Gemini a dessiné à chaque fois **un autre personnage** (le 71 : t-shirt
+vert clair et pantalon beige au lieu du pull vert, du pantalon gris et du sac en bandoulière du 53 ; le 72 : manteau
+marron et sac à dos ; le 73 : un décor de ville entier en fond au lieu du vert uni). Alterner les deux pas ferait donc
+changer de vêtements le passant deux fois par seconde. En attendant, la marche est animée en code (lot L10.5a). Pour
+réessayer, joindre **l'image d'origine du personnage** et insister :
+
+```
+Dans exactement le même style que la première image jointe (illustration vectorielle isométrique 2:1, aplats propres, contours fins, ombrage doux, lumière haut-gauche, palette pastel), dessine EXACTEMENT LA MÊME PERSONNE que la deuxième image jointe : mêmes vêtements, mêmes couleurs exactes, mêmes cheveux, même sac, même taille, même cadrage, même vue. Ne change rien d'autre que la position des jambes et des bras : c'est le pas suivant de la même marche, l'autre jambe en avant et l'autre bras en avant. Ce n'est pas une nouvelle personne : c'est la même, une demi-seconde plus tard. Sans sol ni socle sous l'objet. Fond uni vert #00FF00. Format PNG carré 1024x1024, fichier .png obligatoire (pas de JPG), objet centré sur 70 % de la hauteur, exactement comme la deuxième image jointe. Aucun texte, aucune lettre, aucun chiffre.
+```
 
 Conseils donnés à Yann : joindre `docs/gemini/reference-style-ville.jpg` à chaque prompt (et l'image d'origine du
 personnage pour 68 à 74) ; générer les images d'un même personnage ou d'une même paire de couleurs dans la même

@@ -370,7 +370,11 @@ svg .pop, svg .float { transform-box: fill-box; transform-origin: center; }
 }
 .walker-iso { animation: iso-walk 9s ease-in-out infinite alternate; }
 @keyframes iso-walk { from { transform: translate(0, 0); } to { transform: translate(52px, 30px); } }
-@media (prefers-reduced-motion: reduce) { .city-spots .spot { animation: none; } .iso-car, .walker-iso, .iso-move, .birds, .bird-wave, .flap-up, .flap-down { animation: none; } .flap-down { opacity: 0; } }
+/* Lot L10.5a : un piéton monte et descend légèrement en marchant (un pas toutes les 0,52 s), chacun à son rythme ;
+   sans cela il glisse sur le trottoir. Le déplacement est en unités du dessin, donc il suit la taille de l'écran. */
+.walk { animation: walk-bob 0.52s ease-in-out var(--d, 0s) infinite alternate; }
+@keyframes walk-bob { from { transform: translateY(0); } to { transform: translateY(-3px); } }
+@media (prefers-reduced-motion: reduce) { .city-spots .spot { animation: none; } .iso-car, .walker-iso, .iso-move, .birds, .bird-wave, .flap-up, .flap-down, .walk { animation: none; } .flap-down { opacity: 0; } }
 
 /* Whole town (isometric) in the summary and the shop. */
 .town-panel { border: 0.15rem solid var(--encre); border-radius: 1.2rem; overflow: hidden; background: var(--ciel); }

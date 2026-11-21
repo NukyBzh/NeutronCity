@@ -369,3 +369,23 @@ describe('the pictures of the events in the town (lot L10.4, R2-01)', () => {
     for (const id of ['foule-fete', 'guirlandes', 'ecureuil', 'ouvrier']) expect(s, id).not.toContain(`#p-${id}`);
   });
 });
+
+describe('the inhabitants walk (lot L10.5a, R2-05)', () => {
+  it('every walker bobs up and down, each at his own moment; no vehicle does', () => {
+    const s = moving({}, 'full');
+    const walks = s.split('class="walk"').length - 1;
+    expect(walks).toBeGreaterThanOrEqual(6);
+    // One phase per walker, and they are not all the same.
+    const phases = [...s.matchAll(/class="walk" style="--d:([-\d.]+)s"/g)].map((m) => m[1]!);
+    expect(phases.length).toBe(walks);
+    expect(new Set(phases).size).toBeGreaterThan(1);
+    // The bob is inside the layer that crosses the street, never around it.
+    expect(s).not.toMatch(/class="walk"[^>]*>\s*<g class="iso-move"/);
+  });
+
+  it('the old lady walks in two streets, with her shopping bag', () => {
+    const s = moving({}, 'full');
+    expect(s.split('href="#p-dame-agee"').length - 1).toBe(2);
+    expect(TOWN_IMAGES).toContain('dame-agee');
+  });
+});
