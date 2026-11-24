@@ -76,11 +76,11 @@ describe('stars (3 from 75 %, 2 from 45 %)', () => {
 });
 
 describe('money', () => {
-  it('an attentive child completes the town in 15 to 25 days', () => {
+  it('an attentive child completes the town in 15 to 30 days (24 buildings since lot L10.6)', () => {
     const c = campaign(DAYS, SHOP, CHILD);
     expect(c.complete).not.toBeNull();
     expect(c.complete!).toBeGreaterThanOrEqual(15);
-    expect(c.complete!).toBeLessThanOrEqual(25);
+    expect(c.complete!).toBeLessThanOrEqual(30);
     // The first building after one or two days.
     expect(c.bought[0]!.day).toBeLessThanOrEqual(2);
   }, 60000);

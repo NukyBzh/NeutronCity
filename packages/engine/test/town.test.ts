@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
-  DAY_MINUTES, NO_MODS, START_HOUR, dayBonus, dayEffects, dayResult, demandAt, drawSurprises, effectsAt, heatOpen, hourOf, momentWeight,
-  nextDiscovery, shopStatus, simulate, validateShop, welcomeGift, type DayDef, type GameState, type ShopItem,
+  BASE_HAPPINESS, DAY_MINUTES, NO_MODS, START_HOUR, baseId, copiesOf, dayBonus, dayEffects, dayResult, demandAt, drawSurprises, effectsAt,
+  eventMods, heatOpen, hourOf, momentWeight, nextCopyId, nextDiscovery, priceOf, shopStatus, simulate, townHappiness, validateShop,
+  welcomeGift, type DayDef, type EventMods, type GameState, type ShopItem,
 } from '../src/index';
 import { DAYS, SHOP, TEXTS } from './content';
 
@@ -17,8 +18,8 @@ const ahead = (day: DayDef) => (s: GameState) => {
 };
 
 describe('content/shop (lot L6, D-19)', () => {
-  it('has the 18 buildings, 8 of them in the discovery phase, and one that opens heat', () => {
-    expect(SHOP).toHaveLength(18);
+  it('has the 24 buildings, 8 of them in the discovery phase, and one that opens heat', () => {
+    expect(SHOP).toHaveLength(24);
     expect(SHOP.filter((i) => i.discovery !== undefined).map((i) => i.id)).toEqual([
       'reseau-chaleur', 'ferme', 'maison-lilas', 'maison-ve', 'epicerie', 'ecole', 'usine-cereales', 'maison-medicale',
     ]);
@@ -34,8 +35,9 @@ describe('content/shop (lot L6, D-19)', () => {
 
   it('prices from 2 400 to 12 000 € (the first building 900 €, L9.3); a building pays itself back in 12 to 20 days of bonus (E3, E6, D-22), 30 % more for those that help (L10.2)', () => {
     // A building helps when it lowers or smooths the demand, or protects from the events (D-30).
-    const helps = (i: ShopItem): boolean => !!(i.softens || i.protects || i.heatwaveCap) || (i.effects ?? []).some((e) => e.add < 0);
-    expect(SHOP.filter(helps).map((i) => i.id).sort()).toEqual(['batterie', 'cuve', 'hopital', 'isolation', 'maison-medicale', 'parc', 'solaire']);
+    const helps = (i: ShopItem): boolean => !!(i.softens || i.protects || i.heatwaveCap || i.party || i.repair) || (i.effects ?? []).some((e) => e.add < 0);
+    expect(SHOP.filter(helps).map((i) => i.id).sort())
+      .toEqual(['batterie', 'caserne', 'cuve', 'hopital', 'isolation', 'mairie', 'maison-medicale', 'parc', 'solaire']);
     for (const i of SHOP) {
       const k = helps(i) ? 1.3 : 1;
       expect(i.price).toBeGreaterThanOrEqual(i.discovery === 1 ? 900 : 2400);
@@ -145,4 +147,61 @@ describe('effects of the buildings on demand (E2)', () => {
         for (const seed of [1, 2, 3, 4, 5]) expect(dayResult(day, simulate(day, seed, ahead(day), effects, NO_MODS, true)).stars).toBe(3);
       });
     });
+});
+
+describe('buildings bought several times (lot L10.6, R2-06)', () => {
+  const repeatables = SHOP.filter((i) => i.repeat);
+  const house = SHOP.find((i) => i.id === 'petite-maison')!;
+
+  it('only the small house and the block of flats may be bought again', () => {
+    expect(repeatables.map((i) => i.id).sort()).toEqual(['immeuble-neuf', 'petite-maison']);
+    for (const i of repeatables) expect(i.discovery, i.id).toBeUndefined();
+  });
+
+  it('a copy keeps its own id and leads back to its building', () => {
+    expect(baseId('petite-maison')).toBe('petite-maison');
+    expect(baseId('petite-maison-2')).toBe('petite-maison');
+    expect(baseId('maison-medicale')).toBe('maison-medicale');
+    // No building of the shop ends with a number, so no id is mistaken for a copy.
+    for (const i of SHOP) expect(baseId(i.id), i.id).toBe(i.id);
+    expect(nextCopyId(house, [])).toBe('petite-maison');
+    expect(nextCopyId(house, ['petite-maison'])).toBe('petite-maison-2');
+    expect(nextCopyId(house, ['petite-maison', 'petite-maison-2'])).toBe('petite-maison-3');
+    expect(copiesOf(['petite-maison', 'petite-maison-2', 'hotel'], 'petite-maison')).toBe(2);
+  });
+
+  it('each copy costs a little more, rounded to ten euros', () => {
+    expect(priceOf(house, [])).toBe(house.price);
+    expect(priceOf(house, ['petite-maison'])).toBe(Math.round(house.price * 1.15 / 10) * 10);
+    expect(priceOf(house, ['petite-maison', 'petite-maison-2'])).toBeGreaterThan(priceOf(house, ['petite-maison']));
+    // A building bought once keeps its price whatever the town holds.
+    const hotel = SHOP.find((i) => i.id === 'hotel')!;
+    expect(priceOf(hotel, ['hotel'])).toBe(hotel.price);
+  });
+
+  it('every copy pays its bonus, gives its happiness and uses its electricity', () => {
+    const one = ['petite-maison'];
+    const three = ['petite-maison', 'petite-maison-2', 'petite-maison-3'];
+    expect(dayBonus(SHOP, three)).toBe(dayBonus(SHOP, one) * 3);
+    expect(townHappiness(SHOP, three) - BASE_HAPPINESS).toBe((townHappiness(SHOP, one) - BASE_HAPPINESS) * 3);
+    for (const d of DAYS) expect(dayEffects(d, SHOP, three).length).toBe(dayEffects(d, SHOP, one).length * 3);
+  });
+
+  it('the shop keeps offering it, and says nothing of the kind for the others', () => {
+    const all = SHOP.map((i) => i.id);
+    expect(shopStatus(SHOP, all, house).kind).toBe('open');
+    expect(shopStatus(SHOP, all, SHOP.find((i) => i.id === 'hotel')!).kind).toBe('owned');
+  });
+
+  it('the town hall brings the party more often, the fire station shortens the repairs', () => {
+    const mods = eventMods(SHOP, ['mairie', 'caserne'], () => null);
+    expect(mods.partyWeight).toBe(3);
+    expect(mods.repair).toBe(0.5);
+    const parties = (m: EventMods): number => {
+      let n = 0;
+      for (let seed = 0; seed < 300; seed++) n += drawSurprises(DAYS[0]!, seed, m).filter((s) => s.kind === 'party').length;
+      return n;
+    };
+    expect(parties(mods)).toBeGreaterThan(parties(NO_MODS) * 1.5);
+  });
 });

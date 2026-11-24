@@ -119,7 +119,7 @@ describe('buildings against events (lot L7.1)', () => {
   it('the hospital keeps its quarter lit, the maison médicale softens bad events, the battery helps in a heatwave', () => {
     expect(eventMods(SHOP, [], quarterOf)).toEqual(NO_MODS);
     const all = eventMods(SHOP, SHOP.map((i) => i.id), quarterOf);
-    expect(all).toEqual({ protectedQuarter: 1, strength: 0.8, heatwaveCap: 90 });
+    expect(all).toEqual({ protectedQuarter: 1, strength: 0.8, heatwaveCap: 90, partyWeight: 3, repair: 0.5 });
     for (const d of DAYS) {
       for (let seed = 0; seed < 300; seed++) {
         for (const e of drawSurprises(d, seed, all)) {

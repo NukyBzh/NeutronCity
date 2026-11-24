@@ -12,7 +12,7 @@
  * Every picture is defined once per layer (<defs>) and placed with <use>: the still layers stay small enough to be
  * painted quickly on the tablet.
  */
-import type { Mood } from '@neutron/engine';
+import { baseId, type Mood } from '@neutron/engine';
 import { WHO_PICTURES, type Visit } from './visits';
 
 export type Season = 'ete' | 'printemps' | 'hiver';
@@ -123,7 +123,31 @@ export const PLOTS: Readonly<Record<string, { c: number; r: number; size: number
   hopital: { c: 7, r: 4, size: 1.05 },
   cuve: { c: 3, r: 7, size: 0.6 },
   fontaine: { c: 4, r: 7, size: 0.62 },
+  // Lot L10.6 (R2-06) : les six bâtiments qui s'ouvrent quand les 18 premiers sont achetés. Leurs terrains par défaut
+  // sont libres ; l'enfant choisit où les poser (L9.4), et un exemplaire de plus prend un autre terrain libre.
+  'petite-maison': { c: 3, r: 1, size: 0.85 },
+  'immeuble-neuf': { c: 4, r: 1, size: 0.9 },
+  patisserie: { c: 3, r: 4, size: 0.85 },
+  hotel: { c: 10, r: 4, size: 0.95 },
+  mairie: { c: 7, r: 7, size: 1 },
+  caserne: { c: 9, r: 7, size: 0.95 },
 };
+/**
+ * A building bought several times (lot L10.6): the copies take the two colours in turn, and every copy stands on the
+ * plot of the building it copies until the child moves it.
+ */
+const COLOURS: Readonly<Record<string, readonly [string, string]>> = {
+  'petite-maison': ['petite-maison', 'petite-maison-b'],
+  'immeuble-neuf': ['immeuble-neuf', 'immeuble-neuf-b'],
+};
+/** The picture of a building on its lot: the second colour for every other copy. */
+export function pictureOf(id: string): string {
+  const base = baseId(id);
+  const pair = COLOURS[base];
+  if (!pair) return base;
+  const n = Number(id.slice(base.length + 1)) || 1;
+  return pair[(n - 1) % 2]!;
+}
 /** Where each building stands: column and row of its lot (lot L9.4). */
 export type Places = Readonly<Record<string, readonly [number, number]>>;
 /** The heat station always stands against the plant; the other buildings with a plot go where the child wants. */
@@ -139,7 +163,8 @@ const FAR_LOTS = ['7,7', '9,6', '9,7', '10,3', '10,4', '10,6', '4,9', '6,9', '7,
 
 /** Ring and arrow helpers need the lot's column and row: where a building stands now, or null. */
 export function placeOf(id: string, places?: Places): readonly [number, number] | null {
-  const pl = PLOTS[id];
+  // A copy of a building (lot L10.6, « petite-maison-2 ») shares the plot and the size of the building it copies.
+  const pl = PLOTS[baseId(id)];
   if (!pl) return null;
   if (!places || FIXED_PLOTS.includes(id)) return [pl.c, pl.r];
   return places[id] ?? null;
@@ -154,7 +179,7 @@ export const TILE = 'herbe';
 const FACE: Record<string, number> = { herbe: 0.872, route: 0.876, piste: 0.86, carrefour: 0.817, riviere: 0.817, beton: 0.817 };
 
 type Thing = 'immeuble' | 'maisons' | 'arbres' | 'jeux' | 'usine-2' | 'usine-3' | 'gare'
-  | 'immeuble-moderne' | 'immeuble-brique' | 'tour-bureaux' | 'boulangerie' | 'maison-jardin' | 'immeuble-rose'
+  | 'immeuble-moderne' | 'immeuble-brique' | 'tour-bureaux' | 'maison-jardin' | 'immeuble-rose'
   | 'reacteur' | 'salle-machines' | 'tour' | 'poste' | 'pompage' | 'salle-commande' | 'combustible' | 'diesel';
 /** What stands on the lots and on the plant's tiles; other lots get a mix of flats, houses and trees. */
 const PLACES: Record<string, Thing> = {
@@ -197,9 +222,9 @@ export function settle(owned: readonly string[], places: Places, pending: string
     out[id] = [at[0], at[1]];
     return true;
   };
-  const todo = owned.filter((id) => PLACEABLE.includes(id) && id !== pending);
+  const todo = owned.filter((id) => PLACEABLE.includes(baseId(id)) && id !== pending);
   const left = todo.filter((id) => !(places[id] && take(id, places[id]!)));
-  const still = left.filter((id) => !take(id, [PLOTS[id]!.c, PLOTS[id]!.r]));
+  const still = left.filter((id) => !take(id, [PLOTS[baseId(id)]!.c, PLOTS[baseId(id)]!.r]));
   for (const id of still) {
     const lot = BUILD_LOTS.find(([c, r]) => !used.has(`${c},${r}`));
     if (lot) take(id, lot);
@@ -214,7 +239,7 @@ export function tileCorners(c: number, r: number): [number, number][] {
 
 const FILL: Thing[] = [
   'immeuble', 'maisons', 'immeuble-moderne', 'arbres', 'immeuble-brique', 'maison-jardin', 'tour-bureaux', 'immeuble',
-  'immeuble-rose', 'boulangerie', 'arbres', 'maisons',
+  'immeuble-rose', 'maison-jardin', 'arbres', 'maisons',
 ];
 const hash = (a: number, b: number): number => (((a + 7) * 73856093) ^ ((b + 3) * 19349663)) >>> 0;
 const thingAt = (c: number, r: number): Thing | null => {
@@ -228,7 +253,7 @@ const thingAt = (c: number, r: number): Thing | null => {
 const SIZE: Record<Thing, number> = {
   immeuble: 0.95, maisons: 0.95, arbres: 0, jeux: 0, 'usine-2': 1, 'usine-3': 1, gare: 1, reacteur: 0.95, 'salle-machines': 1,
   tour: 0.95, poste: 1, pompage: 1, 'salle-commande': 0.9, combustible: 0.9, diesel: 0.8,
-  'immeuble-moderne': 0.8, 'immeuble-brique': 0.8, 'tour-bureaux': 0.62, boulangerie: 0.72, 'maison-jardin': 0.95, 'immeuble-rose': 0.9,
+  'immeuble-moderne': 0.8, 'immeuble-brique': 0.8, 'tour-bureaux': 0.62, 'maison-jardin': 0.95, 'immeuble-rose': 0.9,
 };
 
 /** Pictures of the town (assets/ville), loaded by the screen with the shop buildings' pictures. */
@@ -238,7 +263,9 @@ export const TOWN_IMAGES = [
   'maisons', 'usine-2', 'usine-3', 'gare', 'reacteur', 'salle-machines', 'tour-on', 'tour-off', 'poste', 'pylone', 'pompage',
   'salle-commande', 'combustible', 'diesel', 'arbre', 'lampadaire', 'panneau-alerte', 'balancoire', 'enfants',
   'oiseau-bleu-haut', 'oiseau-bleu-bas', 'oiseau-jaune-haut', 'oiseau-jaune-bas',
-  'immeuble-moderne', 'immeuble-brique', 'tour-bureaux', 'boulangerie', 'maison-jardin', 'immeuble-rose', 'piste',
+  'immeuble-moderne', 'immeuble-brique', 'tour-bureaux', 'maison-jardin', 'immeuble-rose', 'piste',
+  // Second colour of the buildings bought several times (lot L10.6).
+  'petite-maison-b', 'immeuble-neuf-b',
   'voiture-rouge-avant', 'voiture-rouge-arriere', 'voiture-bleue-avant', 'voiture-bleue-arriere', 'bus',
   'habitant-adulte', 'habitant-enfant', 'famille-1', 'famille-2', 'dame-agee', 'camion-maintenance', 'fumee',
   // Seen from the back, to walk up to a door (lot L10.5b).
@@ -533,10 +560,10 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
   };
   /** The picture of a shop building on its lot. */
   function pictureBox(id: string): Box | null {
-    const pl = PLOTS[id];
+    const pl = PLOTS[baseId(id)];
     const at = placeOf(id, o.places);
     if (!pl || !at) return null;
-    return boxAt(id, T * at[0] + 4, T * at[1] + 4, pl.size * (view === 'full' ? 1.15 : 1));
+    return boxAt(pictureOf(id), T * at[0] + 4, T * at[1] + 4, pl.size * (view === 'full' ? 1.15 : 1));
   }
   function hatBox(): Box | null {
     const b = pictureBox(HAT.on);
@@ -666,9 +693,9 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
       const plot = builtAt.get(`${c},${r}`);
       if (!plot && (isBuildLot(c, r) || heatPlot(c, r))) { dim(); continue; }
       if (plot) {
-        const box = o.upgrades.includes(plot) && img[plot] ? pictureBox(plot) : null;
+        const box = o.upgrades.includes(plot) && img[pictureOf(plot)] ? pictureBox(plot) : null;
         if (box) {
-          const item = { id: plot, box, filters: L() };
+          const item = { id: pictureOf(plot), box, filters: L() };
           const hat = plot === HAT.on && o.upgrades.includes('isolation') ? hatBox() : null;
           const hatItem = hat ? { id: 'isolation', box: hat, filters: L() } : null;
           // The building just bought pops in at its own depth, not over the whole town (lot L9.3): the pictures

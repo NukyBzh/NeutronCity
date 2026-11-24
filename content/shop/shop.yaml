@@ -33,3 +33,13 @@ items:
   - { id: solaire, price: 14000, joy: 3, bonus: 600, unlockAt: 12, effects: [{ out: elec, add: -3, when: jour, days: [ete] }, { out: elec, add: -1, when: jour, days: [printemps, hiver] }] }
   - { id: hopital, price: 15600, joy: 4, bonus: 650, unlockAt: 14, protects: true, effects: [{ out: elec, add: 2, when: toujours }] }
   - { id: cuve, price: 15600, joy: 3, bonus: 650, unlockAt: 16, effects: [{ out: heat, add: -2, when: soir }, { out: heat, add: 2, when: nuit }] }
+  # Lot L10.6 (R2-06, D-34) : la ville s'agrandit. Ces six bâtiments s'ouvrent quand les 18 premiers sont achetés.
+  # repeat : achetable plusieurs fois, chaque exemplaire 15 % plus cher que le précédent et posé sur son propre terrain
+  # (deux couleurs en alternance) ; party : la fête de la ville est tirée 3 fois plus souvent ; repair : les réparations
+  # prennent la moitié du temps.
+  - { id: petite-maison, price: 2600, joy: 2, bonus: 150, unlockAt: 18, repeat: true, effects: [{ out: elec, add: 1, when: soir }, { out: heat, add: 1, when: toujours }] }
+  - { id: immeuble-neuf, price: 5200, joy: 3, bonus: 300, unlockAt: 18, repeat: true, effects: [{ out: elec, add: 2, when: soir }, { out: heat, add: 1, when: toujours }] }
+  - { id: patisserie, price: 6800, joy: 4, bonus: 400, unlockAt: 18, effects: [{ out: heat, add: 2, when: jour }] }
+  - { id: hotel, price: 11200, joy: 4, bonus: 700, unlockAt: 18, effects: [{ out: elec, add: 2, when: toujours }] }
+  - { id: mairie, price: 10600, joy: 5, bonus: 500, unlockAt: 18, party: 3 }
+  - { id: caserne, price: 11400, joy: 4, bonus: 550, unlockAt: 18, repair: 0.5, effects: [{ out: elec, add: 1, when: toujours }] }

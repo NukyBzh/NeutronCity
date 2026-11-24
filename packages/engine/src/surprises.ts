@@ -91,6 +91,8 @@ export interface Surprise {
   k?: number;
   /** Heatwave: core limit at full strength (absent: the spec's). */
   cap?: number;
+  /** Repair of this event takes this much of its usual time (fire station, lot L10.6; absent: 1). */
+  rep?: number;
 }
 
 /** Changes of the town that soften the events (lot L7.1): hospital, maison médicale, battery. */
@@ -101,8 +103,12 @@ export interface EventMods {
   strength: number;
   /** Core limit during a heatwave (80, 90 with the battery). */
   heatwaveCap: number;
+  /** The town party is drawn this many times more often (3 with the town hall, lot L10.6). */
+  partyWeight: number;
+  /** Repairs take this much of their usual time (0.5 with the fire station, lot L10.6). */
+  repair: number;
 }
-export const NO_MODS: EventMods = { protectedQuarter: null, strength: 1, heatwaveCap: 80 };
+export const NO_MODS: EventMods = { protectedQuarter: null, strength: 1, heatwaveCap: 80, partyWeight: 1, repair: 1 };
 
 export const surpriseEnd = (kind: SurpriseKind, start: number): number => {
   const s = SURPRISE_SPEC[kind];
@@ -124,7 +130,9 @@ export function drawSurprises(day: DayDef, seed: number, mods: EventMods = NO_MO
   const pool = day.surprises.filter((k) => heating || !SURPRISE_SPEC[k].needsHeat);
   // Seeded order weighted by the owner's « poids » (lot L7.2): each kind gets the key u^(1/weight), highest first, so a
   // kind of weight 3 comes early three times as often as one of weight 1.
-  const keyed = pool.map((k) => ({ k, key: Math.pow(r(), 1 / SURPRISE_SPEC[k].weight) }));
+  // The town hall (lot L10.6) only makes the party come more often: every other event keeps its own « poids ».
+  const weightOf = (k: SurpriseKind): number => SURPRISE_SPEC[k].weight * (k === 'party' ? mods.partyWeight : 1);
+  const keyed = pool.map((k) => ({ k, key: Math.pow(r(), 1 / weightOf(k)) }));
   const order = keyed.sort((a, b) => b.key - a.key).map((x) => x.k);
   const byHour = (ks: SurpriseKind[]): SurpriseKind[] => [...ks].sort((a, b) => SURPRISE_SPEC[a].from - SURPRISE_SPEC[b].from);
   const latestOf = (k: SurpriseKind): number => Math.min(SURPRISE_SPEC[k].to, END_HOUR - duration(k));
@@ -157,6 +165,7 @@ export function drawSurprises(day: DayDef, seed: number, mods: EventMods = NO_MO
     const s: Surprise = { kind, start, end: surpriseEnd(kind, start) };
     if (spec.negative && mods.strength !== 1) s.k = mods.strength;
     if (spec.cap !== undefined) s.cap = 100 - (100 - mods.heatwaveCap) * mods.strength;
+    if (spec.repair !== undefined && mods.repair !== 1) s.rep = mods.repair;
     if (spec.cut) {
       const quarters = Array.from({ length: QUARTERS }, (_, q) => q).filter((q) => q !== mods.protectedQuarter);
       s.quarter = quarters[Math.floor(r() * quarters.length)]!;
@@ -172,7 +181,7 @@ function holdEnd(s: Surprise): number {
   const spec = SURPRISE_SPEC[s.kind];
   const latest = s.start + spec.rise + spec.hold;
   if (s.fixedAt === undefined || !spec.fix) return latest;
-  return Math.min(latest, Math.max(s.start + spec.rise, s.fixedAt + (spec.repair ?? 0)));
+  return Math.min(latest, Math.max(s.start + spec.rise, s.fixedAt + (spec.repair ?? 0) * (s.rep ?? 1)));
 }
 
 /** End of an event, given what the child did. */

@@ -65,6 +65,9 @@ summary.earned: "Tu as gagné {amount}"
 shop.title: Boutique de la ville
 shop.joy: Bonheur des habitants
 shop.owned: Dans ta ville
+# Lot L10.6 : un bâtiment qu'on peut racheter montre combien tu en as déjà.
+shop.copies: "Tu en as {n}"
+shop.noLot: Plus de terrain libre
 shop.fontaine: Une fontaine
 shop.parc: Un parc
 shop.piste: Une piste cyclable
@@ -83,6 +86,13 @@ shop.isolation: Des maisons bien isolées
 shop.solaire: Des panneaux solaires
 shop.hopital: Un hôpital
 shop.cuve: Une cuve de chaleur
+# Lot L10.6 (R2-06) : la ville s'agrandit.
+shop.petite-maison: Une petite maison
+shop.immeuble-neuf: Un immeuble neuf
+shop.patisserie: Une boulangerie-pâtisserie
+shop.hotel: Un hôtel
+shop.mairie: La mairie
+shop.caserne: Une caserne de pompiers
 shop.new: "Nouveau dans ta ville !"
 shop.placeTitle: "Choisis l'endroit !"
 shop.placeHint: "Touche un terrain vert qui brille pour y construire."
@@ -105,6 +115,12 @@ shop.where.isolation: "Les maisons gardent mieux la chaleur : moins de chauffage
 shop.where.solaire: Le soleil donne un peu d'électricité pendant la journée.
 shop.where.hopital: L'hôpital a besoin d'électricité jour et nuit.
 shop.where.cuve: La cuve garde la chaleur de la nuit pour le soir.
+shop.where.petite-maison: Une famille de plus dans ta ville. Tu peux en construire autant que tu veux.
+shop.where.immeuble-neuf: Beaucoup d'habitants d'un coup. Tu peux en construire plusieurs.
+shop.where.patisserie: Le four à pain chauffe toute la journée.
+shop.where.hotel: Les clients de l'hôtel allument tout, jour et nuit.
+shop.where.mairie: La mairie organise la fête de la ville bien plus souvent.
+shop.where.caserne: Les pompiers réparent les pannes deux fois plus vite.
 
 # Boutique (lot L6) : effet court sur chaque carte, bonus, déblocages.
 shop.effect.ferme: Électricité + le jour
@@ -125,6 +141,12 @@ shop.effect.isolation: Chaleur − en hiver
 shop.effect.solaire: Électricité − le jour
 shop.effect.hopital: Électricité + tout le temps
 shop.effect.cuve: Chaleur − le soir, + la nuit
+shop.effect.petite-maison: Électricité + le soir, chaleur +
+shop.effect.immeuble-neuf: Électricité + le soir, chaleur +
+shop.effect.patisserie: Chaleur + le jour
+shop.effect.hotel: Électricité + tout le temps
+shop.effect.mairie: La fête de la ville bien plus souvent
+shop.effect.caserne: Pannes réparées deux fois plus vite
 shop.bonus: "+{amount} par journée"
 shop.after: "Après : {name}"
 shop.afterMany: "Encore {n} bâtiments à acheter avant"

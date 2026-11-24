@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { nextDiscovery, shopStatus, townHappiness, type Advice, type ShopItem, type ShopStatus } from '@neutron/engine';
+import { copiesOf, nextDiscovery, ownedItems, priceOf, shopStatus, townHappiness, type Advice, type ShopItem, type ShopStatus } from '@neutron/engine';
 import { HOME_BACKGROUND, shopUrl } from '../assets';
 import { euros, t } from '../i18n';
 import { IsoCity } from '../play/IsoCity';
-import type { Places } from '../play/iso/town';
+import { PLACEABLE, freeLots, type Places } from '../play/iso/town';
 import { sound } from '../sound';
 import { Button, Cassandra, Icon, Rich, SoundButton, Stars } from '../ui/ui';
 
@@ -173,10 +173,13 @@ export function Shop({ items, wallet, owned, fresh = null, season, places, placi
   const happiness = townHappiness(items, owned);
   const next = nextDiscovery(items, owned);
   const total = items.filter((i) => i.discovery !== undefined).length;
-  const count = items.filter((i) => owned.includes(i.id)).length;
+  // Every building counts, a second small house included (lot L10.6).
+  const count = ownedItems(items, owned).length;
+  /** Lots still free: a building that needs one cannot be bought when the town is full (lot L10.6). */
+  const free = freeLots(places ?? {}).length;
   const rows = items.map((item) => ({ item, status: shopStatus(items, owned, item) })).sort((a, b) => ORDER[a.status.kind] - ORDER[b.status.kind]);
   const line = placing ? 'shop.place' : next ? (wallet >= next.price ? `shop.discover.${next.id}` : 'shop.say.wait') : 'shop.say.free';
-  const affordable = rows.some(({ item, status }) => status.kind === 'open' && wallet >= item.price);
+  const affordable = rows.some(({ item, status }) => status.kind === 'open' && wallet >= priceOf(item, owned));
   return (
     <main className="screen shop">
       <header className="screen-head">
@@ -207,7 +210,12 @@ export function Shop({ items, wallet, owned, fresh = null, season, places, placi
       </div>
       <div className="shop-items">
         {rows.map(({ item, status }) => {
-          const can = status.kind === 'open' && wallet >= item.price && !placing;
+          // A building bought several times costs more each time, and says how many the town already has (lot L10.6).
+          const price = priceOf(item, owned);
+          const copies = item.repeat ? copiesOf(owned, item.id) : 0;
+          // Nowhere left to build: the town is full until it grows (lot L10.6).
+          const noLot = PLACEABLE.includes(item.id) && free === 0;
+          const can = status.kind === 'open' && wallet >= price && !placing && !noLot;
           const closed = status.kind === 'later' || status.kind === 'locked';
           return (
             <article key={item.id} className={`shop-item shop-${status.kind}${item.id === fresh ? ' just' : ''}`}>
@@ -215,12 +223,15 @@ export function Shop({ items, wallet, owned, fresh = null, season, places, placi
               <h2>{t(`shop.${item.id}`)}</h2>
               <p className="shop-effect">{t(`shop.effect.${item.id}`)}</p>
               <p className="shop-bonus"><Icon name="piece" size={1.2} />{t('shop.bonus', { amount: euros(item.bonus) })}</p>
+              {copies > 0 ? <p className="shop-copies"><Icon name="bien" size={1.4} />{t('shop.copies', { n: String(copies) })}</p> : null}
               {status.kind === 'owned' ? (
                 <p className="shop-owned"><Icon name="bien" size={1.6} />{t('shop.owned')}</p>
               ) : closed ? (
                 <p className="shop-lock"><Icon name="cadenas" size={1.4} />{unlockText(item, status, next)}</p>
+              ) : noLot ? (
+                <p className="shop-lock"><Icon name="cadenas" size={1.4} />{t('shop.noLot')}</p>
               ) : (
-                <Button kind={can ? 'primary' : 'secondary'} pulse={can} icon="piece" label={euros(item.price)} onClick={() => onBuy(item)} disabled={!can} />
+                <Button kind={can ? 'primary' : 'secondary'} pulse={can} icon="piece" label={euros(price)} onClick={() => onBuy(item)} disabled={!can} />
               )}
             </article>
           );

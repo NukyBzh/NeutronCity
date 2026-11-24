@@ -4,7 +4,7 @@
  */
 import { type DayDef, type SurpriseKind } from './day';
 import { dayResult, demandAt, hourOf, simulate, starBonus, type GameState } from './game';
-import { dayBonus, dayEffects, eventMods, shopStatus, welcomeGift, type ShopItem } from './town';
+import { copiesOf, dayBonus, dayEffects, eventMods, nextCopyId, priceOf, shopStatus, welcomeGift, type ShopItem } from './town';
 
 /** A simulated player: how it moves the sliders, and how long it takes to act on an event (null: never). */
 export interface Bot {
@@ -100,13 +100,19 @@ export function campaign(days: readonly DayDef[], shop: readonly ShopItem[], bot
     wallet += game.euros + starBonus(dayBonus(shop, owned), result.stars);
     wallet += welcomeGift(shop, owned, wallet);
     for (;;) {
-      const open = shop.filter((i) => shopStatus(shop, owned, i).kind === 'open' && i.price <= wallet).sort((a, b) => a.price - b.price);
+      // The cheapest it can afford, but a building it does not have yet before a second copy of one it has (L10.6).
+      const open = shop
+        .filter((i) => shopStatus(shop, owned, i).kind === 'open' && priceOf(i, owned) <= wallet)
+        .sort((a, b) => (copiesOf(owned, a.id) - copiesOf(owned, b.id)) || (priceOf(a, owned) - priceOf(b, owned)));
       if (!open.length) break;
-      wallet -= open[0]!.price;
-      owned.push(open[0]!.id);
-      bought.push({ id: open[0]!.id, day: n });
+      const item = open[0]!;
+      const id = nextCopyId(item, owned);
+      wallet -= priceOf(item, owned);
+      owned.push(id);
+      bought.push({ id, day: n });
     }
-    if (owned.length === shop.length) return { bought, complete: n };
+    // The town is complete once every building of the shop has been bought at least once (copies do not count).
+    if (shop.every((i) => copiesOf(owned, i.id) > 0)) return { bought, complete: n };
   }
   return { bought, complete: null };
 }

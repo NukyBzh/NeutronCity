@@ -32,8 +32,38 @@ export interface ShopItem {
   softens?: number;
   /** Core limit during a heatwave once it is bought (battery: 90). */
   heatwaveCap?: number;
+  /** The town party is drawn this many times more often (town hall, lot L10.6). */
+  party?: number;
+  /** Repairs take this much of their time once it is bought (fire station: 0.5, lot L10.6). */
+  repair?: number;
+  /** May be bought again and again (small house, block of flats, lot L10.6): each copy has its own lot. */
+  repeat?: boolean;
   effects: TownEffect[];
 }
+
+/**
+ * A building bought several times (lot L10.6, R2-06): the first copy keeps the shop's id, the next ones get a number
+ * (`petite-maison`, `petite-maison-2`, `petite-maison-3`…). No building of the shop ends with a number, so the id of
+ * a copy always leads back to its building.
+ */
+export const baseId = (id: string): string => id.replace(/-\d+$/, '');
+/** How many of this building the town has. */
+export const copiesOf = (owned: readonly string[], id: string): number => owned.filter((o) => baseId(o) === id).length;
+/** Each copy costs this much more than the one before (lot L10.6). */
+export const REPEAT_RISE = 0.15;
+/** What the next copy costs, rounded to ten euros; the usual price for a building bought only once. */
+export function priceOf(item: ShopItem, owned: readonly string[]): number {
+  const n = item.repeat ? copiesOf(owned, item.id) : 0;
+  return n === 0 ? item.price : Math.round((item.price * (1 + REPEAT_RISE) ** n) / 10) * 10;
+}
+/** The id the next copy will have. */
+export function nextCopyId(item: ShopItem, owned: readonly string[]): string {
+  const n = copiesOf(owned, item.id);
+  return n === 0 ? item.id : `${item.id}-${n + 1}`;
+}
+/** The buildings the town owns, one entry per copy (a second house pays its bonus and uses its electricity too). */
+export const ownedItems = (shop: readonly ShopItem[], owned: readonly string[]): ShopItem[] =>
+  owned.map((o) => shop.find((i) => i.id === baseId(o))).filter((i): i is ShopItem => i !== undefined);
 
 /** Happiness of a town with nothing bought yet. */
 export const BASE_HAPPINESS = 40;
@@ -66,6 +96,11 @@ export function validateShop(raw: unknown, where = 'shop'): ShopItem[] {
     if (o.protects !== undefined && typeof o.protects !== 'boolean') errors.push(`${at}.protects: true or false expected`);
     if (o.softens !== undefined && !(typeof o.softens === 'number' && o.softens > 0 && o.softens <= 1)) errors.push(`${at}.softens: number between 0 and 1 expected`);
     if (o.heatwaveCap !== undefined && !(typeof o.heatwaveCap === 'number' && o.heatwaveCap > 0 && o.heatwaveCap <= 100)) errors.push(`${at}.heatwaveCap: % of the core expected`);
+    if (o.party !== undefined && !(typeof o.party === 'number' && o.party >= 1)) errors.push(`${at}.party: how many times more often the party comes (≥ 1) expected`);
+    if (o.repair !== undefined && !(typeof o.repair === 'number' && o.repair > 0 && o.repair <= 1)) errors.push(`${at}.repair: share of the repair time (0 to 1) expected`);
+    if (o.repeat !== undefined && typeof o.repeat !== 'boolean') errors.push(`${at}.repeat: true or false expected`);
+    if (o.repeat === true && o.discovery !== undefined) errors.push(`${at}.repeat: not during the discovery phase`);
+    if (typeof o.id === 'string' && /-\d+$/.test(o.id)) errors.push(`${at}.id: must not end with a number (that is how a copy is named)`);
     const eff = o.effects ?? [];
     if (!Array.isArray(eff)) errors.push(`${at}.effects: list expected`);
     else eff.forEach((e, k) => errors.push(...effectErrors(e, `${at}.effects[${k}]`)));
@@ -79,7 +114,7 @@ export function validateShop(raw: unknown, where = 'shop'): ShopItem[] {
 
 /** Happiness of the town (0–100) from what was bought. */
 export function townHappiness(shop: readonly ShopItem[], owned: readonly string[]): number {
-  return Math.min(100, BASE_HAPPINESS + shop.filter((i) => owned.includes(i.id)).reduce((a, i) => a + i.joy, 0));
+  return Math.min(100, BASE_HAPPINESS + ownedItems(shop, owned).reduce((a, i) => a + i.joy, 0));
 }
 
 /** Discovery buildings in order. */
@@ -110,24 +145,24 @@ export type ShopStatus =
 
 /** What the shop shows for one building. */
 export function shopStatus(shop: readonly ShopItem[], owned: readonly string[], item: ShopItem): ShopStatus {
-  if (owned.includes(item.id)) return { kind: 'owned' };
+  // A building that may be bought again never shows as « owned »: it stays open, at a higher price (lot L10.6).
+  if (!item.repeat && owned.includes(item.id)) return { kind: 'owned' };
   const next = nextDiscovery(shop, owned);
   if (item.discovery !== undefined) return next?.id === item.id ? { kind: 'open' } : { kind: 'later' };
   if (next) return { kind: 'later' };
-  const count = shop.filter((i) => owned.includes(i.id)).length;
+  const count = owned.length;
   return count >= (item.unlockAt ?? 0) ? { kind: 'open' } : { kind: 'locked', needs: item.unlockAt! };
 }
 
 /** True once a building that opens heat has been bought (D-19 E5). */
 export function heatOpen(shop: readonly ShopItem[], owned: readonly string[]): boolean {
-  return shop.some((i) => i.opensHeat && owned.includes(i.id));
+  return ownedItems(shop, owned).some((i) => i.opensHeat);
 }
 
 /** Effects of the buildings bought that apply to this day (heat effects only on days with heat). */
 export function dayEffects(day: DayDef, shop: readonly ShopItem[], owned: readonly string[]): TownEffect[] {
   const heating = isHeatingDay(day);
-  return shop
-    .filter((i) => owned.includes(i.id))
+  return ownedItems(shop, owned)
     .flatMap((i) => i.effects)
     .filter((e) => (!e.days || e.days.includes(day.id)) && (e.out === 'elec' || heating));
 }
@@ -138,18 +173,21 @@ export function dayEffects(day: DayDef, shop: readonly ShopItem[], owned: readon
  * lets the plant produce more during a heatwave.
  */
 export function eventMods(shop: readonly ShopItem[], owned: readonly string[], quarterOf: (id: string) => number | null): EventMods {
-  const mine = shop.filter((i) => owned.includes(i.id));
+  const mine = ownedItems(shop, owned);
   const guard = mine.find((i) => i.protects);
   return {
     protectedQuarter: guard ? quarterOf(guard.id) : NO_MODS.protectedQuarter,
     strength: mine.reduce((k, i) => k * (i.softens ?? 1), 1),
     heatwaveCap: Math.max(NO_MODS.heatwaveCap, ...mine.map((i) => i.heatwaveCap ?? 0)),
+    // Town hall: the party is drawn more often. Fire station: repairs are quicker (lot L10.6).
+    partyWeight: Math.max(NO_MODS.partyWeight, ...mine.map((i) => i.party ?? 0)),
+    repair: Math.min(NO_MODS.repair, ...mine.map((i) => i.repair ?? 1)),
   };
 }
 
 /** Euros the town's buildings pay at the end of a day (D-19 E1). */
 export function dayBonus(shop: readonly ShopItem[], owned: readonly string[]): number {
-  return shop.filter((i) => owned.includes(i.id)).reduce((a, i) => a + i.bonus, 0);
+  return ownedItems(shop, owned).reduce((a, i) => a + i.bonus, 0);
 }
 
 export type Mood = 'content' | 'noir' | 'froid' | 'calme';

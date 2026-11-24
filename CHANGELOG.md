@@ -4,6 +4,14 @@
 
 ## v0.15.0 (en cours) — lots L10.4 et L10.5a : les événements se voient, les habitants marchent
 
+### Lot L10.6a — six nouveaux bâtiments (R2-06)
+- Quand tes **18 premiers bâtiments** sont construits, la boutique en ouvre **six nouveaux** : une petite maison, un immeuble neuf, une boulangerie-pâtisserie, un hôtel, la mairie et une caserne de pompiers.
+- **La petite maison et l'immeuble s'achètent autant de fois que tu veux** : chaque exemplaire est un peu plus cher que le précédent (+15 %) et prend une couleur après l'autre (bleue puis jaune, verte puis corail).
+- **La mairie** organise la fête de la ville bien plus souvent (3 fois plus).
+- **La caserne de pompiers** répare les pannes deux fois plus vite.
+- La boulangerie qui était dans le décor laisse la place à celle de la boutique.
+- Quand il n'y a plus de terrain libre, la boutique le dit au lieu de laisser acheter.
+
 ### Lot L10.5b — les habitants entrent dans les bâtiments (R2-05)
 - **Les habitants rendent visite aux bâtiments que tu as construits** : ils longent le trottoir, montent jusqu'à la porte, entrent, et ressortent un moment plus tard.
 - **Les enfants vont à l'école le matin** (de 7 h à 9 h 30) et en ressortent en fin d'après-midi (de 16 h à 18 h).

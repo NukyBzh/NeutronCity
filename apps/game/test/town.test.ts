@@ -4,7 +4,8 @@ import { describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
 import { validateShop } from '@neutron/engine';
 import {
-  BAND_VIEWBOX, BUILD_LOTS, HAT, PLACEABLE, PLOTS, TOWN_IMAGES, drawTown, drawTownLayers, freeLots, isBuildLot, isLot, lightKey, quarterOf,
+  BAND_VIEWBOX, BUILD_LOTS, FULL_VIEWBOX, HAT, PLACEABLE, PLOTS, TOWN_IMAGES, drawTown, drawTownLayers, freeLots, isBuildLot, isLot,
+  lightKey, pictureOf, quarterOf,
   settle, tileCentre, tileCorners, type Places, type TownImage, type TownOptions,
 } from '../src/play/iso/town';
 import { skyColours } from '../src/play/iso/Sky';
@@ -147,12 +148,13 @@ describe('sky (R1-11, R1-12)', () => {
 });
 
 describe('shop buildings in the town (lots L6.2, L6.3)', () => {
-  it('every building with a picture has its own plot, on a lot seen in the play screen', () => {
+  it('every building with a picture has its own plot, well inside the town the player sees', () => {
     const withPicture = ALL.filter((id) => !NO_PLOT.includes(id) && id !== 'isolation');
     expect(Object.keys(PLOTS).sort()).toEqual([...withPicture].sort());
     const cells = Object.values(PLOTS).map((p) => `${p.c},${p.r}`);
     expect(new Set(cells).size).toBe(cells.length);
-    const [bx, by, bw, bh] = BAND_VIEWBOX.split(' ').map(Number) as [number, number, number, number];
+    // Since lot L10.3 (D-31) the play screen shows the whole town: the band is not used by any screen any more.
+    const [bx, by, bw, bh] = FULL_VIEWBOX.split(' ').map(Number) as [number, number, number, number];
     for (const [id, p] of Object.entries(PLOTS)) {
       expect(isLot(p.c, p.r) || (id === 'reseau-chaleur' && p.c === 1), id).toBe(true);
       const [x, y] = tileCentre(p.c, p.r);
@@ -478,5 +480,34 @@ describe('the inhabitants go into the buildings (lot L10.5b, R2-05)', () => {
   it('a visit is never painted into the still pictures of the town', () => {
     expect(still({ places: schoolPlaces, upgrades: ['ecole'], scene: { visits: [{ id: 'ecole', who: 'enfant', mode: 'round' }] } }, 'full'))
       .not.toContain('class="visit"');
+  });
+});
+
+describe('buildings bought several times in the town (lot L10.6, R2-06)', () => {
+  it('the copies take the two colours in turn', () => {
+    expect(pictureOf('petite-maison')).toBe('petite-maison');
+    expect(pictureOf('petite-maison-2')).toBe('petite-maison-b');
+    expect(pictureOf('petite-maison-3')).toBe('petite-maison');
+    expect(pictureOf('immeuble-neuf-2')).toBe('immeuble-neuf-b');
+    // A building bought once keeps its own picture.
+    expect(pictureOf('hotel')).toBe('hotel');
+    expect(pictureOf('parc')).toBe('parc');
+    for (const id of ['petite-maison-b', 'immeuble-neuf-b']) expect(TOWN_IMAGES).toContain(id);
+  });
+
+  it('each copy is drawn on its own lot, with its own colour', () => {
+    const places = { 'petite-maison': [3, 1] as const, 'petite-maison-2': [4, 1] as const };
+    const s = still({ upgrades: ['petite-maison', 'petite-maison-2'], places }, 'full');
+    expect(s).toContain('#p-petite-maison"');
+    expect(s).toContain('#p-petite-maison-b"');
+    const lots = settle(['petite-maison', 'petite-maison-2'], {});
+    expect(Object.keys(lots).sort()).toEqual(['petite-maison', 'petite-maison-2']);
+    expect(lots['petite-maison']).not.toEqual(lots['petite-maison-2']);
+  });
+
+  it('the bakery of the decor is gone: only the one from the shop is left (R2-06)', () => {
+    expect(TOWN_IMAGES).not.toContain('boulangerie');
+    expect(still({}, 'full')).not.toContain('#p-boulangerie');
+    expect(still({ upgrades: ['patisserie'] }, 'full')).toContain('#p-patisserie');
   });
 });

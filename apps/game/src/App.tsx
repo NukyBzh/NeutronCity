@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  dayBonus, dayEffects, dayResult, eventMods, heatOpen, isHeatingDay, shopStatus, starBonus, welcomeGift, type DayResult, type GameState,
+  dayBonus, dayEffects, dayResult, eventMods, heatOpen, isHeatingDay, nextCopyId, priceOf, shopStatus, starBonus, welcomeGift,
+  type DayResult, type GameState,
 } from '@neutron/engine';
 import { DAYS, SHOP, dayById } from './content';
 import { Days, Home, Shop, Summary, type DayCard } from './screens/Menus';
@@ -168,13 +169,16 @@ export function App() {
           onBack={() => leave('home')}
           onPlay={() => leave('days')}
           onBuy={(item) => {
-            if (placing || wallet < item.price || shopStatus(SHOP, owned, item).kind !== 'open') return;
-            setWallet(wallet - item.price);
-            setOwned([...owned, item.id]);
+            // A building bought again gets its own id and its own lot, and costs more each time (lot L10.6).
+            const price = priceOf(item, owned);
+            const id = nextCopyId(item, owned);
+            if (placing || wallet < price || shopStatus(SHOP, owned, item).kind !== 'open') return;
+            setWallet(wallet - price);
+            setOwned([...owned, id]);
             // A building with a lot of its own waits for the child's choice (lot L9.4); the others appear at once.
-            if (PLACEABLE.includes(item.id)) { setPlacing(item.id); setFresh(null); } else setFresh(item.id);
+            if (PLACEABLE.includes(item.id)) { setPlacing(id); setFresh(null); } else setFresh(id);
             const now = new Date();
-            lastBuy.current = { type: 'achat', id: now.getTime(), child: journal.child, at: localStamp(now), item: item.id, price: item.price };
+            lastBuy.current = { type: 'achat', id: now.getTime(), child: journal.child, at: localStamp(now), item: id, price };
             log((j) => upsert(j, { ...lastBuy.current!, child: j.child }));
           }} />
       );

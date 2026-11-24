@@ -133,4 +133,22 @@ Images fournies par Yann (Gemini, prompts de `docs/GEMINI-R2.md` § 1), détour�
 au lieu d'un fond vert uni. Alterner les deux pas ferait changer de vêtements le passant deux fois par seconde :
 elles ne sont pas dans le dépôt. La marche est donc animée en code (le passant monte et descend de 8 % de sa
 hauteur à chaque pas). À regénérer si on veut de vraies jambes qui bougent (prompt corrigé dans
-`docs/GEMINI-R2.md` § 1).
+`docs/GEMINI-R2.md` § 1).
+
+## Nouveaux bâtiments de la boutique (`objets/`) — 2026-11-21 (lot L10.6a, R2-06)
+Huit images fournies par Yann (Gemini, prompts de `docs/GEMINI-R2.md` § 2 ; mêmes conditions d'usage à vérifier
+que Cassandra), détourées (fond magenta) et réduites en WebP à 384 px : 158 Ko en tout.
+
+| Fichier | Image d’origine | Rôle |
+|---|---|---|
+| `objets/petite-maison.webp` | `asset_77_*.png.jpg` | petite maison bleue (achetable plusieurs fois) |
+| `objets/petite-maison-b.webp` | `asset_78_*.png.jpg` | la même en jaune : un exemplaire sur deux |
+| `objets/immeuble-neuf.webp` | `asset_79_*.png.jpg` | immeuble neuf vert (achetable plusieurs fois) |
+| `objets/immeuble-neuf-b.webp` | `asset_80_*.png.jpg` | le même en corail : un exemplaire sur deux |
+| `objets/mairie.webp` | `asset_81_*.png.jpg` | la mairie : la fête de la ville bien plus souvent |
+| `objets/hotel.webp` | `asset_82_*.png.jpg` | l'hôtel |
+| `objets/patisserie.webp` | `asset_83_*.png.jpg` | boulangerie-pâtisserie (remplace celle du décor, `asset_61`) |
+| `objets/caserne.webp` | `asset_84_*.png.jpg` | caserne de pompiers : pannes réparées deux fois plus vite |
+
+La boulangerie du décor (`ville/boulangerie.webp`, `asset_61`) n'est plus dessinée dans la ville : seule celle de la
+boutique reste (R2-06). Le fichier est gardé au cas où.
