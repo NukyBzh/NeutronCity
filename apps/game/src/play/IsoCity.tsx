@@ -205,7 +205,9 @@ export const IsoCity = memo(function IsoCity(p: IsoCityProps) {
   return (
     <div ref={box} className={`city iso-${p.view}`} role="img" aria-label={t('app.title')}>
       {/* The sky moves by quarters of an hour: enough for the sun, and cheap on the tablet. */}
-      <Sky view={p.view} hour={Math.floor(p.hour * 4) / 4} viewBox={viewBox} aspect={aspect} storm={p.weather?.storm ?? 0} mild={p.weather?.mild ?? 0} heat={p.weather?.heat ?? 0} cold={p.weather?.cold ?? 0} />
+      {/* In the full view the panel is wider than the drawing: the sky fills it (slice), so the sides of the
+          panel are sky and not the colour of the page (lot L10.6b2). */}
+      <Sky view={p.view} hour={Math.floor(p.hour * 4) / 4} viewBox={viewBox} aspect={p.view === 'full' ? 'xMidYMid slice' : aspect} storm={p.weather?.storm ?? 0} mild={p.weather?.mild ?? 0} heat={p.weather?.heat ?? 0} cold={p.weather?.cold ?? 0} />
       {layers.map((l, k) => (l.kind === 'still'
         ? <canvas key={k} className="city-layer" ref={(c) => { canvases.current[k] = c; }} style={l.frame && size ? framedStyle(frameRect(l.frame, viewBox, aspect, size.w, size.h)) : undefined} />
         : (

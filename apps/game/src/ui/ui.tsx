@@ -26,6 +26,15 @@ export function Button(props: {
   );
 }
 
+/**
+ * The name of the game, its first word blue and the rest amber (D-27, NukiTeam charter). Used by the welcome screen
+ * and, since lot L10.6b2, by the header of the play screen.
+ */
+export function GameName() {
+  const [first, ...rest] = t('app.title').split(' ');
+  return <><span className="logo-a">{first}</span> <span className="logo-b">{rest.join(' ')}</span></>;
+}
+
 export type GaugeState = 'bien' | 'presque' | 'loin';
 const GAUGE_LABEL: Record<GaugeState, string> = { bien: 'gauge.bien', presque: 'gauge.presque', loin: 'gauge.loin' };
 

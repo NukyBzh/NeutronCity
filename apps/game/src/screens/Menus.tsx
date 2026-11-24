@@ -5,7 +5,7 @@ import { euros, t } from '../i18n';
 import { IsoCity } from '../play/IsoCity';
 import { PLACEABLE, freeLots, type Places } from '../play/iso/town';
 import { sound } from '../sound';
-import { Button, Cassandra, Icon, Rich, SoundButton, Stars } from '../ui/ui';
+import { Button, Cassandra, GameName, Icon, Rich, SoundButton, Stars } from '../ui/ui';
 
 /** Taps on the version number that open the hidden play log (lot L9.1), within this many milliseconds. */
 const SECRET_TAPS = 5;
@@ -14,12 +14,11 @@ const SECRET_MS = 3000;
 /** Game logo (lot L9.2a, D-27): the Nuki Town symbol, the name with its first word in blue and the rest in orange,
  *  and the NukiTeam signature. The symbol is drawn by tools/branding/nuki-town.mjs. */
 function GameLogo() {
-  const [first, ...rest] = t('app.title').split(' ');
   return (
     <div className="game-logo">
       <img src="./icons/icone.svg" alt="" />
       <div>
-        <h1><span className="logo-a">{first}</span> <span className="logo-b">{rest.join(' ')}</span></h1>
+        <h1><GameName /></h1>
         <p className="game-logo-by">{t('app.by')}</p>
       </div>
     </div>

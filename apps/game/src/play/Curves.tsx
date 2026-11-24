@@ -9,9 +9,15 @@ import { LOOK_AHEAD_HOURS, type Sample } from './session';
  * LOOK_AHEAD_HOURS of demand are visible; a surprise shows as a hatched violet band once Cassandra has announced it.
  * Hours are pictograms (morning, noon, evening, night), not numbers.
  */
-const VW = 720;
-const X0 = 56;
-const X1 = 704;
+/**
+ * Lot L10.6b2: the drawing is 2.4 times wider than it was (720), because the suivi de consommation is now a band as
+ * wide as the town (Yann's « IHM V2 » sketch). The lanes keep their height in drawing units, so the day spreads out
+ * instead of being squeezed; everything that has to stay readable (icons, strokes, dashes) grew by 15 %, the share
+ * the drawing lost when it was widened.
+ */
+const VW = 1720;
+const X0 = 64;
+const X1 = 1700;
 const LANES = {
   elec: { top: 6, h: 124, min: 15, max: 100, line: '#7A5200', fill: '#FFC83D' },
   heat: { top: 146, h: 92, min: 0, max: 50, line: '#9C3D06', fill: '#FF8A3D' },
@@ -63,17 +69,17 @@ export function Curves({ day, surprises, effects = [], hour, history, current, h
   return (
     <svg className="curves" viewBox={`0 0 ${VW} ${CURVES_VH}`} role="img" aria-label={t('curves.label')}>
       <defs>
-        <pattern id="hatch" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-          <rect width="10" height="10" fill="#EEF1F7" />
-          <rect width="4" height="10" fill="#D5DCEB" />
+        <pattern id="hatch" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <rect width="12" height="12" fill="#EEF1F7" />
+          <rect width="5" height="12" fill="#D5DCEB" />
         </pattern>
-        <pattern id="hatch-surprise" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
-          <rect width="12" height="12" fill="#7B5CD6" fillOpacity="0.12" />
-          <rect width="4" height="12" fill="#7B5CD6" fillOpacity="0.35" />
+        <pattern id="hatch-surprise" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+          <rect width="14" height="14" fill="#7B5CD6" fillOpacity="0.12" />
+          <rect width="5" height="14" fill="#7B5CD6" fillOpacity="0.35" />
         </pattern>
         {(['elec', 'heat'] as Lane[]).map((lane) => (
           <clipPath key={lane} id={`clip-${lane}`}>
-            <rect x={X0} y={LANES[lane].top} width={X1 - X0} height={LANES[lane].h} rx={14} />
+            <rect x={X0} y={LANES[lane].top} width={X1 - X0} height={LANES[lane].h} rx={16} />
           </clipPath>
         ))}
       </defs>
@@ -82,32 +88,32 @@ export function Curves({ day, surprises, effects = [], hour, history, current, h
         const on = lanes.includes(lane);
         return (
           <g key={lane} opacity={on ? 1 : 0.35}>
-            <image href={iconUrl(lane === 'elec' ? 'electricite' : 'chaleur')} x={6} y={L.top + L.h / 2 - 20} width={40} height={40} />
-            <rect x={X0} y={L.top} width={X1 - X0} height={L.h} rx={14} fill="#FFFFFF" stroke="#1C2A4A" strokeWidth={2.5} />
+            <image href={iconUrl(lane === 'elec' ? 'electricite' : 'chaleur')} x={6} y={L.top + L.h / 2 - 23} width={46} height={46} />
+            <rect x={X0} y={L.top} width={X1 - X0} height={L.h} rx={16} fill="#FFFFFF" stroke="#1C2A4A" strokeWidth={2.9} />
             <g clipPath={`url(#clip-${lane})`}>
               <rect x={x(until)} y={L.top} width={X1 - x(until)} height={L.h} fill="url(#hatch)" />
               {shown.filter((sp) => laneOf(sp) === lane).map((sp) => (
                 <g key={sp.kind}>
                   <rect x={x(sp.start)} y={L.top} width={x(endOf(sp)) - x(sp.start)} height={L.h} fill="url(#hatch-surprise)" />
-                  <image href={iconUrl('surprise')} x={(x(sp.start) + x(endOf(sp))) / 2 - 14} y={L.top + 4} width={28} height={28} />
+                  <image href={iconUrl('surprise')} x={(x(sp.start) + x(endOf(sp))) / 2 - 16} y={L.top + 4} width={32} height={32} />
                 </g>
               ))}
               {on ? (
                 <>
                   <path d={`${path(bandPts(lane))} Z`} fill="#2E9E5B" fillOpacity={0.24} />
-                  <path d={path(demandPts(lane))} fill="none" stroke="#1C2A4A" strokeWidth={3.5} strokeDasharray="10 8" strokeLinecap="round" />
-                  <path d={path(prodPts(lane))} fill="none" stroke={L.fill} strokeWidth={10} strokeLinecap="round" strokeLinejoin="round" />
-                  <path d={path(prodPts(lane))} fill="none" stroke={L.line} strokeWidth={4} strokeLinecap="round" strokeLinejoin="round" />
+                  <path d={path(demandPts(lane))} fill="none" stroke="#1C2A4A" strokeWidth={4} strokeDasharray="12 9" strokeLinecap="round" />
+                  <path d={path(prodPts(lane))} fill="none" stroke={L.fill} strokeWidth={11.5} strokeLinecap="round" strokeLinejoin="round" />
+                  <path d={path(prodPts(lane))} fill="none" stroke={L.line} strokeWidth={4.6} strokeLinecap="round" strokeLinejoin="round" />
                 </>
               ) : null}
             </g>
           </g>
         );
       })}
-      <line x1={x(hour)} x2={x(hour)} y1={2} y2={LANES.heat.top + LANES.heat.h + 4} stroke="#1D47B8" strokeWidth={3} />
-      <path d={`M${x(hour) - 8} 0 H ${x(hour) + 8} L ${x(hour)} 10 Z`} fill="#1D47B8" />
+      <line x1={x(hour)} x2={x(hour)} y1={2} y2={LANES.heat.top + LANES.heat.h + 4} stroke="#1D47B8" strokeWidth={3.5} />
+      <path d={`M${x(hour) - 9} 0 H ${x(hour) + 9} L ${x(hour)} 11.5 Z`} fill="#1D47B8" />
       {([['matin', 6.5], ['midi', 12], ['soir', 18.5], ['nuit', 23]] as const).map(([name, h]) => (
-        <image key={name} href={iconUrl(name)} x={x(h) - 16} y={CURVES_VH - 34} width={32} height={32} />
+        <image key={name} href={iconUrl(name)} x={x(h) - 18} y={CURVES_VH - 38} width={36} height={36} />
       ))}
     </svg>
   );

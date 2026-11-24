@@ -13,7 +13,7 @@ import { Clock, CoreBar, Slider } from '../play/Controls';
 import { Curves } from '../play/Curves';
 import { REAL_SECONDS_PER_GAME_MINUTE, START_HOUR, advance, playUntil, startOf, timelineOf, type Sample } from '../play/session';
 import { coinShows, sound, tickSounds } from '../sound';
-import { Button, Cassandra, Gauge, Icon, Rich, SoundButton } from '../ui/ui';
+import { Button, Cassandra, GameName, Gauge, Icon, Rich, SoundButton } from '../ui/ui';
 import { NO_STATS, type GameEnd, type PlayStats } from '../journal';
 
 /** A bubble stays about 7 s (auto-advance, no "Continue" button). */
@@ -391,7 +391,11 @@ export function Play({
   return (
     <main className={`screen play play-full${step ? ' tuto-on' : ''}`} data-tuto={step?.target}>
       <header className="play-top">
-        <Button icon="pause" label={t('btn.pause')} onClick={() => setPaused(true)} />
+        <div className="play-top-left">
+          {/* The symbol and the name of the game, as on the welcome screen (lot L10.6b2). */}
+          <span className="play-logo"><img src="./icons/icone.svg" alt="" aria-hidden /><b><GameName /></b></span>
+          <Button icon="pause" label={t('btn.pause')} onClick={() => setPaused(true)} />
+        </div>
         <div className="play-day">
           <Icon name="matin" size={2} />
           <span>{t(`day.${day.id}.title`)}</span>

@@ -134,6 +134,12 @@ strong { font-weight: 800; }
 .play-guide { grid-column: 2; grid-row: 3; position: relative; z-index: 3; }
 .zone-controls { grid-column: 3; grid-row: 3; }
 .play-top { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; }
+/* Lot L10.6b2: the symbol and the name of the game at the far left, before Pause. */
+.play-top-left { display: flex; align-items: center; gap: 0.9rem; }
+.play-logo { display: inline-flex; align-items: center; gap: 0.5rem; }
+.play-logo img { width: 2.6rem; height: 2.6rem; flex: none; }
+.play-logo b { font-size: 1.35rem; font-weight: 900; line-height: 1; letter-spacing: 0.01em; white-space: nowrap;
+  -webkit-text-stroke: 0.1em var(--encre); paint-order: stroke fill; }
 .play-day { display: flex; align-items: center; gap: 0.6rem; font-size: 1.4rem; font-weight: 800; }
 .clock-box { display: inline-flex; align-items: center; gap: 0.5rem; }
 .clock { width: 2.6rem; height: 2.6rem; }
@@ -230,24 +236,33 @@ strong { font-weight: 800; }
 .step-btn:active:not(:disabled) { transform: scale(0.94); background: var(--bleu-clair); }
 .step-btn:disabled { opacity: 0.35; cursor: default; }
 .step-btn:focus-visible { outline: 0.2rem solid var(--bleu); outline-offset: 0.1rem; }
+/* Chaleur is the right-hand slider: its + and − go to the right of its track, so both pairs of buttons stand on the
+   outer edges of the panel and the two tracks sit side by side (lot L10.6b2). */
+.slider-heat.has-steps { grid-template-columns: 1fr auto; }
+.slider-heat.has-steps .slider-track { grid-column: 1; }
+.slider-heat.has-steps .step-plus, .slider-heat.has-steps .step-minus { grid-column: 2; }
 
 /* Play screen with the whole town (lots L10.1 and L10.3, R2-10): the town on the left, two thirds of the screen; on the
    right the sliders with + and −, then small curves; Cassandra in a corner of the town. These rules come after the
    older ones (band of the town) and win over them. */
-.play.play-full { grid-template-columns: 1fr 20rem; grid-template-rows: 3.4rem 1fr 11.4rem; }
-.play-full .zone-city { grid-column: 1; grid-row: 2 / 4; }
-/* The event buttons lie on a box framed as the drawing of the town (full view, 1960 × 1300, centred), so that a button
-   stands over its quarter whatever the size of the screen (lot L10.3). */
+/* Lot L10.6b2 (schéma « IHM V2 » de Yann) : le suivi de consommation en bandeau large sous l'en-tête, la ville
+   dessous, et les curseurs sur toute la hauteur à droite. Le suivi gagne les trois quarts de la largeur de l'écran,
+   soit près du double de surface, et surtout de la place pour l'axe du temps ; la ville perd de la hauteur. */
+.play.play-full { grid-template-columns: 1fr 20rem; grid-template-rows: 3.4rem 12rem 1fr; }
+.play-full .zone-curves { grid-column: 1; grid-row: 2; padding: 0.3rem 0.9rem 0.4rem; }
+.play-full .zone-city { grid-column: 1; grid-row: 3; }
+/* The event buttons lie on a box framed as the drawing of the town (the full view's FULL_VIEWBOX in town.ts, centred),
+   so that a button stands over its quarter whatever the size of the screen (lot L10.3). These two numbers must stay
+   in step with FULL_VIEWBOX: they were left at 1960 × 1300 when it grew (lot L10.6b2, S-13). */
 .play-full .zone-city { container-type: size; }
-.play-full .event-layer { inset: auto; left: 50%; top: 50%; width: min(100cqw, calc(100cqh * 1960 / 1300)); aspect-ratio: 1960 / 1300;
+.play-full .event-layer { inset: auto; left: 50%; top: 50%; width: min(100cqw, calc(100cqh * 2000 / 1470)); aspect-ratio: 2000 / 1470;
   transform: translate(-50%, -50%); }
 .play-full .event-btn { transform: translate(-50%, -100%); }
-.play-full .zone-controls { grid-column: 2; grid-row: 2; padding: 0.4rem 0.6rem; gap: 0.3rem; min-height: 0; }
-.play-full .zone-curves { grid-column: 2; grid-row: 3; padding: 0.3rem 0.5rem; }
-.play-full .curves-head { gap: 0.2rem 0.6rem; flex-wrap: wrap; height: auto; }
+.play-full .zone-controls { grid-column: 2; grid-row: 2 / 4; padding: 0.4rem 0.6rem; gap: 0.3rem; min-height: 0; }
+.play-full .curves-head { height: 2.2rem; gap: 1.1rem; }
 .play-full .curves-body { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
-.play-full .curves-gauges { display: flex; justify-content: space-around; padding-top: 0; }
-.play-full .play-guide { grid-column: 1; grid-row: 2 / 4; pointer-events: none; z-index: 3; }
+.play-full .curves-gauges { display: flex; justify-content: center; gap: 1.4rem; padding-top: 0.1rem; }
+.play-full .play-guide { grid-column: 1; grid-row: 3; pointer-events: none; z-index: 3; }
 .play-full .play-cassandra { left: 0.4rem; right: auto; bottom: 0; height: 12rem; transform: none; }
 .play-full .play-cassandra .bubble { left: 85%; right: auto; bottom: 6rem; top: auto; width: 20rem; }
 .play-full .sliders { justify-content: space-around; }
@@ -560,6 +575,10 @@ svg .pop, svg .float { transform-box: fill-box; transform-origin: center; }
   .zone-city { grid-column: 1; grid-row: 2; }
   .zone-curves { grid-column: 1; grid-row: 3; padding: 0.3rem 0.6rem 0.3rem; }
   .zone-controls { grid-column: 2; grid-row: 2 / 4; padding: 0.4rem 0.5rem; }
+  /* The name of the game does not fit next to Pause: the symbol alone (lot L10.6b2). */
+  .play-logo b { display: none; }
+  .play-logo img { width: 2.2rem; height: 2.2rem; }
+  .play-top-left { gap: 0.5rem; }
   .play-top-right { gap: 0.8rem; }
   .play-day { font-size: 1.15rem; gap: 0.4rem; }
   .play-day > img:first-child { display: none; }
