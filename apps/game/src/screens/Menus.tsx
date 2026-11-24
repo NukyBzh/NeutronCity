@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { baseId, copiesOf, nextDiscovery, ownedItems, priceOf, shopStatus, townHappiness, type Advice, type ShopItem, type ShopStatus } from '@neutron/engine';
-import { HOME_BACKGROUND, shopUrl } from '../assets';
+import {
+  QUARTERS, baseId, copiesOf, nextDiscovery, ownedItems, priceOf, quarterPrice, quarterStatus, shopStatus, townHappiness,
+  type Advice, type QuarterOffer, type ShopItem, type ShopStatus,
+} from '@neutron/engine';
+import { HOME_BACKGROUND, shopUrl, townUrl } from '../assets';
 import { euros, t } from '../i18n';
 import { IsoCity } from '../play/IsoCity';
 import { PLACEABLE, freeLots, type Places } from '../play/iso/town';
@@ -163,11 +166,13 @@ const ORDER: Record<ShopStatus['kind'], number> = { open: 0, owned: 1, later: 2,
  * demand a little. Discovery phase: one building offered at a time, presented by Cassandra; then the others open as
  * the town grows. Buildings to come stay visible, greyed, so the child sees what is next.
  */
-export function Shop({ items, wallet, owned, fresh = null, season, places, quarters = [], placing = null, spots = [], onPlace, onBuy, onBack, onPlay }: {
+export function Shop({ items, wallet, owned, fresh = null, season, places, quarters = [], offer, onBuyQuarter, placing = null, spots = [], onPlace, onBuy, onBack, onPlay }: {
   items: readonly ShopItem[]; wallet: number; owned: readonly string[]; fresh?: string | null; season: string; onBuy: (item: ShopItem) => void; onBack: () => void;
   onPlay: () => void;
   /** Lot L9.4: lots of the buildings, the building waiting for its lot, the free lots and the child's choice. */
   places?: Places; quarters?: readonly number[]; placing?: string | null; spots?: readonly (readonly [number, number])[]; onPlace?: (c: number, r: number) => void;
+  /** Lot L10.6b3: what the quarters for sale cost, and buying one. Absent: the shop shows no quarter. */
+  offer?: QuarterOffer; onBuyQuarter?: (q: number) => void;
 }) {
   const happiness = townHappiness(items, owned);
   const next = nextDiscovery(items, owned);
@@ -177,7 +182,7 @@ export function Shop({ items, wallet, owned, fresh = null, season, places, quart
   /** Lots still free: a building that needs one cannot be bought when the town is full (lot L10.6). */
   const free = freeLots(places ?? {}, quarters).length;
   const rows = items.map((item) => ({ item, status: shopStatus(items, owned, item) })).sort((a, b) => ORDER[a.status.kind] - ORDER[b.status.kind]);
-  const line = placing ? 'shop.place' : next ? (wallet >= next.price ? `shop.discover.${next.id}` : 'shop.say.wait') : 'shop.say.free';
+  const line = placing ? 'shop.place' : next ? (wallet >= next.price ? `shop.discover.${next.id}` : 'shop.say.wait') : free === 0 && offer ? 'shop.say.grow' : 'shop.say.free';
   const affordable = rows.some(({ item, status }) => status.kind === 'open' && wallet >= priceOf(item, owned));
   return (
     <main className="screen shop">
@@ -208,6 +213,7 @@ export function Shop({ items, wallet, owned, fresh = null, season, places, quart
         <div className="joy-bar"><span style={{ width: `${happiness}%` }} /></div>
       </div>
       <div className="shop-items">
+        {free === 0 ? quarterCards() : null}
         {rows.map(({ item, status }) => {
           // A building bought several times costs more each time, and says how many the town already has (lot L10.6).
           const price = priceOf(item, owned);
@@ -235,9 +241,43 @@ export function Shop({ items, wallet, owned, fresh = null, season, places, quart
             </article>
           );
         })}
+        {free > 0 ? quarterCards() : null}
       </div>
       </div>
       </div>
     </main>
   );
+
+  /**
+   * Lot L10.6b3 (R2-07): the three quarters for sale. A quarter brings no happiness and no bonus: it opens 6 lots
+   * more. The three are the same, so they all show the price of the next one. They come at the end of the shop, but
+   * first when there is nowhere left to build: that is the moment the child needs them.
+   */
+  function quarterCards() {
+    return offer ? (
+          <>
+            <h2 className="shop-section">{t('shop.quarters')}</h2>
+            {Array.from({ length: QUARTERS }, (_, q) => {
+              const status = quarterStatus(offer, owned, quarters, q);
+              const price = quarterPrice(offer, quarters);
+              const can = status.kind === 'open' && price !== null && wallet >= price && !placing;
+              return (
+                <article key={`quartier-${q}`} className={`shop-item shop-quarter shop-${status.kind}`}>
+                  <img src={townUrl('panneau-a-vendre')} alt="" aria-hidden />
+                  <h2>{t(`shop.quarter.${q}`)}</h2>
+                  <p className="shop-effect">{t('shop.quarter.effect')}</p>
+                  {status.kind === 'owned' ? (
+                    <p className="shop-owned"><Icon name="bien" size={1.6} />{t('shop.owned')}</p>
+                  ) : status.kind === 'locked' ? (
+                    <p className="shop-lock"><Icon name="cadenas" size={1.4} />{t('shop.locked', { n: String(status.needs) })}</p>
+                  ) : (
+                    // Nowhere left to build: the quarter is what the child needs, so its button pulses.
+                    <Button kind={can ? 'primary' : 'secondary'} pulse={can && free === 0} icon="piece" label={euros(price ?? 0)} onClick={() => onBuyQuarter?.(q)} disabled={!can} />
+                  )}
+                </article>
+              );
+            })}
+          </>
+    ) : null;
+  }
 }

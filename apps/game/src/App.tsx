@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  dayBonus, dayEffects, dayResult, eventMods, heatOpen, isHeatingDay, nextCopyId, priceOf, shopStatus, starBonus, welcomeGift,
+  dayBonus, dayEffects, dayResult, eventMods, heatOpen, isHeatingDay, nextCopyId, priceOf, quarterPrice, quarterStatus, shopStatus, starBonus, welcomeGift,
   type DayResult, type GameState,
 } from '@neutron/engine';
-import { DAYS, SHOP, dayById } from './content';
+import { DAYS, QUARTERS_OFFER, SHOP, dayById } from './content';
 import { Days, Home, Shop, Summary, type DayCard } from './screens/Menus';
 import { Play, type Speed } from './screens/Play';
 import { JournalScreen } from './screens/Journal';
@@ -25,6 +25,8 @@ const START_DAY = dayById(PARAMS.get('journee') ?? '') ?? DAYS[0]!;
 const START_OWNED = (PARAMS.get('achats') ?? '').split(',').filter(Boolean);
 /** Review: `&nouveau=fontaine` shows the shop just after buying that upgrade. */
 const START_FRESH = PARAMS.get('nouveau');
+/** Review: `&euros=30000` opens the game with that much in the piggy bank (lot L10.6b3). */
+const START_EUROS = PARAMS.has('euros') ? Math.max(0, Number(PARAMS.get('euros')) || 0) : null;
 /** Review: `&quartiers=0,2` shows the town with those quarters for sale already bought (lot L10.6b). */
 const START_QUARTERS = (PARAMS.get('quartiers') ?? '').split(',').filter(Boolean).map(Number);
 /** Review: `&placer=ferme` shows the shop while that upgrade (in `achats`) waits for its lot (lot L9.4). */
@@ -32,7 +34,9 @@ const START_PLACING = PARAMS.get('placer');
 const FIXED_SEED = PARAMS.has('graine') ? Number(PARAMS.get('graine')) >>> 0 : null;
 /** Reviewing a screen through the address never reads nor changes the player's saved progress. */
 const REVIEW = PARAMS.has('ecran') || PARAMS.has('achats');
-const SAVED = REVIEW ? { ...EMPTY, wallet: 7500, owned: START_OWNED, tuto: true } : loadProgress();
+const SAVED = REVIEW ? { ...EMPTY, wallet: START_EUROS ?? 7500, owned: START_OWNED, tuto: true } : loadProgress();
+/** Quarters the town starts with: those of the address when reviewing, those saved otherwise (lot L10.6b3). */
+const SAVED_QUARTERS = REVIEW ? START_QUARTERS : SAVED.quarters ?? [];
 /** Review: `&tuto=oui` opens the game with the guided tutorial. */
 const FORCE_TUTO = PARAMS.get('tuto') === 'oui';
 
@@ -51,7 +55,9 @@ export function App() {
   const [wallet, setWallet] = useState(SAVED.wallet);
   const [owned, setOwned] = useState<string[]>(SAVED.owned);
   // Lot of each building (lot L9.4): chosen by the child; progress saved before gets the default plots.
-  const [places, setPlaces] = useState<Places>(() => settle(SAVED.owned, SAVED.places ?? {}, START_PLACING, START_QUARTERS));
+  const [places, setPlaces] = useState<Places>(() => settle(SAVED.owned, SAVED.places ?? {}, START_PLACING, SAVED_QUARTERS));
+  /** Quarters for sale the child has bought (lot L10.6b3): each one opens 6 lots more. */
+  const [quarters, setQuarters] = useState<number[]>(SAVED_QUARTERS);
   // Building just bought that waits for its lot: the shop asks the child where to build it.
   const [placing, setPlacing] = useState<string | null>(START_PLACING);
   const [last, setLast] = useState<DayResult>({ euros: 0, max: 0, stars: 1, advice: 'anticiper' });
@@ -85,8 +91,8 @@ export function App() {
   }, [day, log]);
 
   useEffect(() => {
-    if (!REVIEW) saveProgress({ version: 1, wallet, owned, stars, lastDay: day.id, tuto: tutoSeen, seen, places: places as Record<string, [number, number]> });
-  }, [wallet, owned, stars, day, tutoSeen, seen, places]);
+    if (!REVIEW) saveProgress({ version: 1, wallet, owned, stars, lastDay: day.id, tuto: tutoSeen, seen, places: places as Record<string, [number, number]>, quarters });
+  }, [wallet, owned, stars, day, tutoSeen, seen, places, quarters]);
 
   const reset = () => {
     clearProgress();
@@ -95,6 +101,7 @@ export function App() {
     setWallet(0);
     setOwned([]);
     setPlaces({});
+    setQuarters([]);
     setPlacing(null);
     setStars({});
     setDay(DAYS[0]!);
@@ -144,12 +151,12 @@ export function App() {
       return <Days cards={cards} onPick={startDay} onHome={() => setScreen('home')} />;
     case 'play':
       return (
-        <Play key={round} day={day} seed={seed} upgrades={owned} effects={dayEffects(day, SHOP, owned)} places={places} quarters={START_QUARTERS} mods={eventMods(SHOP, owned, quarterOf(places))}
+        <Play key={round} day={day} seed={seed} upgrades={owned} effects={dayEffects(day, SHOP, owned)} places={places} quarters={quarters} mods={eventMods(SHOP, owned, quarterOf(places))}
           seen={seen} onSeen={(k) => setSeen((s) => (s.includes(k) ? s : [...s, k]))} speed={speed} onSpeed={setSpeed} onFinish={finish} onRestart={() => startDay(day.id)}
           onHome={() => setScreen('home')} tutorial={!tutoSeen || tutoAsked} onTutorialDone={() => { setTutoSeen(true); setTutoAsked(false); }} onRecord={logGame} />
       );
     case 'summary':
-      return <Summary earned={last.euros} bonus={lastBonus} gift={lastGift} townBonus={townBonus} stars={last.stars} advice={last.advice} season={day.id} upgrades={owned} places={places} quarters={START_QUARTERS} onShop={() => setScreen('shop')} onAgain={() => startDay(day.id)} onDays={() => setScreen('days')} />;
+      return <Summary earned={last.euros} bonus={lastBonus} gift={lastGift} townBonus={townBonus} stars={last.stars} advice={last.advice} season={day.id} upgrades={owned} places={places} quarters={quarters} onShop={() => setScreen('shop')} onAgain={() => startDay(day.id)} onDays={() => setScreen('days')} />;
     case 'shop': {
       // Leaving the shop before choosing a lot puts the building on the first free lot (never lost).
       const leave = (to: Screen) => {
@@ -159,8 +166,8 @@ export function App() {
         setScreen(to);
       };
       return (
-        <Shop items={SHOP} wallet={wallet} owned={owned} fresh={fresh} season={day.id} places={places} quarters={START_QUARTERS}
-          placing={placing} spots={placing ? freeLots(places, START_QUARTERS) : []}
+        <Shop items={SHOP} wallet={wallet} owned={owned} fresh={fresh} season={day.id} places={places} quarters={quarters} offer={QUARTERS_OFFER}
+          placing={placing} spots={placing ? freeLots(places, quarters) : []}
           onPlace={(c, r) => {
             if (!placing) return;
             setPlaces((p) => ({ ...p, [placing]: [c, r] }));
@@ -170,6 +177,15 @@ export function App() {
           }}
           onBack={() => leave('home')}
           onPlay={() => leave('days')}
+          onBuyQuarter={(q) => {
+            // A quarter for sale opens 6 lots more (lot L10.6b3): no building, no lot to choose, the town simply grows.
+            const price = quarterPrice(QUARTERS_OFFER, quarters);
+            if (placing || price === null || wallet < price || quarterStatus(QUARTERS_OFFER, owned, quarters, q).kind !== 'open') return;
+            setWallet(wallet - price);
+            setQuarters([...quarters, q].sort((a, b) => a - b));
+            const now = new Date();
+            log((j) => upsert(j, { type: 'achat', id: now.getTime(), child: j.child, at: localStamp(now), item: `quartier-${q}`, price }));
+          }}
           onBuy={(item) => {
             // A building bought again gets its own id and its own lot, and costs more each time (lot L10.6).
             const price = priceOf(item, owned);

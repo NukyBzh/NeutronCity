@@ -10,7 +10,7 @@
 import type { DayDef } from './day';
 import { isHeatingDay } from './day';
 import { effectErrors, type TownEffect } from './effects';
-import { NO_MODS, type EventMods } from './surprises';
+import { NO_MODS, QUARTERS, type EventMods } from './surprises';
 import type { Gauge } from './game';
 
 export interface ShopItem {
@@ -110,6 +110,41 @@ export function validateShop(raw: unknown, where = 'shop'): ShopItem[] {
   if (sorted.some((s, i) => s !== i + 1)) errors.push('discovery: steps must be 1, 2, 3… without gap nor repeat');
   if (errors.length) throw new Error(`${where}: ${errors.join('; ')}`);
   return out;
+}
+
+/**
+ * The three quarters for sale beyond the new street (lot L10.6b, R2-07). A quarter is not a building: it brings no
+ * happiness and no bonus, it opens 6 lots more. The three are the same, so the price does not belong to one of them
+ * but to the rank of the purchase: the second quarter costs more than the first, whichever one the child picks.
+ */
+export interface QuarterOffer {
+  /** What the first, the second and the third quarter bought cost, in euros. */
+  prices: readonly number[];
+  /** Buildings the town needs before the quarters are offered at all. */
+  unlockAt: number;
+}
+
+export function validateQuarters(raw: unknown, where = 'shop'): QuarterOffer {
+  const q = (raw as { quarters?: unknown })?.quarters as Record<string, unknown> | undefined;
+  const errors: string[] = [];
+  const prices = q?.prices;
+  if (!Array.isArray(prices) || prices.length !== QUARTERS) errors.push(`quarters.prices: ${QUARTERS} prices expected`);
+  else prices.forEach((p, i) => {
+    if (!Number.isInteger(p) || (p as number) <= 0) errors.push(`quarters.prices[${i}]: whole euros expected`);
+    else if (i > 0 && (p as number) <= (prices[i - 1] as number)) errors.push(`quarters.prices[${i}]: each quarter costs more than the one before`);
+  });
+  if (!Number.isInteger(q?.unlockAt) || (q!.unlockAt as number) < 0) errors.push('quarters.unlockAt: whole number ≥ 0 expected');
+  if (errors.length) throw new Error(`${where}: ${errors.join('; ')}`);
+  return { prices: prices as number[], unlockAt: q!.unlockAt as number };
+}
+
+/** What the next quarter costs, or null once all three are bought. */
+export const quarterPrice = (offer: QuarterOffer, bought: readonly number[]): number | null => offer.prices[bought.length] ?? null;
+
+/** What the shop shows for one quarter for sale. */
+export function quarterStatus(offer: QuarterOffer, owned: readonly string[], bought: readonly number[], q: number): ShopStatus {
+  if (bought.includes(q)) return { kind: 'owned' };
+  return owned.length >= offer.unlockAt ? { kind: 'open' } : { kind: 'locked', needs: offer.unlockAt };
 }
 
 /** Happiness of the town (0–100) from what was bought. */

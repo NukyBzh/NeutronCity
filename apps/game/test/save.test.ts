@@ -17,9 +17,21 @@ describe('progress saved on the device', () => {
 
   it('comes back as it was saved', () => {
     const s = memory();
-    const p = { version: 1 as const, wallet: 3120, owned: ['parc'], stars: { ete: 3, printemps: 1 }, lastDay: 'printemps', tuto: true, seen: ['storm'], places: { parc: [9, 6] as [number, number] } };
+    const p = { version: 1 as const, wallet: 3120, owned: ['parc'], stars: { ete: 3, printemps: 1 }, lastDay: 'printemps', tuto: true, seen: ['storm'], places: { parc: [9, 6] as [number, number] }, quarters: [0, 2] };
     saveProgress(p, s);
     expect(loadProgress(s)).toEqual(p);
+  });
+
+  it('keeps the quarters for sale bought, and drops what is not one (lot L10.6b3)', () => {
+    const s = memory();
+    // Progress saved before this lot: no quarter, the town keeps its 30 lots.
+    s.setItem('neutron-city.progress', JSON.stringify({ version: 1, wallet: 0, owned: ['parc'], stars: {}, lastDay: null }));
+    expect(loadProgress(s).quarters).toEqual([]);
+    // Each quarter once, in order; anything that is not a quarter of the town goes.
+    s.setItem('neutron-city.progress', JSON.stringify({ ...EMPTY, quarters: [2, 0, 2, 3, -1, 1.5, 'x', null] }));
+    expect(loadProgress(s).quarters).toEqual([0, 2]);
+    s.setItem('neutron-city.progress', JSON.stringify({ ...EMPTY, quarters: 'tout' }));
+    expect(loadProgress(s).quarters).toEqual([]);
   });
 
   it('starts fresh when nothing is saved, when the data is broken, or after « Nouveau joueur »', () => {

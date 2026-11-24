@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   BASE_HAPPINESS, DAY_MINUTES, NO_MODS, START_HOUR, baseId, copiesOf, dayBonus, dayEffects, dayResult, demandAt, drawSurprises, effectsAt,
-  eventMods, heatOpen, hourOf, momentWeight, nextCopyId, nextDiscovery, priceOf, shopStatus, simulate, townHappiness, validateShop,
+  QUARTERS, eventMods, heatOpen, hourOf, momentWeight, nextCopyId, nextDiscovery, priceOf, quarterPrice, quarterStatus, shopStatus,
+  simulate, townHappiness, validateQuarters, validateShop,
   welcomeGift, type DayDef, type EventMods, type GameState, type ShopItem,
 } from '../src/index';
-import { DAYS, SHOP, TEXTS } from './content';
+import { DAYS, OFFER, SHOP, TEXTS } from './content';
 
 const SEEDS = 200;
 const ids = (items: readonly ShopItem[]) => items.map((i) => i.id);
@@ -147,6 +148,47 @@ describe('effects of the buildings on demand (E2)', () => {
         for (const seed of [1, 2, 3, 4, 5]) expect(dayResult(day, simulate(day, seed, ahead(day), effects, NO_MODS, true)).stars).toBe(3);
       });
     });
+});
+
+describe('the three quarters for sale (lot L10.6b3, R2-07)', () => {
+  const full = Array.from({ length: OFFER.unlockAt }, (_, i) => `b${i}`);
+
+  it('content/shop names a price for each quarter, each one dearer than the one before', () => {
+    expect(OFFER.prices).toHaveLength(QUARTERS);
+    expect([...OFFER.prices].sort((a, b) => a - b)).toEqual([...OFFER.prices]);
+    for (const p of OFFER.prices) expect(Number.isInteger(p) && p > 0, String(p)).toBe(true);
+    // The quarters come when the town is nearly full: 24 buildings of the 30 lots of the start.
+    expect(OFFER.unlockAt).toBeGreaterThan(18);
+    expect(OFFER.unlockAt).toBeLessThan(30);
+  });
+
+  it('refuses a shop whose quarters are missing, too few or not dearer each time', () => {
+    const ok = { quarters: { prices: [1000, 2000, 3000], unlockAt: 4 } };
+    expect(validateQuarters(ok)).toEqual({ prices: [1000, 2000, 3000], unlockAt: 4 });
+    expect(() => validateQuarters({})).toThrow(/prices/);
+    expect(() => validateQuarters({ quarters: { prices: [1000, 2000], unlockAt: 4 } })).toThrow(/prices/);
+    expect(() => validateQuarters({ quarters: { prices: [1000, 900, 3000], unlockAt: 4 } })).toThrow(/costs more/);
+    expect(() => validateQuarters({ quarters: { prices: [1000, 2000, 3000] } })).toThrow(/unlockAt/);
+    expect(() => validateQuarters({ quarters: { prices: [1000, 2000, 0], unlockAt: 4 } })).toThrow(/euros/);
+  });
+
+  it('the price is the one of the next quarter, whichever one the child picks', () => {
+    expect(quarterPrice(OFFER, [])).toBe(OFFER.prices[0]);
+    expect(quarterPrice(OFFER, [2])).toBe(OFFER.prices[1]);
+    expect(quarterPrice(OFFER, [2, 0])).toBe(OFFER.prices[2]);
+    // All three bought: there is nothing left to sell.
+    expect(quarterPrice(OFFER, [0, 1, 2])).toBeNull();
+  });
+
+  it('a quarter opens with the size of the town, and shows as bought afterwards', () => {
+    const nearly = full.slice(0, OFFER.unlockAt - 1);
+    for (let q = 0; q < QUARTERS; q++) {
+      expect(quarterStatus(OFFER, nearly, [], q), `${q} trop tôt`).toEqual({ kind: 'locked', needs: OFFER.unlockAt });
+      expect(quarterStatus(OFFER, full, [], q), `${q} ouvert`).toEqual({ kind: 'open' });
+    }
+    expect(quarterStatus(OFFER, full, [1], 1)).toEqual({ kind: 'owned' });
+    expect(quarterStatus(OFFER, full, [1], 0)).toEqual({ kind: 'open' });
+  });
 });
 
 describe('buildings bought several times (lot L10.6, R2-06)', () => {

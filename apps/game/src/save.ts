@@ -2,6 +2,8 @@
  * Progress kept on the device only (no account, no network, no personal data): euros, upgrades bought, best stars
  * per day and the last day played. Stored as a versioned object so a later version can migrate it.
  */
+import { QUARTERS } from '@neutron/engine';
+
 export interface Progress {
   version: 1;
   wallet: number;
@@ -14,10 +16,12 @@ export interface Progress {
   seen: string[];
   /** Lot chosen for each building, column and row (lot L9.4); absent in progress saved before: default plots. */
   places?: Record<string, [number, number]>;
+  /** Quarters for sale bought (lot L10.6b3); absent in progress saved before: none, the town keeps its 30 lots. */
+  quarters?: number[];
 }
 
 const KEY = 'neutron-city.progress';
-export const EMPTY: Progress = { version: 1, wallet: 0, owned: [], stars: {}, lastDay: null, tuto: false, seen: [], places: {} };
+export const EMPTY: Progress = { version: 1, wallet: 0, owned: [], stars: {}, lastDay: null, tuto: false, seen: [], places: {}, quarters: [] };
 
 /** Reads the saved progress; anything missing or unreadable gives a fresh start. */
 export function loadProgress(storage: Pick<Storage, 'getItem'> | undefined = globalThis.localStorage): Progress {
@@ -37,6 +41,7 @@ export function loadProgress(storage: Pick<Storage, 'getItem'> | undefined = glo
       tuto: typeof p.tuto === 'boolean' ? p.tuto : Object.keys(stars).length > 0,
       seen: Array.isArray(p.seen) ? p.seen.filter((x): x is string => typeof x === 'string') : [],
       places: readPlaces(p.places),
+      quarters: readQuarters(p.quarters),
     };
   } catch {
     return { ...EMPTY };
@@ -51,6 +56,13 @@ function readPlaces(raw: unknown): Record<string, [number, number]> {
     if (Array.isArray(v) && v.length === 2 && v.every((n) => Number.isInteger(n))) out[id] = [v[0] as number, v[1] as number];
   }
   return out;
+}
+
+/** Keeps only whole quarter numbers the town really has, each once, in order. */
+function readQuarters(raw: unknown): number[] {
+  if (!Array.isArray(raw)) return [];
+  const out = raw.filter((q): q is number => Number.isInteger(q) && q >= 0 && q < QUARTERS);
+  return [...new Set(out)].sort((a, b) => a - b);
 }
 
 export function saveProgress(p: Progress, storage: Pick<Storage, 'setItem'> | undefined = globalThis.localStorage): void {

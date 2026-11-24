@@ -67,7 +67,14 @@ shop.joy: Bonheur des habitants
 shop.owned: Dans ta ville
 # Lot L10.6 : un bâtiment qu'on peut racheter montre combien tu en as déjà.
 shop.copies: "Tu en as {n}"
-shop.noLot: Plus de terrain libre
+shop.noLot: "Plus de terrain libre : agrandis ta ville"
+# Lot L10.6b3 : les trois quartiers à vendre, au-delà de la nouvelle rue.
+shop.quarters: Agrandir la ville
+shop.say.grow: Ta ville est pleine ! Achète un **nouveau quartier** pour continuer.
+shop.quarter.0: Le quartier de gauche
+shop.quarter.1: Le quartier du milieu
+shop.quarter.2: Le quartier de droite
+shop.quarter.effect: 6 terrains de plus pour construire
 shop.fontaine: Une fontaine
 shop.parc: Un parc
 shop.piste: Une piste cyclable

@@ -33,6 +33,7 @@ describe('texts (content/i18n/fr.yaml, content/dialogues/fr.yaml)', () => {
     const built = [
       ...['ete', 'printemps', 'hiver'].flatMap((d) => [`day.${d}.title`, `day.${d}.level`]),
       ...['fontaine', 'parc', 'piste', 'eclairage', 'ecole'].map((s) => `shop.${s}`),
+      ...[0, 1, 2].map((q) => `shop.quarter.${q}`),
       ...['elec', 'heat'].flatMap((o) => [`jeu.indice.${o}.monter`, `jeu.indice.${o}.baisser`]),
       'gauge.bien', 'gauge.presque', 'gauge.loin', 'bilan.bravo', 'bilan.soir', 'bilan.chaleur', 'bilan.anticiper',
     ];

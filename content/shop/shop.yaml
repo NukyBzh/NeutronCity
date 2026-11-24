@@ -43,3 +43,12 @@ items:
   - { id: hotel, price: 11200, joy: 4, bonus: 700, unlockAt: 18, effects: [{ out: elec, add: 2, when: toujours }] }
   - { id: mairie, price: 10600, joy: 5, bonus: 500, unlockAt: 18, party: 3 }
   - { id: caserne, price: 11400, joy: 4, bonus: 550, unlockAt: 18, repair: 0.5, effects: [{ out: elec, add: 1, when: toujours }] }
+
+# Lot L10.6b3 (R2-07) : les trois quartiers à vendre, au-delà de la nouvelle rue. Un quartier n'est pas un bâtiment :
+# il n'apporte ni bonheur ni bonus, il ouvre 6 terrains de plus. Les trois sont pareils, donc le prix ne tient pas au
+# quartier choisi mais au rang de l'achat : 2, 3 puis 5 journées de bonus d'une ville complète (9 810 € par journée à
+# 3 étoiles, docs/EQUILIBRAGE.md). À confirmer avec l'outil d'équilibrage (lot L10.6c).
+# unlockAt : les quartiers s'ouvrent quand la ville compte 24 bâtiments, soit 6 terrains encore libres sur les 30.
+quarters:
+  prices: [20000, 30000, 50000]
+  unlockAt: 24

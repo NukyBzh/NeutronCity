@@ -480,6 +480,9 @@ svg .pop, svg .float { transform-box: fill-box; transform-origin: center; }
 .shop-item .shop-effect { font-size: 0.95rem; margin: 0; }
 .shop-item .shop-bonus { display: inline-flex; align-items: center; gap: 0.3rem; font-weight: 800; color: var(--bien-fonce); margin: 0; font-size: 0.95rem; }
 .shop-item .shop-lock { display: inline-flex; align-items: center; gap: 0.3rem; color: #3B4A6B; font-weight: 700; margin: 0; }
+/* Lot L10.6b3: the quarters for sale have their own heading at the end of the shop, across the whole grid. */
+.shop-section { grid-column: 1 / -1; font-size: 1.15rem; font-weight: 800; color: var(--bleu); margin: 0.7rem 0 0; }
+.shop-quarter img { object-fit: contain; }
 .shop-item.shop-later, .shop-item.shop-locked { background: #F1F3F8; border-style: dashed; }
 .shop-item.shop-later img, .shop-item.shop-locked img { filter: grayscale(1); opacity: 0.55; }
 .shop-item.shop-open { border-width: 0.2rem; border-color: var(--bleu); }
