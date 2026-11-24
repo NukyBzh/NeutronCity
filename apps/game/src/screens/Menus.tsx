@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { copiesOf, nextDiscovery, ownedItems, priceOf, shopStatus, townHappiness, type Advice, type ShopItem, type ShopStatus } from '@neutron/engine';
+import { baseId, copiesOf, nextDiscovery, ownedItems, priceOf, shopStatus, townHappiness, type Advice, type ShopItem, type ShopStatus } from '@neutron/engine';
 import { HOME_BACKGROUND, shopUrl } from '../assets';
 import { euros, t } from '../i18n';
 import { IsoCity } from '../play/IsoCity';
@@ -109,14 +109,14 @@ export function Days({ cards, onPick, onHome }: { cards: DayCard[]; onPick: (id:
 }
 
 /** End of the day: euros, stars (pictograms) and the one piece of advice chosen by the engine. */
-export function Summary({ earned, bonus = 0, townBonus = bonus, gift = 0, stars, advice, season, upgrades, places, onShop, onAgain, onDays }: {
-  earned: number; bonus?: number; townBonus?: number; gift?: number; places?: Places; stars: number; advice: Advice; season: string; upgrades: readonly string[]; onShop: () => void; onAgain: () => void; onDays: () => void;
+export function Summary({ earned, bonus = 0, townBonus = bonus, gift = 0, stars, advice, season, upgrades, places, quarters = [], onShop, onAgain, onDays }: {
+  earned: number; bonus?: number; townBonus?: number; gift?: number; places?: Places; quarters?: readonly number[]; stars: number; advice: Advice; season: string; upgrades: readonly string[]; onShop: () => void; onAgain: () => void; onDays: () => void;
 }) {
   // A short jingle when the day ends (lot L5).
   useEffect(() => sound.play('jingle'), []);
   return (
     <main className="screen summary">
-      <div className="town-panel"><IsoCity view="full" hour={21.5} season={season} mood={stars >= 2 ? 'content' : 'calme'} elecOn heatOn={season !== 'ete'} upgrades={upgrades} places={places} /></div>
+      <div className="town-panel"><IsoCity view="full" hour={21.5} season={season} mood={stars >= 2 ? 'content' : 'calme'} elecOn heatOn={season !== 'ete'} upgrades={upgrades} places={places} quarters={quarters} /></div>
       <div className="summary-card panel">
         <h1>{t('summary.title')}</h1>
         <Stars count={stars} size={4} />
@@ -164,11 +164,11 @@ const ORDER: Record<ShopStatus['kind'], number> = { open: 0, owned: 1, later: 2,
  * demand a little. Discovery phase: one building offered at a time, presented by Cassandra; then the others open as
  * the town grows. Buildings to come stay visible, greyed, so the child sees what is next.
  */
-export function Shop({ items, wallet, owned, fresh = null, season, places, placing = null, spots = [], onPlace, onBuy, onBack, onPlay }: {
+export function Shop({ items, wallet, owned, fresh = null, season, places, quarters = [], placing = null, spots = [], onPlace, onBuy, onBack, onPlay }: {
   items: readonly ShopItem[]; wallet: number; owned: readonly string[]; fresh?: string | null; season: string; onBuy: (item: ShopItem) => void; onBack: () => void;
   onPlay: () => void;
   /** Lot L9.4: lots of the buildings, the building waiting for its lot, the free lots and the child's choice. */
-  places?: Places; placing?: string | null; spots?: readonly (readonly [number, number])[]; onPlace?: (c: number, r: number) => void;
+  places?: Places; quarters?: readonly number[]; placing?: string | null; spots?: readonly (readonly [number, number])[]; onPlace?: (c: number, r: number) => void;
 }) {
   const happiness = townHappiness(items, owned);
   const next = nextDiscovery(items, owned);
@@ -176,7 +176,7 @@ export function Shop({ items, wallet, owned, fresh = null, season, places, placi
   // Every building counts, a second small house included (lot L10.6).
   const count = ownedItems(items, owned).length;
   /** Lots still free: a building that needs one cannot be bought when the town is full (lot L10.6). */
-  const free = freeLots(places ?? {}).length;
+  const free = freeLots(places ?? {}, quarters).length;
   const rows = items.map((item) => ({ item, status: shopStatus(items, owned, item) })).sort((a, b) => ORDER[a.status.kind] - ORDER[b.status.kind]);
   const line = placing ? 'shop.place' : next ? (wallet >= next.price ? `shop.discover.${next.id}` : 'shop.say.wait') : 'shop.say.free';
   const affordable = rows.some(({ item, status }) => status.kind === 'open' && wallet >= priceOf(item, owned));
@@ -191,9 +191,9 @@ export function Shop({ items, wallet, owned, fresh = null, season, places, placi
       </header>
       <div className="shop-body">
       <div className={`town-panel${placing ? ' placing' : ''}`}><IsoCity view="full" hour={13} season={season} mood="content" elecOn heatOn={season !== 'ete'} upgrades={owned} fresh={fresh}
-        places={places} spots={placing ? spots : undefined} onSpot={onPlace} spotLabel={placing ? t('shop.placeHere', { name: t(`shop.${placing}`) }) : undefined} />
+        places={places} quarters={quarters} spots={placing ? spots : undefined} onSpot={onPlace} spotLabel={placing ? t('shop.placeHere', { name: t(`shop.${baseId(placing)}`) }) : undefined} />
         {placing ? (
-          <p className="shop-news shop-placing" role="status"><img src={shopUrl(placing)} alt="" aria-hidden /><span><b>{t('shop.placeTitle')}</b>{t('shop.placeHint')}</span></p>
+          <p className="shop-news shop-placing" role="status"><img src={shopUrl(baseId(placing))} alt="" aria-hidden /><span><b>{t('shop.placeTitle')}</b>{t('shop.placeHint')}</span></p>
         ) : fresh ? (
           <p className="shop-news" role="status"><img src={shopUrl(fresh)} alt="" aria-hidden /><span><b>{t('shop.new')}</b>{t(`shop.where.${fresh}`)}</span></p>
         ) : null}

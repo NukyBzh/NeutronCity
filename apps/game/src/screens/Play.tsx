@@ -105,7 +105,7 @@ export const SPEEDS = [1, 2, 4] as const;
 export type Speed = (typeof SPEEDS)[number];
 
 export function Play({
-  day, seed, upgrades, places, effects = [], mods = NO_MODS, seen = [], onSeen, speed, onSpeed, onFinish, onRestart, onHome, tutorial = false, onTutorialDone, onRecord,
+  day, seed, upgrades, places, quarters = [], effects = [], mods = NO_MODS, seen = [], onSeen, speed, onSpeed, onFinish, onRestart, onHome, tutorial = false, onTutorialDone, onRecord,
 }: {
   day: DayDef;
   /** Effects of the buildings bought on this day's demand (lot L6). */
@@ -119,6 +119,8 @@ export function Play({
   upgrades: readonly string[];
   /** Lot of each building (lot L9.4). */
   places?: Places;
+  /** Quarters for sale the child has bought (lot L10.6b). */
+  quarters?: readonly number[];
   speed: Speed;
   onSpeed: (s: Speed) => void;
   onFinish: (game: GameState, stats: PlayStats) => void;
@@ -422,6 +424,7 @@ export function Play({
           heatOn={heatDay && g.plant.heat > 0}
           upgrades={upgrades}
           places={places}
+          quarters={quarters}
           scene={scene}
           weather={weather}
         />

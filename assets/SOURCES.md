@@ -111,7 +111,8 @@ du fond sur le bord de l'image, se trompait ; le magenta a été enlevé explici
 | `ville/givre.webp` | `asset_90_*.png.jpg` | cadre de givre sur le pourtour (vague de froid) | magenta | 151 Ko |
 | `ville/ouvrier.webp` | `asset_91_*.png.jpg` | ouvrier qui calorifuge le tuyau (après la vanne fermée) | vert | 20 Ko |
 | `ville/eclair.webp` | `asset_92_*.png.jpg` | éclair de la tempête | magenta | 13 Ko |
-| `ville/nuage-orage.webp` | `asset_93_*.png.jpg` | nuages sombres au-dessus de la ville (tempête) | magenta | 11 Ko |
+| `ville/nuage-orage.webp` | `asset_93_*.png.jpg` | nuages sombres au-dessus de la ville (tempête) | magenta | 11 Ko |
+| `ville/panneau-a-vendre.webp` | `asset_94_panneau_a_vendre.png.jpg` | panneau « À VENDRE » planté sur chaque quartier à vendre (lot L10.6b2) | vert | 10 Ko |
 
 Pluie, air qui ondule, voiles de couleur, soleil du redoux et fenêtres allumées du pic restent faits en code
 (`apps/game/src/play/iso/weather.ts`, `WeatherLayer.tsx`), sans image.

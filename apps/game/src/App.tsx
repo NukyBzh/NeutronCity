@@ -25,6 +25,8 @@ const START_DAY = dayById(PARAMS.get('journee') ?? '') ?? DAYS[0]!;
 const START_OWNED = (PARAMS.get('achats') ?? '').split(',').filter(Boolean);
 /** Review: `&nouveau=fontaine` shows the shop just after buying that upgrade. */
 const START_FRESH = PARAMS.get('nouveau');
+/** Review: `&quartiers=0,2` shows the town with those quarters for sale already bought (lot L10.6b). */
+const START_QUARTERS = (PARAMS.get('quartiers') ?? '').split(',').filter(Boolean).map(Number);
 /** Review: `&placer=ferme` shows the shop while that upgrade (in `achats`) waits for its lot (lot L9.4). */
 const START_PLACING = PARAMS.get('placer');
 const FIXED_SEED = PARAMS.has('graine') ? Number(PARAMS.get('graine')) >>> 0 : null;
@@ -49,7 +51,7 @@ export function App() {
   const [wallet, setWallet] = useState(SAVED.wallet);
   const [owned, setOwned] = useState<string[]>(SAVED.owned);
   // Lot of each building (lot L9.4): chosen by the child; progress saved before gets the default plots.
-  const [places, setPlaces] = useState<Places>(() => settle(SAVED.owned, SAVED.places ?? {}, START_PLACING));
+  const [places, setPlaces] = useState<Places>(() => settle(SAVED.owned, SAVED.places ?? {}, START_PLACING, START_QUARTERS));
   // Building just bought that waits for its lot: the shop asks the child where to build it.
   const [placing, setPlacing] = useState<string | null>(START_PLACING);
   const [last, setLast] = useState<DayResult>({ euros: 0, max: 0, stars: 1, advice: 'anticiper' });
@@ -142,12 +144,12 @@ export function App() {
       return <Days cards={cards} onPick={startDay} onHome={() => setScreen('home')} />;
     case 'play':
       return (
-        <Play key={round} day={day} seed={seed} upgrades={owned} effects={dayEffects(day, SHOP, owned)} places={places} mods={eventMods(SHOP, owned, quarterOf(places))}
+        <Play key={round} day={day} seed={seed} upgrades={owned} effects={dayEffects(day, SHOP, owned)} places={places} quarters={START_QUARTERS} mods={eventMods(SHOP, owned, quarterOf(places))}
           seen={seen} onSeen={(k) => setSeen((s) => (s.includes(k) ? s : [...s, k]))} speed={speed} onSpeed={setSpeed} onFinish={finish} onRestart={() => startDay(day.id)}
           onHome={() => setScreen('home')} tutorial={!tutoSeen || tutoAsked} onTutorialDone={() => { setTutoSeen(true); setTutoAsked(false); }} onRecord={logGame} />
       );
     case 'summary':
-      return <Summary earned={last.euros} bonus={lastBonus} gift={lastGift} townBonus={townBonus} stars={last.stars} advice={last.advice} season={day.id} upgrades={owned} places={places} onShop={() => setScreen('shop')} onAgain={() => startDay(day.id)} onDays={() => setScreen('days')} />;
+      return <Summary earned={last.euros} bonus={lastBonus} gift={lastGift} townBonus={townBonus} stars={last.stars} advice={last.advice} season={day.id} upgrades={owned} places={places} quarters={START_QUARTERS} onShop={() => setScreen('shop')} onAgain={() => startDay(day.id)} onDays={() => setScreen('days')} />;
     case 'shop': {
       // Leaving the shop before choosing a lot puts the building on the first free lot (never lost).
       const leave = (to: Screen) => {
@@ -157,8 +159,8 @@ export function App() {
         setScreen(to);
       };
       return (
-        <Shop items={SHOP} wallet={wallet} owned={owned} fresh={fresh} season={day.id} places={places}
-          placing={placing} spots={placing ? freeLots(places) : []}
+        <Shop items={SHOP} wallet={wallet} owned={owned} fresh={fresh} season={day.id} places={places} quarters={START_QUARTERS}
+          placing={placing} spots={placing ? freeLots(places, START_QUARTERS) : []}
           onPlace={(c, r) => {
             if (!placing) return;
             setPlaces((p) => ({ ...p, [placing]: [c, r] }));

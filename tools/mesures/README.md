@@ -14,3 +14,7 @@ Repères du 2026-11-08 (v0.6.0, ralenti 3 fois) : jour 85 à 150 images/s ; cré
    Le service worker de la version web est contourné : on mesure ce qui vient d'être construit.
 5. Ergonomie (lot L8.3) : `node tools/mesures/ergonomie.mjs 9333 http://localhost:5181/ docs/ERGONOMIE.md` : boutons et
    textes trop petits (cibles D-23), écran par écran, aux 8 formats des appareils visés.
+6. Captures d'écran (lot L10.6b2) : `node tools/mesures/capture.mjs 9333 1280 800 docs/maquettes/x.png "<adresse>"`.
+   À utiliser à la place de `msedge --screenshot --virtual-time-budget`, qui fait défiler le temps du jeu et
+   photographie des calques de ville peints pour une autre taille : la ville sort alors en double, la seconde un peu
+   plus petite et décalée (vu pendant la relecture du lot L10.6b).

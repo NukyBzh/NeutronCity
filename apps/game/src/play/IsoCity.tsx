@@ -35,6 +35,8 @@ export interface IsoCityProps {
   weather?: Weather;
   /** Lot of each building (lot L9.4). */
   places?: Places;
+  /** Quarters for sale the child has bought (lot L10.6b): the others keep their sign. */
+  quarters?: readonly number[];
   /** Free lots to touch while a building waits for its lot (lot L9.4), what touching one does, and its label. */
   spots?: readonly (readonly [number, number])[];
   onSpot?: (c: number, r: number) => void;
@@ -134,12 +136,13 @@ export const IsoCity = memo(function IsoCity(p: IsoCityProps) {
   const upgradesKey = p.upgrades.join(',');
   const sceneKey = JSON.stringify(p.scene ?? {});
   const placesKey = p.places ? JSON.stringify(p.places) : '';
+  const quartersKey = (p.quarters ?? []).join(',');
   const light = lightKey(p.hour);
   const layers = useMemo(
-    () => drawTownLayers({ hour: p.hour, season: seasonOf(p.season), mood: p.mood, elecOn: p.elecOn, heatOn: p.heatOn, upgrades: upgradesKey ? upgradesKey.split(',') : [], fresh: p.fresh ?? null, images: images ?? undefined, scene: JSON.parse(sceneKey) as TownScene, places: placesKey ? JSON.parse(placesKey) as Places : undefined }, p.view),
+    () => drawTownLayers({ hour: p.hour, season: seasonOf(p.season), mood: p.mood, elecOn: p.elecOn, heatOn: p.heatOn, upgrades: upgradesKey ? upgradesKey.split(',') : [], fresh: p.fresh ?? null, images: images ?? undefined, scene: JSON.parse(sceneKey) as TownScene, places: placesKey ? JSON.parse(placesKey) as Places : undefined, quarters: quartersKey ? quartersKey.split(',').map(Number) : [] }, p.view),
     // The hour only matters through the light (night and sunset levels).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [light, p.season, p.mood, p.elecOn, p.heatOn, upgradesKey, p.fresh, p.view, images, sceneKey, placesKey],
+    [light, p.season, p.mood, p.elecOn, p.heatOn, upgradesKey, p.fresh, p.view, images, sceneKey, placesKey, quartersKey],
   );
   // Each moving layer has its own phase, changed only when that layer's drawing changes (React then creates new
   // elements, whose animations must go on where the old ones were, R1-02). A layer whose drawing is the same keeps its

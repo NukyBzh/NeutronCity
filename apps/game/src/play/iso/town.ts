@@ -41,6 +41,11 @@ export interface TownOptions {
   images?: Readonly<Record<string, TownImage>>;
   /** What the day's events show in the town (lot L7.1). */
   scene?: TownScene;
+  /**
+   * Quarters for sale the child has bought (lot L10.6b, R2-07). The others keep their « À vendre » sign and no
+   * building stands on them. Absent: none bought, the town stops at its first 30 lots.
+   */
+  quarters?: readonly number[];
 }
 
 /** Events seen in the town: a dark quarter, the repair truck, a heat leak, a family arriving, a class visiting. */
@@ -88,16 +93,39 @@ const f1 = (v: number): string => v.toFixed(1);
 const TILE_W = 2 * T * 0.866 * S;
 
 export const COLS = [-2, 10] as const;
-export const ROWS = [0, 10] as const;
+/**
+ * Rows 0 to 10 are the town of the first 30 lots. Beyond the new street (row 11) lie the three quarters for sale
+ * on the countryside (lot L10.6b, R2-07): QUARTER_ROWS says how deep each one is. A quarter for sale grows one of
+ * the three quarters of the town straight outwards and keeps its columns, so the engine still knows only three
+ * quarters (QUARTERS = 3): a power cut darkens the same share of the town, and the hospital still guards the one
+ * it stands in. Three rows make 6 lots a quarter (R2-07); two rows would make 4, the depth of the other blocks.
+ */
+export const SALE_STREET = 11;
+export const QUARTER_ROWS: readonly number[] = [12, 13, 14];
+export const ROWS = [0, QUARTER_ROWS[QUARTER_ROWS.length - 1]!] as const;
 const PLANT_COLS = [0, 1];
 const isRoadCol = (c: number): boolean => c >= 2 && (c - 2) % 3 === 0;
-const isRoadRow = (r: number): boolean => r >= 2 && (r - 2) % 3 === 0;
+const isRoadRow = (r: number): boolean => r >= 2 && r <= SALE_STREET && (r - 2) % 3 === 0;
+/** The 6 lots of a quarter for sale (lot L10.6b): its columns are those of the town quarter it grows. */
+export const saleLots = (q: number): (readonly [number, number])[] =>
+  (QUARTER_COLS[q] ?? []).flatMap((c) => QUARTER_ROWS.map((r) => [c, r] as const));
+/** Every lot for sale, all three quarters together. */
+export const SALE_LOTS: readonly (readonly [number, number])[] = QUARTER_COLS.flatMap((_, q) => saleLots(q));
+const SALE_SET = new Set(SALE_LOTS.map(([c, r]) => `${c},${r}`));
+export const isSaleLot = (c: number, r: number): boolean => SALE_SET.has(`${c},${r}`);
+/** Which quarter for sale a lot belongs to, or null. */
+export const saleQuarterOf = (c: number, r: number): number | null => {
+  if (!isSaleLot(c, r)) return null;
+  const q = QUARTER_COLS.findIndex((cols) => cols.includes(c));
+  return q >= 0 ? q : null;
+};
+
 /** Lots of the town: not river, not plant, not road. */
 export const isLot = (c: number, r: number): boolean => c >= 3 && !isRoadCol(c) && !isRoadRow(r);
 
 /** Band of the play screen: from the river and the plant (left) to the streets (right). */
 export const BAND_VIEWBOX = '-170 204 1620 432';
-export const FULL_VIEWBOX = '-360 -170 1960 1300';
+export const FULL_VIEWBOX = '-400 -170 2000 1470';
 
 /**
  * Plot of each shop building (lot L6.2): tile (c, r) and width of the picture as a share of a tile. A grass tile until
@@ -117,12 +145,15 @@ export const PLOTS: Readonly<Record<string, { c: number; r: number; size: number
   'usine-cereales': { c: 7, r: 0, size: 1 },
   'maison-medicale': { c: 7, r: 3, size: 0.72 },
   batterie: { c: 3, r: 6, size: 0.8 },
-  parc: { c: 4, r: 6, size: 1 },
+  // The park and the swimming pool are grounds, not buildings: their picture is a whole tile, so a size of 0.87
+  // (× 1.15 of the full view) lays the grass exactly on its own tile and no longer under the fountain (lot L10.6b2).
+  parc: { c: 4, r: 6, size: 0.87 },
   piscine: { c: 6, r: 1, size: 1 },
-  solaire: { c: 7, r: 1, size: 0.95 },
+  // The panels are a low field, not a building: smaller than the houses around them (lot L10.6b2).
+  solaire: { c: 7, r: 1, size: 0.7 },
   hopital: { c: 7, r: 4, size: 1.05 },
   cuve: { c: 3, r: 7, size: 0.6 },
-  fontaine: { c: 4, r: 7, size: 0.62 },
+  fontaine: { c: 4, r: 7, size: 0.55 },
   // Lot L10.6 (R2-06) : les six bâtiments qui s'ouvrent quand les 18 premiers sont achetés. Leurs terrains par défaut
   // sont libres ; l'enfant choisit où les poser (L9.4), et un exemplaire de plus prend un autre terrain libre.
   'petite-maison': { c: 3, r: 1, size: 0.85 },
@@ -202,22 +233,28 @@ export const BUILD_LOTS: readonly (readonly [number, number])[] = (() => {
 const BUILD_SET = new Set(BUILD_LOTS.map(([c, r]) => `${c},${r}`));
 export const isBuildLot = (c: number, r: number): boolean => BUILD_SET.has(`${c},${r}`);
 
+/** Where the child may build: the 30 lawns of the start, plus the lots of the quarters bought (lot L10.6b). */
+export const lotsOpen = (quarters: readonly number[] = []): readonly (readonly [number, number])[] =>
+  (quarters.length ? [...BUILD_LOTS, ...quarters.flatMap((q) => saleLots(q))] : BUILD_LOTS);
+
 /** Lots still free for a new building. */
-export function freeLots(places: Places): (readonly [number, number])[] {
+export function freeLots(places: Places, quarters: readonly number[] = []): (readonly [number, number])[] {
   const used = new Set(Object.values(places).map(([c, r]) => `${c},${r}`));
-  return BUILD_LOTS.filter(([c, r]) => !used.has(`${c},${r}`));
+  return lotsOpen(quarters).filter(([c, r]) => !used.has(`${c},${r}`));
 }
 
 /**
  * Gives every building bought a lot (lot L9.4): its own lot if it is a free building lot, else its default plot (progress
  * saved before L9.4, review addresses) if free, else the first free lot. `pending` (being placed) gets none.
  */
-export function settle(owned: readonly string[], places: Places, pending: string | null = null): Places {
+export function settle(owned: readonly string[], places: Places, pending: string | null = null, quarters: readonly number[] = []): Places {
   const out: Record<string, readonly [number, number]> = {};
   const used = new Set<string>();
+  const open = lotsOpen(quarters);
+  const isOpen = (c: number, r: number): boolean => open.some(([oc, or]) => oc === c && or === r);
   const take = (id: string, at: readonly [number, number]): boolean => {
     const k = `${at[0]},${at[1]}`;
-    if (!isBuildLot(at[0], at[1]) || used.has(k)) return false;
+    if (!isOpen(at[0], at[1]) || used.has(k)) return false;
     used.add(k);
     out[id] = [at[0], at[1]];
     return true;
@@ -226,7 +263,7 @@ export function settle(owned: readonly string[], places: Places, pending: string
   const left = todo.filter((id) => !(places[id] && take(id, places[id]!)));
   const still = left.filter((id) => !take(id, [PLOTS[baseId(id)]!.c, PLOTS[baseId(id)]!.r]));
   for (const id of still) {
-    const lot = BUILD_LOTS.find(([c, r]) => !used.has(`${c},${r}`));
+    const lot = open.find(([c, r]) => !used.has(`${c},${r}`));
     if (lot) take(id, lot);
   }
   return out;
@@ -246,7 +283,7 @@ const thingAt = (c: number, r: number): Thing | null => {
   const k = PLACES[`${c},${r}`];
   if (k) return k;
   if (PLANT_COLS.includes(c)) return (r === 4 || r === 10) ? 'arbres' : null;
-  if (c < 0 || !isLot(c, r) || isBuildLot(c, r)) return null;
+  if (c < 0 || !isLot(c, r) || isBuildLot(c, r) || isSaleLot(c, r)) return null;
   return FILL[hash(c, r) % FILL.length]!;
 };
 /** Size of each thing as a share of a tile. */
@@ -272,11 +309,14 @@ export const TOWN_IMAGES = [
   'habitant-adulte-dos', 'habitant-enfant-dos', 'famille-dos', 'dame-agee-dos',
   // Events seen in the town (lot L10.4): the party, the squirrel on its pylon, the worker on the pipe.
   'guirlandes', 'foule-fete', 'ecureuil', 'ouvrier',
+  // Quarters for sale (lot L10.6b): the sign planted on a quarter the child has not bought yet.
+  'panneau-a-vendre',
 ] as const;
 
 /**
  * Countryside picture behind the town (1024 px square): centre of its dark green diamond (pixels) and the scale that
- * makes that diamond (541 px high) the town's lots, columns and rows 0 to 10 (1 056 drawing units high).
+ * makes that diamond (541 px high) the town's lots, columns and rows 0 to 10 (1 056 drawing units high). It reaches
+ * far enough to cover the three rows the quarters for sale add at the front (lot L10.6b).
  */
 const BACKDROP = { size: 1024, cx: 525.5, cy: 551.5, scale: (T * 11 * S) / 541 } as const;
 
@@ -514,15 +554,21 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
     if (c < 0) return { id: 'herbe', winter: true };
     if (PLANT_COLS.includes(c)) return r >= 5 && r <= 9 ? { id: 'beton' } : { id: 'herbe', winter: true };
     if (isRoadCol(c) && isRoadRow(r)) return { id: 'carrefour' };
-    if (isRoadCol(c)) return { id: 'route', mirror: true };
-    if (isRoadRow(r)) return o.upgrades.includes('piste') && img.piste ? { id: 'piste' } : { id: 'route' };
+    // The road picture runs along the rows' axis (its carriageway lies between 2.6 and 6.2 of the tile, measured on
+    // route.webp): a road column takes it as it is, a road row takes it mirrored. Mirroring an isometric tile swaps
+    // its two axes, so the lanes of TRAFFIC (0.8 pavement, 3 and 5 carriageway, 7.3 pavement) fall on the painted
+    // carriageway either way. Both flags were the wrong way round until lot L10.6b2, and every street was painted
+    // across itself.
+    if (isRoadCol(c)) return { id: 'route' };
+    if (isRoadRow(r)) return o.upgrades.includes('piste') && img.piste ? { id: 'piste', mirror: true } : { id: 'route', mirror: true };
     const thing = thingAt(c, r);
-    return thing === 'arbres' || thing === 'jeux' || isBuildLot(c, r) || heatPlot(c, r) ? { id: 'herbe', winter: true } : { id: 'beton' };
+    return thing === 'arbres' || thing === 'jeux' || isBuildLot(c, r) || isSaleLot(c, r) || heatPlot(c, r) ? { id: 'herbe', winter: true } : { id: 'beton' };
   };
   for (let s = COLS[0] + ROWS[0]; s <= COLS[1] + ROWS[1]; s++) {
     for (let c: number = COLS[0]; c <= COLS[1]; c++) {
       const r = s - c;
       if (r < ROWS[0] || r > ROWS[1]) continue;
+      if (r > SALE_STREET && c < 3) continue;
       // The strip of grass beyond the river: the countryside picture already has it (lot L9.3).
       if (c < -1 && img['arriere-ville']) continue;
       const t = tileOf(c, r);
@@ -542,6 +588,8 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
   const standing: { c: number; item: Item }[] = [];
   const top: string[] = [];
   const scene = o.scene ?? {};
+  // Quarters for sale already bought (lot L10.6b): the others show their sign and take no building.
+  const bought = o.quarters ?? [];
   const cutCols = scene.cut !== undefined && scene.cut !== null ? QUARTER_COLS[scene.cut] ?? [] : [];
   const darkQuarter = (c: number, r: number): boolean => cutCols.includes(c) || (o.mood === 'noir' && c >= 3 && c - r >= 2);
   const flats = (c: number, r: number): { id: string; filters: string[] } => {
@@ -691,6 +739,14 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
         }
       };
       const plot = builtAt.get(`${c},${r}`);
+      if (!plot && isSaleLot(c, r)) {
+        // Quarter not bought yet (lot L10.6b): the « À vendre » sign stands on its lot nearest the new street.
+        const q = saleQuarterOf(c, r);
+        const sign = q !== null && !bought.includes(q) && c === QUARTER_COLS[q]![0] && r === QUARTER_ROWS[0];
+        if (sign) push('panneau-a-vendre', x + 2, y, 0.3, L());
+        dim();
+        continue;
+      }
       if (!plot && (isBuildLot(c, r) || heatPlot(c, r))) { dim(); continue; }
       if (plot) {
         const box = o.upgrades.includes(plot) && img[pictureOf(plot)] ? pictureBox(plot) : null;
@@ -768,8 +824,10 @@ export function drawTownLayers(o: TownOptions, view: 'band' | 'full'): TownLayer
     }
     if (!items.length) continue;
     const frame = { x: Math.floor(x0 - 4), y: Math.floor(y0 - 4), w: Math.ceil(x1 - x0 + 8), h: Math.ceil(y1 - y0 + 8) };
-    const meets = (b: Box): boolean => b.x < frame.x + frame.w && b.x + b.w > frame.x && b.y < frame.y + frame.h && b.y + b.h > frame.y;
-    const front = standing.filter((s) => s.c > col && meets(s.item.box)).map((s) => s.item);
+    // Every picture to the right of the street, in the order the rows gave them; the frame only cuts what is painted.
+    // Keeping just those that meet the frame left out their neighbours (lot L10.6b2): a picture dropped went under
+    // the one kept, and a picture cut by the edge of the frame showed a seam.
+    const front = standing.filter((s) => s.c > col).map((s) => s.item);
     layers.push({ kind: 'moving', svg: render(items), frame });
     if (front.length) layers.push({ kind: 'still', svg: render(front), frame, over: true });
   }

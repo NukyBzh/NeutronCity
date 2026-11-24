@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
 import { validateShop } from '@neutron/engine';
 import {
-  BAND_VIEWBOX, BUILD_LOTS, FULL_VIEWBOX, HAT, PLACEABLE, PLOTS, TOWN_IMAGES, drawTown, drawTownLayers, freeLots, isBuildLot, isLot,
+  BAND_VIEWBOX, BUILD_LOTS, FULL_VIEWBOX, HAT, PLACEABLE, PLOTS, QUARTER_ROWS, SALE_LOTS, SALE_STREET, TOWN_IMAGES, drawTown, drawTownLayers, freeLots, isBuildLot, isLot, isSaleLot, lotsOpen, saleLots, saleQuarterOf,
   lightKey, pictureOf, quarterOf,
   settle, tileCentre, tileCorners, type Places, type TownImage, type TownOptions,
 } from '../src/play/iso/town';
@@ -102,12 +102,70 @@ describe('the town is made of pictures (lot L6.3)', () => {
       expect(over.frame).toEqual(l.frame);
       expect(over.svg).not.toContain('iso-move');
       // Framed on the street: much smaller than the whole drawing.
-      expect(l.frame!.w * l.frame!.h).toBeLessThan(1960 * 1300 * 0.4);
+      const [, , fw, fh] = FULL_VIEWBOX.split(' ').map(Number) as [number, number, number, number];
+      expect(l.frame!.w * l.frame!.h).toBeLessThan(fw * fh * 0.4);
     }
     // The street by the plant: the plant (to its left, behind) is not drawn again, the town to its right is.
     const byPlant = layers[cross[0]!.k + 1]!.svg;
     expect(byPlant).not.toContain('#p-reacteur"');
     expect(byPlant).toMatch(/#p-(immeuble|maisons|arbre|gare)/);
+  });
+
+  it('each street is painted the way it runs, not across it (lot L10.6b2)', () => {
+    const s = still({ upgrades: [] }, 'full');
+    const d1 = (v: number): string => v.toFixed(1);
+    // tileCorners gives the top, right, bottom and left corner: a tile is placed from its left corner, a mirrored
+    // one from its right corner (negative x scale).
+    const col = tileCorners(5, 3);
+    const row = tileCorners(6, 5);
+    // A road column takes the picture as it is: its carriageway already runs the way the column does.
+    expect(s).toContain(`<use href="#p-route" transform="translate(${d1(col[3]![0])} ${d1(col[0]![1])}) scale(`);
+    expect(s).not.toContain(`<use href="#p-route" transform="translate(${d1(col[1]![0])} ${d1(col[0]![1])}) scale(-`);
+    // A road row takes it mirrored, which swaps the two axes of the tile, so its carriageway turns with the street.
+    expect(s).toContain(`<use href="#p-route" transform="translate(${d1(row[1]![0])} ${d1(row[0]![1])}) scale(-`);
+    expect(s).not.toContain(`<use href="#p-route" transform="translate(${d1(row[3]![0])} ${d1(row[0]![1])}) scale(0`);
+    // The cycle track replaces the road of a row: same way.
+    const piste = still({ upgrades: ['piste'] }, 'full');
+    expect(piste).toContain(`<use href="#p-piste" transform="translate(${d1(row[1]![0])} ${d1(row[0]![1])}) scale(-`);
+  });
+
+  it('nothing far away is drawn over something nearer, the layers of the cross streets included (lot L10.6b2)', () => {
+    const layers = drawTownLayers(opts(), 'full');
+    const ground = ['herbe', 'route', 'carrefour', 'riviere', 'beton', 'piste', 'arriere-ville'];
+    // The hat on the chimney has a box of its own (HAT), not the box of a tile.
+    const painted: { id: string; n: number; x: number; y: number; w: number; h: number; depth: number }[] = [];
+    for (const l of layers) {
+      if (l.kind !== 'still') continue;
+      for (const u of l.svg.matchAll(/<use href="#p-([a-z0-9-]+)" transform="translate\((-?[\d.]+) (-?[\d.]+)\) scale\((-?[\d.]+) ([\d.]+)\)"/g)) {
+        const id = u[1]!;
+        if (ground.includes(id) || id === 'isolation') continue;
+        const kx = Number(u[4]);
+        const w = Math.abs(kx) * 100;
+        const h = Number(u[5]) * 90;
+        const x = Number(u[2]) - (kx < 0 ? w : 0);
+        const y = Number(u[3]);
+        // A picture stands on the centre of its tile: the bottom of its box is that centre, so (y + h − 0.289 w) / 6
+        // gives back x + y of the world point, which says how near the picture is.
+        painted.push({ id, n: painted.length, x, y, w, h, depth: (y + h - 0.289 * w) / 6 });
+      }
+    }
+    expect(painted.length).toBeGreaterThan(60);
+    // A picture drawn again later (over the cars of a cross street) is back on top: only its last painting counts.
+    const last = new Map<string, typeof painted[number]>();
+    for (const b of painted) last.set(`${b.id}@${b.x.toFixed(1)},${b.y.toFixed(1)}`, b);
+    const order = [...last.values()].sort((a, b) => a.n - b.n);
+    const wrong: string[] = [];
+    for (let i = 0; i < order.length; i++) {
+      for (let j = i + 1; j < order.length; j++) {
+        const near = order[i]!;
+        const far = order[j]!;
+        if (near.depth - far.depth <= 0.5) continue;
+        const ox = Math.min(near.x + near.w, far.x + far.w) - Math.max(near.x, far.x);
+        const oy = Math.min(near.y + near.h, far.y + far.h) - Math.max(near.y, far.y);
+        if (ox > 0 && oy > 0 && ox * oy > 600) wrong.push(`${far.id} (loin) par-dessus ${near.id} (près)`);
+      }
+    }
+    expect(wrong).toEqual([]);
   });
 
   it('the cycle track turns the streets into cycle-track tiles', () => {
@@ -209,6 +267,58 @@ describe('the child chooses where to build (lot L9.4)', () => {
     // Most of them are seen in the band of the play screen.
     const [, by, , bh] = BAND_VIEWBOX.split(' ').map(Number) as [number, number, number, number];
     expect(BUILD_LOTS.filter(([c, r]) => { const y = tileCentre(c, r)[1]; return y > by + 40 && y < by + bh; }).length).toBeGreaterThanOrEqual(16);
+  });
+
+  it('three quarters of 6 lots for sale beyond the new street (lot L10.6b, R2-07)', () => {
+    expect(SALE_LOTS).toHaveLength(18);
+    expect(new Set(SALE_LOTS.map(([c, r]) => `${c},${r}`)).size).toBe(18);
+    for (const q of [0, 1, 2]) {
+      expect(saleLots(q), `quartier ${q}`).toHaveLength(6);
+      // A quarter for sale grows its own quarter of the town: same columns, so the engine still knows three quarters.
+      for (const [c, r] of saleLots(q)) {
+        expect(saleQuarterOf(c, r), `${c},${r}`).toBe(q);
+        expect(isSaleLot(c, r), `${c},${r}`).toBe(true);
+        expect(isLot(c, r), `${c},${r}`).toBe(true);
+        // In front of the new street, and never one of the 30 lawns of the start.
+        expect(r, `${c},${r}`).toBeGreaterThan(SALE_STREET);
+        expect(isBuildLot(c, r), `${c},${r}`).toBe(false);
+      }
+    }
+    // Every lot of the quarters is inside the whole view the three screens show.
+    const [vx, vy, vw, vh] = FULL_VIEWBOX.split(' ').map(Number) as [number, number, number, number];
+    for (const [c, r] of SALE_LOTS) {
+      const [x, y] = tileCentre(c, r);
+      expect(x, `${c},${r}`).toBeGreaterThan(vx);
+      expect(x, `${c},${r}`).toBeLessThan(vx + vw);
+      expect(y, `${c},${r}`).toBeGreaterThan(vy);
+      expect(y, `${c},${r}`).toBeLessThan(vy + vh);
+    }
+  });
+
+  it('a quarter bought opens its 6 lots, and nothing else changes (lot L10.6b)', () => {
+    expect(lotsOpen()).toHaveLength(30);
+    expect(lotsOpen([])).toHaveLength(30);
+    expect(lotsOpen([1])).toHaveLength(36);
+    expect(lotsOpen([0, 1, 2])).toHaveLength(48);
+    // The 30 lawns stay open whatever is bought.
+    for (const [c, r] of BUILD_LOTS) expect(lotsOpen([2]).some(([a, b]) => a === c && b === r), `${c},${r}`).toBe(true);
+    // Free lots: a town whose 30 lawns are taken has none left until a quarter is bought.
+    const full: Record<string, [number, number]> = {};
+    BUILD_LOTS.forEach(([c, r], i) => { full[`b${i}`] = [c, r]; });
+    expect(freeLots(full)).toHaveLength(0);
+    expect(freeLots(full, [1])).toEqual(saleLots(1));
+  });
+
+  it('the quarters for sale show their sign until they are bought (lot L10.6b)', () => {
+    // A sign a quarter, drawn again by the still layers of the cross streets like any other picture (L10.3).
+    const signs = (svg: string): number => svg.split('#p-panneau-a-vendre"').length - 1;
+    const none = signs(town({}, 'full'));
+    expect(none).toBeGreaterThanOrEqual(3);
+    // None left once the three quarters are bought; fewer when one is.
+    expect(town({ quarters: [0, 1, 2] }, 'full')).not.toContain('#p-panneau-a-vendre"');
+    expect(signs(town({ quarters: [1] }, 'full'))).toBeLessThan(none);
+    // The sign stands on the row nearest the new street.
+    expect(QUARTER_ROWS[0]).toBe(SALE_STREET + 1);
   });
 
   it('settles every building on a lot of its own: kept, else its default plot, else the first free lot', () => {
