@@ -74,6 +74,7 @@ Avant tout retour en arrière : `git status` doit être propre (sinon `git stash
 | v0.12.0 | *(à poser après validation)* | 2026-11-11 | L9.2a : le jeu s'appelle « Nuki Town », logo et icônes NukiTeam (D-27) |
 | v0.13.0 | *(à poser après validation)* | 2026-11-11 | L9.3 et L9.4 : premier achat dès la 1re journée, son, boutique, oiseaux, cochon et fond (D-28) ; l'enfant choisit où construire (D-29) |
 | v0.14.0 | *(à poser après validation)* | 2026-11-20 | L10.1 à L10.3 : retours R2 (D-30), nouvel écran de jeu avec la ville entière (D-31), boutons + et −, circulation, « ZzZ », prix des bâtiments qui aident |
+| v0.15.0 | *(à poser après validation)* | 2026-11-25 | L10.4 à L10.6 : événements visibles (D-32), habitants qui marchent et qui entrent dans les bâtiments (D-33, D-34), six nouveaux bâtiments dont deux achetables sans fin (R2-06), trois quartiers à vendre et rues redressées (R2-07), écran de jeu réorganisé (D-35), achat d'un quartier dans la boutique (D-36) |
 | v0.7.0 | *(à poser après validation)* | 2026-11-09 | L5 : tutoriel guidé de la première partie, musique CC0 en boucle, bruitages, bouton « Son » (D-18) |
 
 Un commit ne peut pas citer son propre identifiant : la colonne « Commit » de la dernière ligne se complète au commit

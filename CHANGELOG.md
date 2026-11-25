@@ -2,7 +2,24 @@
 
 *Ce qui change pour le joueur, en mots simples. Une section par version (voir `docs/CONFIGURATION.md` §4).*
 
-## v0.15.0 (en cours) — lots L10.4 et L10.5a : les événements se voient, les habitants marchent
+## v0.15.0 — 2026-11-25 (lots L10.4 à L10.6 : les événements se voient, les habitants marchent, la ville s'agrandit ; à valider)
+
+### Lot L10.6b3 — agrandir la ville (R2-07)
+- Quand ta ville compte **24 bâtiments**, la boutique ouvre une section **« Agrandir la ville »** : tu peux y acheter un des trois quartiers à vendre.
+- Un quartier te donne **six terrains de plus**. Le premier coûte 20 000 €, le deuxième 30 000 €, le troisième 50 000 €.
+- Quand il ne te reste plus un seul terrain libre, Cassandra te dit d'agrandir la ville et la section passe en tête de la boutique.
+- Les quartiers achetés restent sur l'appareil, comme tes bâtiments.
+
+### Lot L10.6b2 — l'écran de jeu réorganisé
+- **Le suivi de consommation est bien plus grand** : il prend tout le haut de l'écran, sous l'en-tête, et la journée se lit sur toute la largeur. La ville est dessous, les curseurs sur toute la hauteur à droite.
+- Les **boutons + et − de la chaleur** sont passés à droite de son curseur, comme ceux de l'électricité sont à gauche du sien.
+- **Le logo et le nom du jeu** sont dans l'en-tête, à côté du bouton « Pause ».
+
+### Lot L10.6b — trois quartiers à vendre (R2-07)
+- La ville a **une rue de plus**, et derrière elle **trois quartiers à vendre** de six terrains chacun, avec un grand panneau « À VENDRE » tant qu'ils ne sont pas à toi.
+- **Les rues étaient dessinées en travers** : chacune suit maintenant sa propre direction, et celles d'une même diagonale se rejoignent.
+- Les bâtiments du fond ne passent plus par-dessus ceux de devant quand une voiture traverse une rue.
+- Le parc, la fontaine et les panneaux solaires débordaient de leur terrain : ils y sont rentrés (les panneaux solaires étaient bien trop grands).
 
 ### Lot L10.6a — six nouveaux bâtiments (R2-06)
 - Quand tes **18 premiers bâtiments** sont construits, la boutique en ouvre **six nouveaux** : une petite maison, un immeuble neuf, une boulangerie-pâtisserie, un hôtel, la mairie et une caserne de pompiers.

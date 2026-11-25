@@ -1,6 +1,6 @@
 [package]
 name = "neutron-city"
-version = "0.14.0"
+version = "0.15.0"
 description = "Nuki Town - educational game for children aged 8 to 12"
 authors = ["NukiTeam"]
 edition = "2021"
