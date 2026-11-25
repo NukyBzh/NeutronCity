@@ -4,7 +4,11 @@
  */
 import { type DayDef, type SurpriseKind } from './day';
 import { dayResult, demandAt, hourOf, simulate, starBonus, type GameState } from './game';
-import { copiesOf, dayBonus, dayEffects, eventMods, nextCopyId, priceOf, shopStatus, welcomeGift, type ShopItem } from './town';
+import { QUARTERS } from './surprises';
+import {
+  copiesOf, dayBonus, dayEffects, eventMods, nextCopyId, priceOf, quarterPrice, quarterStatus, shopStatus, welcomeGift,
+  type QuarterOffer, type ShopItem,
+} from './town';
 
 /** A simulated player: how it moves the sliders, and how long it takes to act on an event (null: never). */
 export interface Bot {
@@ -83,6 +87,20 @@ export interface Campaign {
   bought: { id: string; day: number }[];
   /** Days played until the whole town was bought (null: not within `maxDays`). */
   complete: number | null;
+  /** What each quarter for sale cost and the day it was bought; empty when the campaign does not count the lots. */
+  quarters: { price: number; day: number }[];
+  /** Days played until every lot holds a building, the quarters for sale included (null: not within `maxDays`). */
+  full: number | null;
+}
+
+/**
+ * The ground the bot builds on (lot L10.6c): the town starts with `start` lots and each quarter for sale bought in the
+ * shop opens `perQuarter` more. Without this the campaign buys without counting the ground, as it did before.
+ */
+export interface CampaignLots {
+  start: number;
+  perQuarter: number;
+  offer: QuarterOffer;
 }
 
 /**
@@ -90,16 +108,33 @@ export interface Campaign {
  * buys whatever the shop offers as soon as it can pay (the cheapest first).
  */
 export function campaign(days: readonly DayDef[], shop: readonly ShopItem[], bot: Bot, maxDays = 60,
-  quarterOf: (id: string) => number | null = () => null): Campaign {
+  quarterOf: (id: string) => number | null = () => null, lots?: CampaignLots): Campaign {
   let wallet = 0;
   const owned: string[] = [];
   const bought: Campaign['bought'] = [];
+  const quarters: Campaign['quarters'] = [];
+  /** The quarters for sale bought, in the order of the purchases. */
+  const got: number[] = [];
+  let complete: number | null = null;
+  /** Lots left to build on, without counting the ground when the caller does not ask for it. */
+  const room = (): number => (lots ? lots.start + lots.perQuarter * got.length - owned.length : Number.POSITIVE_INFINITY);
   for (let n = 1; n <= maxDays; n++) {
     const day = days[(n - 1) % days.length]!;
     const { game, result } = playDay(day, n, bot, shop, owned, quarterOf);
     wallet += game.euros + starBonus(dayBonus(shop, owned), result.stars);
     wallet += welcomeGift(shop, owned, wallet);
     for (;;) {
+      // No ground left: the only thing worth buying is a quarter for sale (lot L10.6c, D-36). It saves up for it, so
+      // the price of a quarter is told in days of play by the report of `tools/equilibrage`.
+      if (room() === 0) {
+        const price = quarterPrice(lots!.offer, got);
+        const q = got.length;
+        if (price === null || price > wallet || quarterStatus(lots!.offer, owned, got, q).kind !== 'open') break;
+        wallet -= price;
+        got.push(q);
+        quarters.push({ price, day: n });
+        continue;
+      }
       // The cheapest it can afford, but a building it does not have yet before a second copy of one it has (L10.6).
       const open = shop
         .filter((i) => shopStatus(shop, owned, i).kind === 'open' && priceOf(i, owned) <= wallet)
@@ -112,7 +147,12 @@ export function campaign(days: readonly DayDef[], shop: readonly ShopItem[], bot
       bought.push({ id, day: n });
     }
     // The town is complete once every building of the shop has been bought at least once (copies do not count).
-    if (shop.every((i) => copiesOf(owned, i.id) > 0)) return { bought, complete: n };
+    if (complete === null && shop.every((i) => copiesOf(owned, i.id) > 0)) {
+      complete = n;
+      if (!lots) return { bought, complete, quarters, full: null };
+    }
+    // Nothing left to buy: every quarter bought and every lot built on.
+    if (lots && got.length === QUARTERS && room() === 0) return { bought, complete, quarters, full: n };
   }
-  return { bought, complete: null };
+  return { bought, complete, quarters, full: null };
 }

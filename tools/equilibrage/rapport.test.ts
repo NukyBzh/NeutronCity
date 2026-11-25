@@ -5,10 +5,20 @@
 import { writeFileSync } from 'node:fs';
 import { it } from 'vitest';
 import { BOTS, CHILD, SURPRISE_KINDS, campaign, measureDay, type BotName } from '../../packages/engine/src/index';
-import { DAYS, SHOP } from '../../packages/engine/test/content';
+import { DAYS, OFFER, SHOP } from '../../packages/engine/test/content';
 
 const SEEDS = 200;
+/** The ground of the drawing (apps/game/src/play/iso/town.ts): 30 lots, and 6 more for each quarter for sale. */
+const LOTS = { start: 30, perQuarter: 6, offer: OFFER };
+const RANKS = ['1er', '2e', '3e'];
 const pct = (x: number): string => `${Math.round(x * 100)} %`;
+/** 20000 euros written as the game writes them: 20 000 €. */
+const euros = (n: number): string => {
+  const d = String(n);
+  let out = '';
+  for (let i = 0; i < d.length; i++) out += (i > 0 && (d.length - i) % 3 === 0 ? ' ' : '') + d[i];
+  return `${out} €`;
+};
 
 it('writes the balance report', () => {
   const out: string[] = [
@@ -32,8 +42,14 @@ it('writes the balance report', () => {
     }
   }
   out.push('', '## Événements', '', '| Journée | Par jour | Part des journées où chacun arrive |', '|---|---|---|', ...kinds);
-  const c = campaign(DAYS, SHOP, CHILD);
-  out.push('', '## Argent (joueur « enfant », journées dans l\'ordre)', '', `Ville complète en **${c.complete ?? 'plus de 60'} journées**.`, '',
+  // Lot L10.6c: the child goes on playing until the three quarters for sale are bought and all 48 lots are built on.
+  const c = campaign(DAYS, SHOP, CHILD, 150, () => null, LOTS);
+  out.push('', '## Argent (joueur « enfant », journées dans l\'ordre)', '',
+    `Les ${SHOP.length} bâtiments du magasin tous achetés au moins une fois après **${c.complete ?? 'plus de 150'} journées**.`,
+    `Les ${LOTS.start} terrains du départ pleins après la journée **${c.quarters[0]?.day ?? '— jamais'}** : l'enfant achète alors le premier quartier à vendre.`,
+    `Les ${LOTS.start + LOTS.perQuarter * c.quarters.length} terrains des quartiers achetés tous bâtis après **${c.full ?? 'plus de 150'} journées**.`, '',
+    '| Quartier à vendre | Prix | Acheté après la journée |', '|---|---|---|',
+    ...c.quarters.map((q, i) => `| ${RANKS[i] ?? i + 1} | ${euros(q.price)} | ${q.day} |`), '',
     '| Bâtiment | Acheté après la journée |', '|---|---|', ...c.bought.map((b) => `| ${b.id} | ${b.day} |`), '');
   writeFileSync('docs/EQUILIBRAGE.md', out.join('\n'));
   console.log(out.join('\n'));

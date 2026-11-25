@@ -38,7 +38,15 @@ Joueurs simulés (`packages/engine/src/balance.ts`) :
 
 ## Argent (joueur « enfant », journées dans l'ordre)
 
-Ville complète en **26 journées**.
+Les 24 bâtiments du magasin tous achetés au moins une fois après **26 journées**.
+Les 30 terrains du départ pleins après la journée **29** : l'enfant achète alors le premier quartier à vendre.
+Les 48 terrains des quartiers achetés tous bâtis après **48 journées**.
+
+| Quartier à vendre | Prix | Acheté après la journée |
+|---|---|---|
+| 1er | 20 000 € | 29 |
+| 2e | 30 000 € | 34 |
+| 3e | 50 000 € | 42 |
 
 | Bâtiment | Acheté après la journée |
 |---|---|
@@ -70,3 +78,23 @@ Ville complète en **26 journées**.
 | hotel | 25 |
 | caserne | 26 |
 | petite-maison-4 | 26 |
+| immeuble-neuf-3 | 27 |
+| immeuble-neuf-4 | 27 |
+| petite-maison-5 | 29 |
+| immeuble-neuf-5 | 30 |
+| petite-maison-6 | 30 |
+| immeuble-neuf-6 | 31 |
+| petite-maison-7 | 31 |
+| immeuble-neuf-7 | 32 |
+| petite-maison-8 | 35 |
+| immeuble-neuf-8 | 35 |
+| petite-maison-9 | 36 |
+| petite-maison-10 | 36 |
+| petite-maison-11 | 37 |
+| immeuble-neuf-9 | 38 |
+| petite-maison-12 | 42 |
+| immeuble-neuf-10 | 44 |
+| immeuble-neuf-11 | 45 |
+| immeuble-neuf-12 | 46 |
+| petite-maison-13 | 47 |
+| petite-maison-14 | 48 |

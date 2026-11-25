@@ -25,6 +25,8 @@ const SCREENS = [
   { name: 'jeu (tutoriel)', q: 'ecran=jeu&journee=ete&tuto=1' },
   { name: 'bilan', q: 'ecran=bilan&journee=hiver&achats=ferme,reseau-chaleur' },
   { name: 'boutique', q: 'ecran=boutique&achats=ferme,reseau-chaleur,maison-lilas,maison-ve,epicerie,ecole,usine-cereales,maison-medicale' },
+  // The shop with the three quarters for sale, which need the 24 buildings of the town (lot L10.6c, D-36).
+  { name: 'boutique (quartiers)', q: `ecran=boutique&euros=30000&achats=reseau-chaleur,ferme,maison-lilas,maison-ve,epicerie,ecole,usine-cereales,maison-medicale,batterie,parc,fontaine,piste,piscine,eclairage,isolation,solaire,hopital,cuve,petite-maison,immeuble-neuf,patisserie,hotel,mairie,caserne` },
 ];
 
 const list = await (await fetch(`http://127.0.0.1:${PORT}/json/list`)).json();
@@ -59,7 +61,7 @@ const probe = (btn, txt) => `(() => {
   return JSON.stringify({ small, tiny: [...tiny.keys()], rem: parseFloat(getComputedStyle(document.documentElement).fontSize) });
 })()`;
 
-const out = ['# Ergonomie (lots L8.3 et L10.3)', '', `Fichier écrit par \`tools/mesures/ergonomie.mjs\` : boutons et textes plus petits que les cibles de D-23 (tablette ≥ 48 px et texte ≥ 18 px, 15 px sous 680 px de haut ; téléphone ≥ 44 px et ≥ 15 px), écran par écran, au format de chaque appareil.`, ''];
+const out = ['# Ergonomie (lots L8.3, L10.3 et L10.6c)', '', `Fichier écrit par \`tools/mesures/ergonomie.mjs\` : boutons et textes plus petits que les cibles de D-23 (tablette ≥ 48 px et texte ≥ 18 px, 15 px sous 680 px de haut ; téléphone ≥ 44 px et ≥ 15 px), écran par écran, au format de chaque appareil.`, ''];
 let faults = 0;
 for (const f of FORMATS) {
   await send('Emulation.setDeviceMetricsOverride', { width: f.w, height: f.h, deviceScaleFactor: 1, mobile: f.phone });

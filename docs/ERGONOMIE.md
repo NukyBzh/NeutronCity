@@ -10,6 +10,7 @@ Fichier écrit par `tools/mesures/ergonomie.mjs` : boutons et textes plus petits
 - **jeu (tutoriel)** (1 rem = 30.0 px) : rien à signaler
 - **bilan** (1 rem = 30.0 px) : rien à signaler
 - **boutique** (1 rem = 30.0 px) : rien à signaler
+- **boutique (quartiers)** (1 rem = 30.0 px) : rien à signaler
 
 ## Tab A7 (1334 × 800)
 
@@ -19,6 +20,7 @@ Fichier écrit par `tools/mesures/ergonomie.mjs` : boutons et textes plus petits
 - **jeu (tutoriel)** (1 rem = 20.0 px) : rien à signaler
 - **bilan** (1 rem = 20.0 px) : rien à signaler
 - **boutique** (1 rem = 20.0 px) : rien à signaler
+- **boutique (quartiers)** (1 rem = 20.0 px) : rien à signaler
 
 ## Tab A6 10.1" (1280 × 800)
 
@@ -28,6 +30,7 @@ Fichier écrit par `tools/mesures/ergonomie.mjs` : boutons et textes plus petits
 - **jeu (tutoriel)** (1 rem = 20.0 px) : rien à signaler
 - **bilan** (1 rem = 20.0 px) : rien à signaler
 - **boutique** (1 rem = 20.0 px) : rien à signaler
+- **boutique (quartiers)** (1 rem = 20.0 px) : rien à signaler
 
 ## Tab A 7" (960 × 600)
 
@@ -37,6 +40,7 @@ Fichier écrit par `tools/mesures/ergonomie.mjs` : boutons et textes plus petits
 - **jeu (tutoriel)** (1 rem = 15.0 px) : rien à signaler
 - **bilan** (1 rem = 15.0 px) : rien à signaler
 - **boutique** (1 rem = 15.0 px) : rien à signaler
+- **boutique (quartiers)** (1 rem = 15.0 px) : rien à signaler
 
 ## Galaxy S23 Ultra (915 × 412)
 
@@ -46,6 +50,7 @@ Fichier écrit par `tools/mesures/ergonomie.mjs` : boutons et textes plus petits
 - **jeu (tutoriel)** (1 rem = 17.9 px) : rien à signaler
 - **bilan** (1 rem = 17.9 px) : rien à signaler
 - **boutique** (1 rem = 17.9 px) : rien à signaler
+- **boutique (quartiers)** (1 rem = 17.9 px) : rien à signaler
 
 ## iPhone 11 (896 × 414)
 
@@ -55,6 +60,7 @@ Fichier écrit par `tools/mesures/ergonomie.mjs` : boutons et textes plus petits
 - **jeu (tutoriel)** (1 rem = 17.5 px) : rien à signaler
 - **bilan** (1 rem = 17.5 px) : rien à signaler
 - **boutique** (1 rem = 17.5 px) : rien à signaler
+- **boutique (quartiers)** (1 rem = 17.5 px) : rien à signaler
 
 ## iPhone 14 (844 × 390)
 
@@ -64,6 +70,7 @@ Fichier écrit par `tools/mesures/ergonomie.mjs` : boutons et textes plus petits
 - **jeu (tutoriel)** (1 rem = 16.4 px) : rien à signaler
 - **bilan** (1 rem = 16.4 px) : rien à signaler
 - **boutique** (1 rem = 16.4 px) : rien à signaler
+- **boutique (quartiers)** (1 rem = 16.4 px) : rien à signaler
 
 ## Galaxy S20 (800 × 360)
 
@@ -73,5 +80,6 @@ Fichier écrit par `tools/mesures/ergonomie.mjs` : boutons et textes plus petits
 - **jeu (tutoriel)** (1 rem = 15.5 px) : rien à signaler
 - **bilan** (1 rem = 15.5 px) : rien à signaler
 - **boutique** (1 rem = 15.5 px) : rien à signaler
+- **boutique (quartiers)** (1 rem = 15.5 px) : rien à signaler
 
 **Total : 0 points.**

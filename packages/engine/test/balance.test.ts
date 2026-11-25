@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import {
   CHILD, IDLE, NO_REPAIR, PERFECT, SURPRISE_SPEC, campaign, drawSurprises, playDay, STAR_THRESHOLDS, starsOf, type DayDef, type SurpriseKind,
 } from '../src/index';
-import { DAYS, SHOP } from './content';
+import { DAYS, OFFER, SHOP } from './content';
 
 const SEEDS = 40;
 const seeds = Array.from({ length: SEEDS }, (_, i) => i + 1);
@@ -83,5 +83,34 @@ describe('money', () => {
     expect(c.complete!).toBeLessThanOrEqual(30);
     // The first building after one or two days.
     expect(c.bought[0]!.day).toBeLessThanOrEqual(2);
+  }, 60000);
+
+  // Lot L10.6c: with the ground counted, the campaign tells what a quarter for sale costs in days of play.
+  const LOTS = { start: 30, perQuarter: 6, offer: OFFER };
+
+  it('counting the lots, the child buys the three quarters and fills the 48 of them (lot L10.6c)', () => {
+    const c = campaign(DAYS, SHOP, CHILD, 150, () => null, LOTS);
+    // One building a lot, never more: the 30 of the start and the 6 of each quarter bought.
+    expect(c.bought).toHaveLength(48);
+    expect(c.quarters.map((q) => q.price)).toEqual([...OFFER.prices]);
+    const days = c.quarters.map((q) => q.day);
+    expect([...days].sort((a, b) => a - b)).toEqual(days);
+    // A quarter is bought when there is nowhere left to build, so after the shop has been gone through once.
+    expect(c.complete).not.toBeNull();
+    expect(days[0]!).toBeGreaterThan(c.complete!);
+    expect(c.full).not.toBeNull();
+    expect(c.full!).toBeGreaterThan(days[2]!);
+    // A quarter must stay a goal of a few days of play, not of a month.
+    expect(days[1]! - days[0]!).toBeLessThanOrEqual(12);
+    expect(days[2]! - days[1]!).toBeLessThanOrEqual(12);
+  }, 60000);
+
+  it('a quarter it can never pay for leaves the town at its 30 lots (lot L10.6c)', () => {
+    const dear = { prices: [900000, 950000, 990000], unlockAt: OFFER.unlockAt };
+    const c = campaign(DAYS, SHOP, CHILD, 60, () => null, { ...LOTS, offer: dear });
+    expect(c.bought).toHaveLength(30);
+    expect(c.quarters).toEqual([]);
+    expect(c.full).toBeNull();
+    expect(c.complete).not.toBeNull();
   }, 60000);
 });
